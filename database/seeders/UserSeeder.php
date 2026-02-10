@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
             'padang tikar',
             'teluk batang',
             'ketapang',
-            'kenawangan',
+            'kendawangan',
         ];
 
         $roles = [
