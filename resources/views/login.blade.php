@@ -32,7 +32,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('login')">Login</button>
             <button class="tab" onclick="switchTab('register')">Registrasi</button>
-            <button class="tab" onclick="switchTab('invoice')">Cek Invoice</button>
+            {{-- <button class="tab" onclick="switchTab('invoice')">Cek Invoice</button> --}}
         </div>
 
         <!-- LOGIN -->
