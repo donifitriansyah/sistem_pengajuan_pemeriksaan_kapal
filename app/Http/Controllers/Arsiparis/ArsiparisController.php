@@ -24,7 +24,7 @@ class ArsiparisController extends Controller
 
         // Extract the last number from nomor_surat_masuk, or set it to 1 if none exists
         $suratMasukNumber = $lastSuratMasuk ? (int) explode('/', $lastSuratMasuk->nomor_surat_masuk)[2] + 1 : 1;
-        $nomorSuratMasuk = 'AC.01.1/X/'.str_pad($suratMasukNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
+        $nomorSuratMasuk = 'AR.02.01/C.X.1.11/'.str_pad($suratMasukNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
 
         // Generate the nomor surat keluar otomatis
         $lastSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', 'like', 'HK.01.1/X/%/'.$currentYear)
@@ -33,7 +33,7 @@ class ArsiparisController extends Controller
 
         // Extract the last number from nomor_surat_keluar, or set it to 1 if none exists
         $suratKeluarNumber = $lastSuratKeluar ? (int) explode('/', $lastSuratKeluar->nomor_surat_keluar)[2] + 1 : 1;
-        $nomorSuratKeluar = 'HK.01.1/X/'.str_pad($suratKeluarNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
+        $nomorSuratKeluar = 'SR.04.02/C.X.1.11/'.str_pad($suratKeluarNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
 
         // Create a new AgendaSuratPengajuan record
         $agenda = AgendaSuratPengajuan::create([
