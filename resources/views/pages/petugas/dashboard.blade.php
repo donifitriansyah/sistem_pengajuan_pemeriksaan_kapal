@@ -164,13 +164,16 @@
                                 {{-- WAKTU MULAI DAN SELESAI --}}
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Mulai</label>
-                                    <input type="datetime-local" name="waktu_mulai" class="form-control" required>
+                                    <input type="datetime-local" name="waktu_mulai" class="form-control" required
+                                        data-id="{{ $item->id }}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
-                                    <input type="datetime-local" name="waktu_selesai" class="form-control" required>
+                                    <input type="datetime-local" name="waktu_selesai" class="form-control" required
+                                        data-id="{{ $item->id }}">
                                 </div>
+
 
 
                                 {{-- JENIS TARIF --}}
@@ -335,20 +338,35 @@
                     0; // Ensure it's an integer
 
                 // Get the start and end time
-                const waktuMulai = new Date(document.querySelector(`[name="waktu_mulai"]`).value);
-                const waktuSelesai = new Date(document.querySelector(`[name="waktu_selesai"]`).value);
+                const waktuMulai = document.querySelector(`[name="waktu_mulai"][data-id="${id}"]`).value;
+                const waktuSelesai = document.querySelector(`[name="waktu_selesai"][data-id="${id}"]`)
+                    .value;
+
+                // Check if both times are selected
+                if (!waktuMulai || !waktuSelesai) {
+                    console.log('Waktu Mulai atau Waktu Selesai belum dipilih');
+                    return; // Skip calculation if either time is missing
+                }
 
                 // Calculate the difference in milliseconds
-                const waktuDifferenceInMs = waktuSelesai - waktuMulai;
+                const start = new Date(waktuMulai);
+                const end = new Date(waktuSelesai);
+                const waktuDifferenceInMs = end - start;
+
+                // Validate if the time difference is valid (should not be negative or NaN)
+                if (isNaN(waktuDifferenceInMs) || waktuDifferenceInMs <= 0) {
+                    console.log('Perhitungan waktu tidak valid');
+                    return; // Skip calculation if the time difference is invalid
+                }
 
                 // Convert milliseconds to days (rounding the difference correctly)
                 const daysDifference = Math.ceil(waktuDifferenceInMs / (1000 * 3600 *
                     24)); // Convert ms to days
 
-                // Calculate the total tarif (no rounding)
+                // Calculate the total tarif (ensure integer)
                 let total = tarif * jumlah * daysDifference;
 
-                // Log the total value before formatting
+                // Log the total value before formatting (for debugging)
                 console.log('Total Tarif (no rounding):', total);
 
                 // Update the display for total tarif (formatted as currency)
@@ -361,6 +379,7 @@
                 document.getElementById(`totalValue${id}`).value = total; // Set the raw value (no rounding)
             });
         });
+
 
 
 

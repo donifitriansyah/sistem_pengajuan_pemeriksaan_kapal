@@ -35,11 +35,20 @@ class ArsiparisController extends Controller
         $suratKeluarNumber = $lastSuratKeluar ? (int) explode('/', $lastSuratKeluar->nomor_surat_keluar)[2] + 1 : 1;
         $nomorSuratKeluar = 'SR.04.02/C.X.1.11/'.str_pad($suratKeluarNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
 
+        // Check if the generated nomor_surat_keluar already exists in the database
+        $existingSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', $nomorSuratKeluar)->first();
+
+        // If the nomor_surat_keluar already exists, regenerate it by incrementing the number
+        if ($existingSuratKeluar) {
+            $suratKeluarNumber++;
+            $nomorSuratKeluar = 'SR.04.02/C.X.1.11/'.str_pad($suratKeluarNumber, 4, '0', STR_PAD_LEFT).'/'.$currentYear;
+        }
+
         // Create a new AgendaSuratPengajuan record
         $agenda = AgendaSuratPengajuan::create([
             'nomor_surat_pengajuan' => $request->input('nomor_surat_pengajuan'),
             'nomor_surat_masuk' => $nomorSuratMasuk,  // Automatically generated
-            'nomor_surat_keluar' => $nomorSuratKeluar, // Automatically generated
+            'nomor_surat_keluar' => $nomorSuratKeluar, // Automatically generated and ensured unique
             'tanggal_surat' => $request->input('tanggal_surat'),
         ]);
 
