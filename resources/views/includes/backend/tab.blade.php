@@ -36,9 +36,6 @@
             class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
             Data Penagihan
         </a>
-        <a href="{{ route('petugas.pembayaran') }}"
-            class="tab {{ request()->routeIs('petugas.pembayaran') ? 'active' : '' }}">
-            Data Pembayaran
         <a href="{{ route('petugas.pemeriksa') }}"
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
@@ -46,6 +43,11 @@
         <a href="{{ route('pengajuan.petugas') }}"
             class="tab {{ request()->routeIs('pengajuan.petugas') ? 'active' : '' }}">
             Semua Data Pengajuan
+        </a>
+    @elseif(auth()->check() && auth()->user()->role === 'keuangan')
+        <a href="{{ route('petugas.pembayaran') }}"
+            class="tab {{ request()->routeIs('petugas.pembayaran') ? 'active' : '' }}">
+            Data Pembayaran
         </a>
         {{-- ================= USER ================= --}}
     @else

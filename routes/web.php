@@ -30,7 +30,7 @@ Route::get('/', function () {
             case 'petugas-kapal':
                 return redirect()->route('petugas-kapal.dashboard');
             case 'keuangan':
-                return redirect()->route('keuangan.dashboard');
+                return redirect()->route('petugas.pembayaran');
             default:
                 return redirect()->route('user.dashboard');
         }
@@ -129,20 +129,27 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
 
-    Route::get('/pembayaran/petugas', [DashboardPetugasController::class, 'indexPembayaran'])
-        ->name('petugas.pembayaran');
-
-
     Route::post(
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
 
+
+    Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
+
+    Route::post('/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
+
+});
+
+Route::middleware(['auth', 'keuangan'])->group(function () {
+
+    Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
+        ->name('petugas.pembayaran');
+
+
     Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
         [DashboardPetugasController::class, 'verifikasi']
     )->name('admin.pembayaran.verifikasi');
-
-    Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
 });
 
@@ -151,5 +158,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
 
 require __DIR__.'/auth.php';

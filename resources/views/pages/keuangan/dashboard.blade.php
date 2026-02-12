@@ -1,10 +1,13 @@
 @extends('layouts.app')
 @section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-
     <div class="content-card">
         <div class="content-header">
-            <h2>Daftar Pengajuan Belum Diverifikasi</h2>
+            <h2>Verifikasi Daftar Pengajuan</h2>
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="searchPengajuan" placeholder="Cari kapal / perusahaan...">
+                </div>
+            </div>
         </div>
 
         <div class="filter-container">
@@ -41,202 +44,132 @@
 
         </div>
 
-        <table id="tablePengajuan">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+
+        <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th style="width:50px">No</th>
-                    <th>Tanggal Pemeriksaan</th>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Wilker</th>
                     <th>Nama Kapal</th>
-                    <th>Nama Perusahaan</th>
-                    <th>Lokasi Pemeriksaan</th>
+                    <th>Perusahaan</th>
+                    <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
-                    <th>Surat Pengajuan</th>
-                    <th>Status Arsip</th>
-                    <th style="width:120px">Aksi</th>
+                    <th>Nomor Surat</th>
+                    <th>Nomor Surat Tugas</th>
+                    <th>Bukti Bayar</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody>
 
-                @forelse($pengajuan as $item)
+            <tbody>
+                @foreach ($pengajuan as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-
-                        <td>
-                            {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
-                        </td>
-
+                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                        <td>{{ $item->wilayah_kerja }}</td>
                         <td>{{ $item->nama_kapal }}</td>
-
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
-
                         <td>{{ $item->lokasi_kapal }}</td>
-
                         <td>
-                            <span class="badge bg-primary">
-                                {{ $item->jenis_dokumen }}
-                            </span>
+                            <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
                         </td>
-
+                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_pengajuan ?? '-' }}</td>
+                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
                         <td>
-                            <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
-                                class="btn btn-sm btn-info">
-                                Lihat File
-                            </a>
-                        </td>
-
-                        <td>
-                            @if ($item->agenda_surat_pengajuan_id)
-                                <span class="badge bg-success">Sudah Arsip</span>
+                            @if ($item->penagihan && $item->penagihan->pembayaran)
+                                <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
+                                    class="btn btn-sm btn-primary">
+                                    Lihat Bukti
+                                </a>
                             @else
-                                <span class="badge bg-warning text-dark">Belum Arsip</span>
+                                <span class="badge bg-secondary">Belum Upload</span>
                             @endif
                         </td>
 
-
-
                         <td>
-                            @if ($item->agenda_surat_pengajuan_id)
-                                {{-- SUDAH ARSIP --}}
-                                <button class="btn btn-sm btn-secondary" disabled>
-                                    Sudah Diarsipkan
-                                </button>
+                            @if ($item->penagihan && $item->penagihan->pembayaran)
+                                @if ($item->penagihan->pembayaran->status === 'menunggu')
+                                    <span class="badge bg-warning text-dark mb-1 d-block">
+                                        Menunggu Verifikasi
+                                    </span>
+
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#verifikasiModal{{ $item->id }}">
+                                        Verifikasi
+                                    </button>
+                                @elseif ($item->penagihan->pembayaran->status === 'diterima')
+                                    <span class="badge bg-success">Lunas</span>
+                                @elseif ($item->penagihan->pembayaran->status === 'ditolak')
+                                    <span class="badge bg-danger">Ditolak</span>
+                                @endif
                             @else
-                                {{-- BELUM ARSIP --}}
-                                <button class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#arsipModal{{ $item->id }}">
-                                    Arsipkan
-                                </button>
+                                <span class="badge bg-secondary">Belum Bayar</span>
                             @endif
                         </td>
 
-
-
-
-                        <div class="modal fade" id="arsipModal{{ $item->id }}" tabindex="-1">
+                    </tr>
+                    @if ($item->penagihan && $item->penagihan->pembayaran)
+                        <div class="modal fade" id="verifikasiModal{{ $item->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form action="{{ route('arsiparis.arsipkan', $item->id) }}" method="POST">
+
+                                    <form
+                                        action="{{ route('admin.pembayaran.verifikasi', $item->penagihan->pembayaran->id) }}"
+                                        method="POST">
                                         @csrf
+                                        @method('PUT')
 
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Arsipkan Pengajuan</h5>
+                                            <h5 class="modal-title">Verifikasi Pembayaran</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
 
                                         <div class="modal-body">
-                                            {{-- Nomor Surat Pengajuan --}}
+                                            <p>
+                                                <strong>Kapal:</strong> {{ $item->nama_kapal }} <br>
+                                                <strong>Perusahaan:</strong> {{ $item->user->nama_perusahaan ?? '-' }}
+                                            </p>
+
                                             <div class="mb-3">
-                                                <label class="form-label">Nomor Surat Pengajuan</label>
-                                                <input type="text" name="nomor_surat_pengajuan" class="form-control"
-                                                    required value="{{ $item->nomor_surat_pengajuan }}">
+                                                <label>Status</label>
+                                                <select name="status" class="form-select" required>
+                                                    <option value="diterima">Terima (Lunas)</option>
+                                                    <option value="ditolak">Tolak</option>
+                                                </select>
                                             </div>
 
-
-
-                                            {{-- Tanggal Surat --}}
                                             <div class="mb-3">
-                                                <label class="form-label">Tanggal Surat</label>
-                                                <input type="date" name="tanggal_surat" class="form-control" required
-                                                    value="{{ $item->tanggal_surat }}">
+                                                <label>Keterangan (opsional)</label>
+                                                <textarea name="keterangan" class="form-control" rows="3"></textarea>
                                             </div>
                                         </div>
 
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Batal
-                                            </button>
-                                            <button type="submit" class="btn btn-primary">
-                                                Simpan Arsip
-                                            </button>
+                                            <button type="submit" class="btn btn-success">Simpan</button>
                                         </div>
+
                                     </form>
+
                                 </div>
                             </div>
                         </div>
-
-
-                    </tr>
-
-                @empty
-
-
-                @endforelse
-
+                    @endif
+                @endforeach
             </tbody>
         </table>
 
     </div>
-    <script>
-        $(document).ready(function() {
-
-            const table = $('#tablePengajuan').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                lengthChange: true,
-                pageLength: 10,
-
-                // Kolom Aksi & No tidak bisa di-sort
-                columnDefs: [{
-                    targets: [0, 8],
-                    orderable: false
-                }],
-
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    emptyTable: "Tidak ada data pengajuan"
-                }
-            });
-
-        });
-    </script>
-    <script>
-        function applyFilter() {
-            const tahun = $('#filterTahun').val();
-            const bulan = $('#filterBulan').val();
-            const perusahaan = $('#filterPerusahaan').val();
-            const jenis = $('#filterJenisDokumen').val();
-
-            $('#tablePengajuan tbody tr').each(function() {
-                const tanggal = $(this).find('td:eq(1)').text(); // dd-mm-yyyy
-                const perusahaanText = $(this).find('td:eq(3)').text();
-                const jenisText = $(this).find('td:eq(5)').text();
-
-                let show = true;
-
-                if (tanggal) {
-                    const parts = tanggal.split('-');
-                    const rowBulan = parts[1];
-                    const rowTahun = parts[2];
-
-                    if (tahun && rowTahun !== tahun) show = false;
-                    if (bulan && rowBulan !== bulan) show = false;
-                }
-
-                if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
-                if (jenis && !jenisText.includes(jenis)) show = false;
-
-                $(this).toggle(show);
-            });
-        }
-
-        $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen').on('change', applyFilter);
-
-        function resetFilter() {
-            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen').val('');
-            $('#tablePengajuan tbody tr').show();
-        }
-    </script>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -245,29 +178,26 @@
             const filterBulan = document.getElementById('filterBulan');
             const filterPerusahaan = document.getElementById('filterPerusahaan');
             const filterJenisDokumen = document.getElementById('filterJenisDokumen');
+            const searchInput = document.getElementById('searchPengajuan');
 
             const rows = document.querySelectorAll('table tbody tr');
 
-            /* =========================
-               ISI OPTION TAHUN & BULAN
-            ========================== */
+            /* =====================
+               ISI DROPDOWN OTOMATIS
+            ===================== */
             const tahunSet = new Set();
             const bulanSet = new Set();
             const perusahaanSet = new Set();
 
             rows.forEach(row => {
-                const tanggal = row.cells[1]?.innerText.trim(); // dd-mm-yyyy
-                const perusahaan = row.cells[3]?.innerText.trim();
+                const tanggal = row.cells[1].innerText; // dd-mm-yyyy
+                const perusahaan = row.cells[3].innerText.trim();
 
-                if (tanggal) {
-                    const [dd, mm, yyyy] = tanggal.split('-');
-                    tahunSet.add(yyyy);
-                    bulanSet.add(mm);
-                }
+                const [day, month, year] = tanggal.split('-');
 
-                if (perusahaan && perusahaan !== '-') {
-                    perusahaanSet.add(perusahaan);
-                }
+                tahunSet.add(year);
+                bulanSet.add(month);
+                if (perusahaan !== '-') perusahaanSet.add(perusahaan);
             });
 
             [...tahunSet].sort().forEach(tahun => {
@@ -282,53 +212,76 @@
                 filterPerusahaan.innerHTML += `<option value="${p}">${p}</option>`;
             });
 
-            /* =========================
-               APPLY FILTER
-            ========================== */
+            /* =====================
+               FILTER + SEARCH
+            ===================== */
             function applyFilter() {
                 const tahun = filterTahun.value;
                 const bulan = filterBulan.value;
                 const perusahaan = filterPerusahaan.value.toLowerCase();
                 const jenis = filterJenisDokumen.value.toLowerCase();
+                const search = searchInput.value.toLowerCase();
+
+                let visibleCount = 0;
 
                 rows.forEach(row => {
-                    const tanggalText = row.cells[1].innerText; // dd-mm-yyyy
+                    const tanggalText = row.cells[1].innerText;
+                    const kapalText = row.cells[2].innerText.toLowerCase();
                     const perusahaanText = row.cells[3].innerText.toLowerCase();
                     const jenisText = row.cells[5].innerText.toLowerCase();
 
-                    const [dd, mm, yyyy] = tanggalText.split('-');
+                    const [day, month, year] = tanggalText.split('-');
 
                     let show = true;
 
-                    if (tahun && yyyy !== tahun) show = false;
-                    if (bulan && mm !== bulan) show = false;
+                    if (tahun && year !== tahun) show = false;
+                    if (bulan && month !== bulan) show = false;
                     if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
                     if (jenis && !jenisText.includes(jenis)) show = false;
 
+                    if (search &&
+                        !kapalText.includes(search) &&
+                        !perusahaanText.includes(search)
+                    ) show = false;
+
                     row.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
                 });
+
+                document.getElementById('emptyPengajuan').style.display =
+                    visibleCount === 0 ? 'block' : 'none';
             }
 
             filterTahun.addEventListener('change', applyFilter);
             filterBulan.addEventListener('change', applyFilter);
             filterPerusahaan.addEventListener('change', applyFilter);
             filterJenisDokumen.addEventListener('change', applyFilter);
+            searchInput.addEventListener('keyup', applyFilter);
+
         });
 
-        /* =========================
+        /* =====================
            RESET FILTER
-        ========================= */
+        ===================== */
         function resetFilter() {
             document.getElementById('filterTahun').value = '';
             document.getElementById('filterBulan').value = '';
             document.getElementById('filterPerusahaan').value = '';
             document.getElementById('filterJenisDokumen').value = '';
+            document.getElementById('searchPengajuan').value = '';
 
             document.querySelectorAll('table tbody tr').forEach(row => {
                 row.style.display = '';
             });
+
+            document.getElementById('emptyPengajuan').style.display = 'none';
         }
     </script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+
+
+
+
+
+
 @endsection

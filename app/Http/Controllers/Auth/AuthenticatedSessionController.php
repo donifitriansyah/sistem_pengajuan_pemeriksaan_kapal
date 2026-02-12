@@ -56,6 +56,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('petugas.dashboard');
         }
 
+        if ($user->role === 'keuangan') {
+            return redirect()->route('petugas.pembayaran');
+        }
+
         // Default user
         return redirect()->route('user.dashboard');
     }

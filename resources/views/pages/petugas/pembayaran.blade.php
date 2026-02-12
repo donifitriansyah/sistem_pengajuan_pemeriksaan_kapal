@@ -69,6 +69,7 @@
                     <th>Nomor Surat Tugas</th>
                     <th>Bukti Bayar</th>
                     <th>Aksi</th>
+                    <th>Invoice</th>
                 </tr>
             </thead>
 
@@ -115,6 +116,41 @@
                                 @endif
                             @else
                                 <span class="badge bg-secondary">Belum Bayar</span>
+                            @endif
+                        </td>
+
+                         <td>
+                            {{-- Aksi sesuai status --}}
+                            @if (!$item->penagihan)
+                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
+                            @elseif($item->penagihan->status_bayar === 'belum_bayar')
+                                <span class="badge bg-warning text-dark">Belum Bayar</span>
+                                <div class="mt-1">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#modalBayar{{ $item->id }}">Bayar Tagihan</button>
+                                </div>
+                            @elseif($item->penagihan->status_bayar === 'menunggu')
+                                <span class="badge bg-info">Menunggu Verifikasi</span>
+                            @elseif($item->penagihan->status_bayar === 'ditolak')
+                                <span class="badge bg-danger">Pembayaran Ditolak</span>
+                                <div class="mt-1">
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#modalBayar{{ $item->id }}">Upload Ulang Bukti</button>
+                                </div>
+                            @elseif($item->penagihan->status_bayar === 'diterima')
+                                <span class="badge bg-success">Lunas</span>
+                                <div class="mt-1">
+                                    <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success">Lihat Invoice</a>
+                                </div>
+                            @endif
+
+                            @if ($item->status === 'Ditolak')
+                                <!-- Button to Edit "Ditolak" status -->
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#editPengajuanModal{{ $item->id }}">
+                                    Edit Pengajuan
+                                </button>
                             @endif
                         </td>
 
