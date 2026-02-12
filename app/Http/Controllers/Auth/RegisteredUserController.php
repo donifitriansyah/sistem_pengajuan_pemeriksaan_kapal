@@ -44,11 +44,11 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'min:6',
+                'min:3',
                 'unique:'.User::class,
             ],
 
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed','min:6', Rules\Password::defaults()],
         ]);
 
         // Format nomor HP -> +62xxxxxxxxx
