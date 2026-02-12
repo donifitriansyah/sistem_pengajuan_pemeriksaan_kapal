@@ -21,10 +21,16 @@ class PengajuanPemeriksaanKapal extends Model
         'wilayah_kerja',
         'waktu_kedatangan_kapal',
         'surat_permohonan_dan_dokumen',
+        'status',
+        'keterangan',
         'kode_bayar',
         'penagihan_id',
         'agenda_surat_pengajuan_id',
         'user_id',
+    ];
+
+    protected $casts = [
+        'waktu_kedatangan_kapal' => 'datetime',
     ];
 
     /**

@@ -21,6 +21,76 @@ class UserDashboardController extends Controller
         return view('dashboard', compact('pengajuan'));
     }
 
+    public function update(Request $request, $id)
+    {
+        // Find the PengajuanPemeriksaanKapal by ID
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        // 1. Validasi
+        $request->validate([
+            'tgl_estimasi_pemeriksaan' => 'required|date',  // Tanggal is required and should be a valid date
+            'nama_kapal' => 'required|string|max:255',
+            'lokasi_kapal' => 'required|string|max:255',
+            'jenis_dokumen' => 'required|in:PHQC,SSCEC,COP,P3K',
+            'wilayah_kerja' => 'required|in:Dwikora,Kijing,Padang Tikar,Teluk Batang,Ketapang,Kendawangan',  // Wilayah is required
+            'surat_permohonan' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',  // Optional file upload
+            'waktu_kedatangan_kapal' => 'required|date',  // Time format validation
+            'status' => 'nullable|string|in:Menunggu Verifikasi,Diterima,Ditolak',  // Optional status
+            'keterangan' => 'nullable|string',  // Optional keterangan
+        ]);
+
+        // 2. Mapping wilayah → kode
+        $kodeWilker = [
+            'Dwikora' => 'DW',
+            'Kijing' => 'KJ',
+            'Padang Tikar' => 'PT',
+            'Teluk Batang' => 'TB',
+            'Ketapang' => 'KT',
+            'Kendawangan' => 'KD',
+        ];
+
+        $wilayah = $request->wilayah_kerja;
+        $prefix = $kodeWilker[$wilayah] ?? 'XX';
+
+        // 3. Generate kode bayar (anti duplikat) - Only if status is updated
+        if (! $pengajuan->kode_bayar) { // Check if kode_bayar is not already generated
+            do {
+                $angkaRandom = rand(1000000, 9999999);
+                $kodeBayar = $prefix.'-'.$angkaRandom;
+            } while (PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->exists());
+            $pengajuan->kode_bayar = $kodeBayar;
+        }
+
+        // 4. Upload file - Only if new file is uploaded
+        if ($request->hasFile('surat_permohonan')) {
+            $file = $request->file('surat_permohonan');
+            $fileName = time().'_'.$file->getClientOriginalName();
+            $path = $file->storeAs('surat_permohonan', $fileName, 'public');
+            $pengajuan->surat_permohonan_dan_dokumen = $path;
+        }
+
+        // 5. Parse the waktu_kedatangan_kapal to store in the database
+        $waktuKedatanganKapal = \Carbon\Carbon::parse($request->waktu_kedatangan_kapal)->format('H:i');  // Store just the time in 'H:i' format
+        $pengajuan->waktu_kedatangan_kapal = $waktuKedatanganKapal;
+
+        // 6. Determine the 'status' value, default to 'menunggu verifikasi' if not provided
+        $pengajuan->status = $request->status ?? 'Menunggu Verifikasi';
+
+        // 7. If the status is 'ditolak', reset keterangan
+        if ($pengajuan->status === 'Menunggu Verifikasi') {
+            $pengajuan->keterangan = '';  // Clear keterangan if the status is 'menunggu verifikasi'
+        } else {
+            // Otherwise, set keterangan if it's provided by the user
+            $pengajuan->keterangan = $request->keterangan ?? $pengajuan->keterangan;
+        }
+
+        // 8. Save the updated data
+        $pengajuan->save();
+
+        // 9. Redirect with success message
+        return redirect()->back()->with('success', 'Pengajuan berhasil diperbarui.');
+    }
+
     public function store(Request $request, $penagihanId)
     {
         $request->validate([

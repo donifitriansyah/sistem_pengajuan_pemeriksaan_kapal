@@ -71,6 +71,7 @@
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat</th>
                     <th>File</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -95,6 +96,8 @@
                                 Lihat File
                             </a>
                         </td>
+                        <td>{{ $item->status }}</td>
+
                         <td>
                             <!-- Check if agenda_surat_pengajuan_id is null, show "Belum Diarsipkan" -->
                             @if (is_null($item->agenda_surat_pengajuan_id))
@@ -120,7 +123,59 @@
                                     </button>
                                 @endif
                             @endif
+
+                            <!-- Verifikasi dan Tolak Buttons -->
+                            @if ($item->status === 'Menunggu Verifikasi')
+                                <!-- Trigger the modal when the user wants to update the status -->
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#statusModal{{ $item->id }}">
+                                    Verifikasi / Tolak
+                                </button>
+                            @endif
+
+
+                        <!-- Modal for Verifikasi and Tolak -->
+                        <div class="modal fade" id="statusModal{{ $item->id }}" tabindex="-1"
+                            aria-labelledby="statusModalLabel{{ $item->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <form action="{{ route('pengajuan.updateStatus', $item->id) }}" method="POST">
+                                        @csrf
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="statusModalLabel{{ $item->id }}">Pilih Status
+                                                Pengajuan</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Pilih Status</label>
+                                                <select name="status" class="form-select" required>
+                                                    <option value="">Pilih Status</option>
+                                                    <option value="Diterima">Diterima</option>
+                                                    <option value="Ditolak">Ditolak</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Keterangan Field (Only visible if "Ditolak" is selected) -->
+                                            <div class="mb-3">
+                                                <label for="keterangan" class="form-label">Alasan Penolakan</label>
+                                                <textarea name="keterangan" class="form-control" rows="4" id="keterangan{{ $item->id }}"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-primary">Simpan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
                         </td>
+
                     </tr>
                 @endforeach
             </tbody>
@@ -218,13 +273,6 @@
             <p>✅ Semua pengajuan sudah diagendakan!</p>
         </div>
     </div>
-
-
-
-
-
-
-
 @endsection
 @push('script')
     <script>

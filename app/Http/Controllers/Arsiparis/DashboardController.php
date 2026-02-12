@@ -7,7 +7,6 @@ use App\Models\PengajuanPemeriksaanKapal;
 
 class DashboardController extends Controller
 {
-
     public function index()
     {
         // Get the logged-in user's wilayah_kerja
@@ -15,10 +14,11 @@ class DashboardController extends Controller
         $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
 
         // Fetch PengajuanPemeriksaanKapal that don't have an 'agenda_surat_pengajuan_id' (i.e., belum diagendakan)
-        // and filter by the user's wilayah_kerja
+        // and filter by the user's wilayah_kerja and where status is 'diterima'
         $pengajuan = PengajuanPemeriksaanKapal::with('user')
-            ->whereNull('agenda_surat_pengajuan_id') // Not yet billed
+            ->whereNull('agenda_surat_pengajuan_id') // Not yet diagendakan
             ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah_kerja
+            ->where('status', 'diterima') // Filter by 'status' field to show only 'diterima'
             ->latest()
             ->get();
 

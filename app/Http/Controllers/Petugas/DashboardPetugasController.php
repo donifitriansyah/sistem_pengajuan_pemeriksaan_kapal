@@ -198,44 +198,67 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
-    public function verifikasi(Request $request, Pembayaran $pembayaran)
-    {
-        $request->validate([
-            'status' => 'required|in:diterima,ditolak',
-            'keterangan' => 'nullable|string',
-        ]);
+    public function updateStatus(Request $request, $id)
+{
+    // Validate the request
+    $request->validate([
+        'status' => 'required|in:Diterima,Ditolak', // Ensure status is either diterima or ditolak
+        'keterangan' => 'nullable|string|max:255', // Optional keterangan field
+    ]);
 
-        $pembayaran->update([
-            'status' => $request->status,
-            'keterangan' => $request->keterangan,
-        ]);
+    // Find the PengajuanPemeriksaanKapal by ID
+    $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
 
-        // jika diterima → update penagihan
-        if ($request->status === 'diterima') {
-            $pembayaran->penagihan->update([
-                'status' => 'lunas',
-            ]);
-        }
+    // Only allow updates if the current status is 'menunggu verifikasi'
+    if ($pengajuan->status === 'Menunggu Verifikasi') {
+        // Update status and keterangan
+        $pengajuan->status = $request->status; // Set the new status (diterima or ditolak)
+        $pengajuan->keterangan = $request->keterangan ?? ''; // Set the keterangan if provided
+        $pengajuan->save(); // Save the updated record
 
-        return back()->with('success', 'Pembayaran berhasil diverifikasi');
+        // Redirect with success message
+        return redirect()->back()->with('success', 'Pengajuan berhasil diperbarui.');
     }
 
-    public function update(Request $request, $id)
-    {
-        // Validate incoming data
-        $validated = $request->validate([
-            'nama_kapal' => 'required|string|max:255',
-            'lokasi_kapal' => 'required|string|max:255',
-            'jenis_dokumen' => 'required|string',
-        ]);
+    return redirect()->back()->with('error', 'Status pengajuan tidak dapat diperbarui.');
+}
 
-        // Find the PengajuanPemeriksaanKapal by id
+
+    public function verifikasiStatus($id)
+    {
+        // Find the PengajuanPemeriksaanKapal by ID
         $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
 
-        // Update the pengajuan with new data
-        $pengajuan->update($validated);
+        // Only allow verification if the current status is 'menunggu verifikasi'
+        if ($pengajuan->status === 'menunggu verifikasi') {
+            $pengajuan->status = 'diterima'; // Set the status to 'diterima'
+            $pengajuan->save(); // Save the updated status
 
-        // Redirect back with a success message
-        return back()->with('success', 'Data berhasil diupdate');
+            return redirect()->back()->with('success', 'Pengajuan berhasil diverifikasi.');
+        }
+
+        return redirect()->back()->with('error', 'Status pengajuan tidak dapat diverifikasi.');
+    }
+
+    public function tolak(Request $request, $id)
+    {
+        // Validate the keterangan field
+        $request->validate([
+            'keterangan' => 'required|string|max:255',
+        ]);
+
+        // Find the PengajuanPemeriksaanKapal by ID
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        // Only allow rejection if the current status is 'menunggu verifikasi'
+        if ($pengajuan->status === 'menunggu verifikasi') {
+            $pengajuan->status = 'ditolak'; // Set the status to 'ditolak'
+            $pengajuan->keterangan = $request->keterangan; // Save the rejection reason
+            $pengajuan->save(); // Save the updated status and keterangan
+
+            return redirect()->back()->with('success', 'Pengajuan berhasil ditolak dengan keterangan: '.$request->keterangan);
+        }
+
+        return redirect()->back()->with('error', 'Status pengajuan tidak dapat ditolak.');
     }
 }

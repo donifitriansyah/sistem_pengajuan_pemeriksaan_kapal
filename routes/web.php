@@ -14,7 +14,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserDashboardController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::get('/', function () {
     // Jika sudah login
     if (auth()->check()) {
@@ -28,6 +27,10 @@ Route::get('/', function () {
                 return redirect()->route('arsiparis.dashboard');
             case 'petugas':
                 return redirect()->route('petugas.dashboard');
+            case 'petugas-kapal':
+                return redirect()->route('petugas-kapal.dashboard');
+            case 'keuangan':
+                return redirect()->route('keuangan.dashboard');
             default:
                 return redirect()->route('user.dashboard');
         }
@@ -40,7 +43,6 @@ Route::get('/', function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])->name('dashboard');
-
 
     Route::resource('approval', ApprovalUserController::class);
 
@@ -84,6 +86,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
         [PengajuanController::class, 'store']
     )->name('pengajuan.store');
 
+    Route::put('/pengajuan/{id}', [UserDashboardController::class, 'update'])->name('user.pengajuan.update');
 });
 
 Route::get('/invoice/{penagihan}', [UserDashboardController::class, 'show'])
@@ -129,8 +132,6 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pembayaran/petugas', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
 
-    Route::get('pengajuan/{id}/edit', [DashboardPetugasController::class, 'edit'])->name('pengajuan.edit');
-    Route::put('pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
 
     Route::post(
         '/petugas/penagihan/{pengajuan}',
@@ -140,6 +141,8 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
         [DashboardPetugasController::class, 'verifikasi']
     )->name('admin.pembayaran.verifikasi');
+
+    Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
 });
 

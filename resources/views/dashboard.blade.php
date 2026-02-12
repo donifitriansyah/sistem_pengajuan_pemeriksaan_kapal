@@ -39,6 +39,17 @@
                     + Tambah Pengajuan
                 </button>
 
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+
 
                 {{-- MODAL --}}
                 <div class="modal fade" id="modalPengajuan" tabindex="-1">
@@ -63,7 +74,7 @@
 
                                     <div class="mb-3">
                                         <label class="form-label">Waktu Kedatangan Kapal</label>
-                                        <input type="time" name="waktu_kedatangan_kapal" class="form-control" required>
+                                        <input type="date" name="waktu_kedatangan_kapal" class="form-control" required>
                                     </div>
 
 
@@ -87,6 +98,7 @@
                                             <option value="PHQC">PHQC</option>
                                             <option value="SSCEC">SSCEC</option>
                                             <option value="COP">COP</option>
+                                            <option value="P3K">P3K</option>
                                         </select>
                                     </div>
 
@@ -99,6 +111,7 @@
                                             <option>Kijing</option>
                                             <option>Padang Tikar</option>
                                             <option>Teluk Batang</option>
+                                            <option>Ketapang</option>
                                             <option>Kendawangan</option>
                                         </select>
                                     </div>
@@ -181,7 +194,8 @@
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
                     <th>Jenis Dokumen</th>
-                    <th>Status</th>
+                    <th>Status Bayar</th>
+                    <th>Status Verifikasi</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -190,7 +204,7 @@
                     <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d H:i') }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
@@ -212,6 +226,8 @@
                                 <span>Belum Ada Tagihan</span>
                             @endif
                         </td>
+                        <td>{{ $item->status }}</td>
+
                         <td>
                             {{-- Aksi sesuai status --}}
                             @if (!$item->penagihan)
@@ -237,8 +253,131 @@
                                         class="btn btn-sm btn-success">Lihat Invoice</a>
                                 </div>
                             @endif
+
+                            @if ($item->status === 'Ditolak')
+                                <!-- Button to Edit "Ditolak" status -->
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#editPengajuanModal{{ $item->id }}">
+                                    Edit Pengajuan
+                                </button>
+                            @endif
                         </td>
                     </tr>
+                    <div class="modal fade" id="editPengajuanModal{{ $item->id }}" tabindex="-1"
+                        aria-labelledby="editPengajuanModalLabel{{ $item->id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ route('user.pengajuan.update', $item->id) }}" method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editPengajuanModalLabel{{ $item->id }}">Edit
+                                            Pengajuan</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <!-- Nama Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Nama Kapal</label>
+                                            <input type="text" name="nama_kapal" class="form-control"
+                                                value="{{ $item->nama_kapal }}" required>
+                                        </div>
+
+                                        <!-- Tanggal Estimasi Pemeriksaan -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal Estimasi Pemeriksaan</label>
+                                            <input type="date" name="tgl_estimasi_pemeriksaan" class="form-control"
+                                                value="{{ old('tgl_estimasi_pemeriksaan', $item->tgl_estimasi_pemeriksaan) }}"
+                                                required>
+                                        </div>
+
+                                        <!-- Wilayah Kerja -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Wilayah Kerja</label>
+                                            <select name="wilayah_kerja" class="form-select" required>
+                                                <option value="">-- Pilih Wilayah --</option>
+                                                <option value="Dwikora"
+                                                    {{ $item->wilayah_kerja === 'Dwikora' ? 'selected' : '' }}>Dwikora
+                                                </option>
+                                                <option value="Kijing"
+                                                    {{ $item->wilayah_kerja === 'Kijing' ? 'selected' : '' }}>Kijing
+                                                </option>
+                                                <option value="Padang Tikar"
+                                                    {{ $item->wilayah_kerja === 'Padang Tikar' ? 'selected' : '' }}>Padang
+                                                    Tikar</option>
+                                                <option value="Teluk Batang"
+                                                    {{ $item->wilayah_kerja === 'Teluk Batang' ? 'selected' : '' }}>Teluk
+                                                    Batang</option>
+                                                <option value="Ketapang"
+                                                    {{ $item->wilayah_kerja === 'Ketapang' ? 'selected' : '' }}>Ketapang
+                                                </option>
+                                                <option value="Kendawangan"
+                                                    {{ $item->wilayah_kerja === 'Kendawangan' ? 'selected' : '' }}>
+                                                    Kendawangan</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Lokasi Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Lokasi Kapal</label>
+                                            <input type="text" name="lokasi_kapal" class="form-control"
+                                                value="{{ $item->lokasi_kapal }}" required>
+                                        </div>
+
+                                        <!-- Jenis Dokumen -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Jenis Dokumen</label>
+                                            <select name="jenis_dokumen" class="form-select" required>
+                                                <option value="PHQC"
+                                                    {{ $item->jenis_dokumen === 'PHQC' ? 'selected' : '' }}>PHQC</option>
+                                                <option value="SSCEC"
+                                                    {{ $item->jenis_dokumen === 'SSCEC' ? 'selected' : '' }}>SSCEC</option>
+                                                <option value="COP"
+                                                    {{ $item->jenis_dokumen === 'COP' ? 'selected' : '' }}>COP</option>
+                                                <option value="P3K"
+                                                    {{ $item->jenis_dokumen === 'P3K' ? 'selected' : '' }}>P3K</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Waktu Kedatangan Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Waktu Kedatangan Kapal</label>
+                                            <input type="datetime-local" name="waktu_kedatangan_kapal"
+                                                class="form-control"
+                                                value="{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d\TH:i') }}"
+                                                required>
+                                        </div>
+
+                                        <!-- Surat Permohonan (Upload) -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Surat Permohonan</label>
+                                            <input type="file" name="surat_permohonan" class="form-control">
+                                            @if ($item->surat_permohonan_dan_dokumen)
+                                                <p>Current File: <a
+                                                        href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
+                                                        target="_blank">View Current File</a></p>
+                                            @endif
+                                        </div>
+
+                                        <!-- Alasan Penolakan (Keterangan) -->
+                                        <div class="mb-3">
+                                            <label for="keterangan" class="form-label">Alasan Penolakan</label>
+                                            <textarea name="keterangan" class="form-control" rows="4" readonly>{{ $item->keterangan }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
             </tbody>
 

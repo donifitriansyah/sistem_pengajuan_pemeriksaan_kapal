@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddWaktuKedatanganKapalToPengajuanPemeriksaanKapalTable extends Migration
+class AddStatusAndKeteranganToPengajuanPemeriksaanKapalTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,14 +14,21 @@ class AddWaktuKedatanganKapalToPengajuanPemeriksaanKapalTable extends Migration
     public function up()
     {
         Schema::table('pengajuan_pemeriksaan_kapal', function (Blueprint $table) {
-            $table->datetime('waktu_kedatangan_kapal')->nullable();  // Add 'time' type field
+            $table->string('status')->nullable();  // Add 'status' column
+            $table->text('keterangan')->nullable();  // Add 'keterangan' column
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
         Schema::table('pengajuan_pemeriksaan_kapal', function (Blueprint $table) {
-            $table->dropColumn('waktu_kedatangan_kapal');
+            $table->dropColumn('status');  // Drop 'status' column
+            $table->dropColumn('keterangan');  // Drop 'keterangan' column
         });
     }
 }

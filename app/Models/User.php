@@ -24,6 +24,7 @@ class User extends Authenticatable
         'wilayah_kerja',
         'status',
         'email',
+        'username',
         'password',
         'role',
     ];

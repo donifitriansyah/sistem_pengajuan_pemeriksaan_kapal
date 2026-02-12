@@ -55,13 +55,19 @@
                 @csrf
 
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required>
+                    <label>Username</label>
+                    <input type="username" name="username" value="{{ old('username') }}" required>
                 </div>
 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" required>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="password_login" required>
+
+                        <span class="toggle-password" onclick="togglePassword('password_login', this)">
+                            👁️
+                        </span>
+                    </div>
                 </div>
 
                 <button type="submit" id="loginBtn">
@@ -90,8 +96,8 @@
                 @csrf
 
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" required>
+                    <label>Username</label>
+                    <input type="username" name="username" required>
                 </div>
 
                 <div class="form-group">
@@ -106,7 +112,6 @@
                     </div>
                 </div>
 
-
                 <div class="form-group">
                     <label>Konfirmasi Password</label>
 
@@ -118,6 +123,11 @@
                         </span>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+
 
 
                 <div class="form-group">

@@ -135,7 +135,7 @@
                                                             {{ $user->role == 'petugas' ? 'selected' : '' }}>Petugas
                                                         </option>
                                                         <option value="petugas-kapal"
-                                                            {{ $user->role == 'petugas-kapal' ? 'selected' : '' }}>Petugas Kapal
+                                                            {{ $user->role == 'petugas-kapal' ? 'selected' : '' }}>Petugas Karantina
                                                         </option>
                                                     </select>
                                                 </div>
