@@ -116,7 +116,7 @@ class PengajuanController extends Controller
         $waktuKedatanganKapal = \Carbon\Carbon::parse($request->waktu_kedatangan_kapal)->format('H:i');  // Store just the time in 'H:i' format
 
         // 6. Determine the 'status' value, default to 'menunggu verifikasi' if not provided
-        $status = $request->status ?? 'menunggu verifikasi';
+        $status = $request->status ?? 'Menunggu Verifikasi';
 
         // 7. Simpan ke database
         PengajuanPemeriksaanKapal::create([
