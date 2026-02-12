@@ -44,7 +44,7 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'min:8',
+                'min:6',
                 'unique:'.User::class,
             ],
 
