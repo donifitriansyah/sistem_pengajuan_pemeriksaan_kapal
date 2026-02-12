@@ -204,7 +204,7 @@
                     <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d') }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
