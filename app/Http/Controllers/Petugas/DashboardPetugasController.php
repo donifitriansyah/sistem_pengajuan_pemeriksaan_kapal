@@ -185,16 +185,34 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+    // public function indexPemeriksa()
+    // {
+    //     return view('pages.petugas.pemeriksa', [
+    //         'pengajuan' => PengajuanPemeriksaanKapal::with([
+    //             'user',
+    //             'penagihan.pembayaran',
+    //             'penagihan.petugas',  // Add this to load petugas data
+    //             'agendaSuratPengajuan',
+    //         ])
+    //             ->get(),
+    //     ]);
+    // }
     public function indexPemeriksa()
     {
+        // Mengambil semua pengajuan beserta data yang diperlukan
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'penagihan.petugas',  // Memuat petugas
+            'agendaSuratPengajuan',
+        ])->get();
+
+        // Mengambil pengguna dengan role 'petugas'
+        $petugas = User::where('role', 'petugas-kapal')->get();
+
         return view('pages.petugas.pemeriksa', [
-            'pengajuan' => PengajuanPemeriksaanKapal::with([
-                'user',
-                'penagihan.pembayaran',
-                'penagihan.petugas',  // Add this to load petugas data
-                'agendaSuratPengajuan',
-            ])
-                ->get(),
+            'pengajuan' => $pengajuan,
+            'petugas' => $petugas, // Mengirim data petugas ke view
         ]);
     }
 
@@ -222,20 +240,46 @@ class DashboardPetugasController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate incoming data
+        // Validasi input dari form
         $validated = $request->validate([
             'nama_kapal' => 'required|string|max:255',
             'lokasi_kapal' => 'required|string|max:255',
             'jenis_dokumen' => 'required|string',
+            'petugas1' => 'nullable|exists:users,id', // Validasi ID Petugas 1
+            'petugas2' => 'nullable|exists:users,id', // Validasi ID Petugas 2
+            'petugas3' => 'nullable|exists:users,id', // Validasi ID Petugas 3
         ]);
 
-        // Find the PengajuanPemeriksaanKapal by id
+        // Temukan PengajuanPemeriksaanKapal berdasarkan ID
         $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
 
-        // Update the pengajuan with new data
-        $pengajuan->update($validated);
+        // Perbarui data pengajuan
+        $pengajuan->update([
+            'nama_kapal' => $validated['nama_kapal'],
+            'lokasi_kapal' => $validated['lokasi_kapal'],
+            'jenis_dokumen' => $validated['jenis_dokumen'],
+        ]);
 
-        // Redirect back with a success message
+        // Perbarui data petugas dalam pivot table
+        $penagihan = $pengajuan->penagihan; // Ambil penagihan terkait
+
+        // Cek apakah petugas ada, baru update
+        $petugasIds = [];
+
+        if ($request->has('petugas1') && $request->petugas1) {
+            $petugasIds[0] = $request->petugas1;
+        }
+        if ($request->has('petugas2') && $request->petugas2) {
+            $petugasIds[1] = $request->petugas2;
+        }
+        if ($request->has('petugas3') && $request->petugas3) {
+            $petugasIds[2] = $request->petugas3;
+        }
+
+        // Update petugas jika ada ID petugas yang valid
+        $penagihan->petugas()->sync($petugasIds);
+
+        // Redirect kembali dengan pesan sukses
         return back()->with('success', 'Data berhasil diupdate');
     }
 

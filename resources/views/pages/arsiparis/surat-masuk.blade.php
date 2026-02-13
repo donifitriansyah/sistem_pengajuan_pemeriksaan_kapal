@@ -7,17 +7,16 @@
             <h2>Daftar Surat Masuk</h2>
         </div>
 
-        <table class="table table-bordered">
+        <table id="tablePengajuan" >
             <thead>
                 <tr>
                     <th width="50">No</th>
+                    <th>Tanggal Surat</th>
                     <th>Nomor Surat Pengajuan</th>
                     <th>Nomor Surat Masuk</th>
-                    <th>Nomor Surat Keluar</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Jenis Dokumen</th>
-                    <th>Tanggal Surat</th>
                 </tr>
             </thead>
 
@@ -30,10 +29,12 @@
                         <strong>{{ $item->nomor_surat_keluar }}</strong>
                     </td> --}}
 
-                        <td>{{ $item->nomor_surat_pengajuan }}</td>
+                    <td>
+                        {{ \Carbon\Carbon::parse($item->tanggal_surat)->format('d-m-Y') }}
+                    </td>
+                    <td>{{ $item->nomor_surat_pengajuan }}</td>
 
                         <td ><strong>{{ $item->nomor_surat_masuk }}</strong></td>
-                        <td>{{ $item->nomor_surat_keluar }}</td>
 
                         <td>{{ $item->pengajuan->nama_kapal ?? '-' }}</td>
 
@@ -45,9 +46,6 @@
                             </span>
                         </td>
 
-                        <td>
-                            {{ \Carbon\Carbon::parse($item->tanggal_surat)->format('d-m-Y') }}
-                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -60,4 +58,83 @@
         </table>
 
     </div>
+    <script>
+        $(document).ready(function() {
+
+            const table = $('#tablePengajuan').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+                pageLength: 10,
+
+                // Kolom Aksi & No tidak bisa di-sort
+                columnDefs: [{
+                    orderable: false
+                }],
+
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
+                var api = this.api();
+                api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1 + settings._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                });
+            }
+            });
+
+        });
+    </script>
+        <script>
+        function applyFilter() {
+            const tahun = $('#filterTahun').val();
+            const bulan = $('#filterBulan').val();
+            const perusahaan = $('#filterPerusahaan').val();
+            const jenis = $('#filterJenisDokumen').val();
+
+            $('#tablePengajuan tbody tr').each(function() {
+                const tanggal = $(this).find('td:eq(1)').text(); // dd-mm-yyyy
+                const perusahaanText = $(this).find('td:eq(3)').text();
+                const jenisText = $(this).find('td:eq(5)').text();
+
+                let show = true;
+
+                if (tanggal) {
+                    const parts = tanggal.split('-');
+                    const rowBulan = parts[1];
+                    const rowTahun = parts[2];
+
+                    if (tahun && rowTahun !== tahun) show = false;
+                    if (bulan && rowBulan !== bulan) show = false;
+                }
+
+                if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
+                if (jenis && !jenisText.includes(jenis)) show = false;
+
+                $(this).toggle(show);
+            });
+        }
+
+        $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen').on('change', applyFilter);
+
+        function resetFilter() {
+            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen').val('');
+            $('#tablePengajuan tbody tr').show();
+        }
+    </script>
+
+
+    
 @endsection

@@ -19,6 +19,10 @@
             class="tab {{ request()->routeIs('arsiparis.dashboard') ? 'active' : '' }}">
             Data Pengajuan Belum Diagendakan
         </a>
+        <a href="{{ route('arsiparis.verifikasi') }}"
+            class="tab {{ request()->routeIs('arsiparis.verifikasi') ? 'active' : '' }}">
+            Data Pengajuan Verifikasi
+        </a>
         <a href="{{ route('arsiparis.sudah-diagendakan') }}"
             class="tab {{ request()->routeIs('arsiparis.sudah-diagendakan') ? 'active' : '' }}">
             Data Pengajuan Sudah Diagendakan
@@ -40,6 +44,7 @@
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
         </a>
+        
         <a href="{{ route('pengajuan.petugas') }}"
             class="tab {{ request()->routeIs('pengajuan.petugas') ? 'active' : '' }}">
             Semua Data Pengajuan

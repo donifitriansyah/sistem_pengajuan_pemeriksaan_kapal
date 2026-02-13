@@ -103,6 +103,9 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
     Route::get('/dashboard/arsiparis', [DashboardController::class, 'index'])
         ->name('arsiparis.dashboard');
 
+    Route::get('/dashboard/arsiparis/verifikasi', [DashboardController::class, 'indexStatus'])
+        ->name('arsiparis.verifikasi');
+
     Route::get('/arsiparis/sudah-diagendakan', [DashboardController::class, 'indexSudahDiagendakan'])
         ->name('arsiparis.sudah-diagendakan');
 
@@ -115,6 +118,9 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
     Route::post('/arsiparis/arsipkan/{id}',
         [ArsiparisController::class, 'arsipkan'])
         ->name('arsiparis.arsipkan');
+
+    Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
+
 
 });
 
@@ -135,9 +141,9 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     )->name('petugas.penagihan.store');
 
 
-    Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
-    Route::post('/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
+
+    Route::post('/petugas/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
 
 });
 

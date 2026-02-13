@@ -174,7 +174,14 @@
                                         <div class="modal-body">
                                             <p>
                                                 <strong>Kapal:</strong> {{ $item->nama_kapal }} <br>
-                                                <strong>Perusahaan:</strong> {{ $item->user->nama_perusahaan ?? '-' }}
+                                                <strong>Perusahaan:</strong> {{ $item->user->nama_perusahaan ?? '-' }} <br>
+                                                <strong>Wilker:</strong> {{ $item->wilayah_kerja }} <br>
+                                                <strong>Lokasi:</strong> {{ $item->jenis_dokumen }} <br>
+                                                <strong>Bukti Bayar:</strong> <a
+                                                    href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}"
+                                                    target="_blank" class="btn btn-sm btn-primary">
+                                                    Lihat Bukti
+                                                </a> <br>
                                             </p>
 
                                             <div class="mb-3">

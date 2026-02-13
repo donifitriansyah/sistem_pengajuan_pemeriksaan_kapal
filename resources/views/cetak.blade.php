@@ -110,7 +110,7 @@
                             KEMENTERIAN KESEHATAN REPUBLIK INDONESIA
                         </div>
                         <div style="font-size:15px; font-weight:bold;">
-                            KANTOR KESEHATAN PELABUHAN
+                            BALAI KEKARANTINAAN KESEHATAN KELAS I PONTIANAK
                         </div>
                         <div style="font-size:13px;">
                             Wilayah Kerja {{ $penagihan->pengajuan->wilayah_kerja }}

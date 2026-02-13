@@ -194,8 +194,8 @@
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
                     <th>Jenis Dokumen</th>
-                    <th>Status Bayar</th>
                     <th>Status Verifikasi</th>
+                    <th>Status Bayar</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -267,6 +267,7 @@
                         aria-labelledby="editPengajuanModalLabel{{ $item->id }}" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
+
                                 <form action="{{ route('user.pengajuan.update', $item->id) }}" method="POST"
                                     enctype="multipart/form-data">
                                     @csrf
@@ -397,6 +398,8 @@
             <div class="modal fade" id="modalBayar{{ $item->id }}" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
+                        {{-- INFO --}}
+
 
                         <form action="{{ route('user.pembayaran.store', $item->penagihan->id) }}" method="POST"
                             enctype="multipart/form-data">
@@ -409,14 +412,19 @@
                                 <button class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
 
-                            <div class="modal-body">
 
-                                <p>
-                                    Total Tagihan:
-                                    <strong>
-                                        Rp {{ number_format($item->penagihan->total_tarif, 0, ',', '.') }}
-                                    </strong>
-                                </p>
+                            <div class="modal-body">
+                                <strong>Kapal :</strong> {{ $item->nama_kapal }} <br>
+                                <strong>Lokasi :</strong> {{ $item->lokasi_kapal }} <br>
+                                <strong>Tanggal :</strong>
+                                {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }} <br>
+                                <strong>Kode Bayar :</strong> {{ $item->kode_bayar }} <br>
+                                <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
+                                    target="_blank">Dokumen Surat Permohonan</a> <br>
+
+                                <strong style="color: red">
+                                    Total Tagihan : Rp {{ number_format($item->penagihan->total_tarif, 0, ',', '.') }}
+                                </strong> <br>
 
 
                                 @if ($item->penagihan->status_bayar === 'ditolak')
@@ -439,10 +447,14 @@
                                 @endif
 
 
-                                <div class="mb-3">
+                                <div class="mb-3 mt-2">
                                     <label class="form-label">Upload Bukti Pembayaran</label>
                                     <input type="file" name="bukti_bayar" class="form-control" required>
+                                    <small style="color: red">
+                                        * Mohon masukan kode bayar di berita transfer
+                                    </small>
                                 </div>
+
 
                             </div>
 
@@ -459,10 +471,15 @@
             </div>
         @endif
     @endforeach
+    <script>
+        // Mencegah input manual pada datetime-local input
+        document.querySelectorAll('input[type="date"]').forEach(function(input) {
+            input.addEventListener('keydown', function(event) {
+                event.preventDefault(); // Mencegah input manual
+            });
+        });
+    </script>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -475,7 +492,6 @@
                 info: true,
                 columnDefs: [{
                         orderable: false,
-                        targets: 6
                     } // Kolom Aksi tidak bisa di-sort
                 ]
             });

@@ -110,8 +110,7 @@
             <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes">
             <div class="kop-text">
                 <div>KEMENTERIAN KESEHATAN REPUBLIK INDONESIA</div>
-                <div>KANTOR KESEHATAN PELABUHAN</div>
-                <div>Wilayah Kerja {{ $penagihan->pengajuan->wilayah_kerja }}</div>
+                <div>BALAI KEKARANTINAAN KESEHATAN KELAS I PONTIANAK</div>
             </div>
         </div>
 
@@ -170,24 +169,6 @@
                 <td>:</td>
                 <td>{{ $jenis_tarif_name }}</td>
             </tr>
-            <tr>
-                <td>Waktu Mulai</td>
-                <td>:</td>
-                <td>{{ \Carbon\Carbon::parse($penagihan->waktu_mulai)->translatedFormat('d F Y H:i') }}</td>
-            </tr>
-            <tr>
-                <td>Waktu Selesai</td>
-                <td>:</td>
-                <td>{{ \Carbon\Carbon::parse($penagihan->waktu_selesai)->translatedFormat('d F Y H:i') }}</td>
-            </tr>
-            <tr>
-                <td>Durasi (Hari)</td>
-                <td>:</td>
-                <td>{{ $days_difference }} Hari</td> <!-- Display rounded number of days -->
-            </tr>
-
-
-
         </table>
         <p>
         <p>

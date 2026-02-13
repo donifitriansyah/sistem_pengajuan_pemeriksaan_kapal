@@ -1,15 +1,8 @@
 @extends('layouts.app')
 @section('content')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Pengajuan Sudah Diagendakan</h2>
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="searchPengajuan" placeholder="Cari kapal / perusahaan...">
-                </div>
-            </div>
         </div>
 
         <div class="filter-container">
@@ -184,6 +177,7 @@
         </table>
 
     </div>
+
     <script>
         $(document).ready(function() {
 
@@ -197,7 +191,6 @@
 
                 // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
-                    targets: [0, 8],
                     orderable: false
                 }],
 
@@ -212,11 +205,19 @@
                         previous: "‹"
                     },
                     emptyTable: "Tidak ada data pengajuan"
-                }
+                },
+                drawCallback: function(settings) {
+                // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
+                var api = this.api();
+                api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1 + settings._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                });
+            }
             });
 
         });
     </script>
+
     <script>
         function applyFilter() {
             const tahun = $('#filterTahun').val();
@@ -355,6 +356,4 @@
         }
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 @endsection

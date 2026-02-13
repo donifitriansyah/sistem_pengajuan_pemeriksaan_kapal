@@ -4,6 +4,7 @@
 @endsection
 @section('content')
 
+
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Penagihan</h2>
@@ -56,7 +57,7 @@
         @endif
 
 
-        <table id="pengajuanTable" class="table table-striped table-bordered">
+        <table id="pengajuanTable" ">
             <thead>
                 <tr>
                     <th>No</th>
@@ -66,8 +67,9 @@
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
-                    <th>Nomor Surat Tugas</th>
-                    <th>Surat Pengajuan</th>
+                    <th>Nomor Surat</th>
+                    <th>File</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -85,13 +87,14 @@
                         <td>
                             <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
                         </td>
-                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
+                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_masuk ?? '-' }}</td>
                         <td>
                             <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
                                 class="btn btn-sm btn-info">
                                 Lihat File
                             </a>
                         </td>
+                        <td>{{ $item->status }}</td>
 
                         <td>
                             <!-- Check if agenda_surat_pengajuan_id is null, show "Belum Diarsipkan" -->
@@ -119,6 +122,55 @@
                                 @endif
                             @endif
 
+                            <!-- Verifikasi dan Tolak Buttons -->
+                            @if ($item->status === 'Menunggu Verifikasi')
+                                <!-- Trigger the modal when the user wants to update the status -->
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#statusModal{{ $item->id }}">
+                                    Verifikasi / Tolak
+                                </button>
+                            @endif
+
+
+                            <!-- Modal for Verifikasi and Tolak -->
+                            <div class="modal fade" id="statusModal{{ $item->id }}" tabindex="-1"
+                                aria-labelledby="statusModalLabel{{ $item->id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <form action="{{ route('pengajuan.updateStatus', $item->id) }}" method="POST">
+                                            @csrf
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="statusModalLabel{{ $item->id }}">Pilih
+                                                    Status
+                                                    Pengajuan</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Pilih Status</label>
+                                                    <select name="status" class="form-select" required>
+                                                        <option value="">Pilih Status</option>
+                                                        <option value="Diterima">Diterima</option>
+                                                        <option value="Ditolak">Ditolak</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Keterangan Field (Only visible if "Ditolak" is selected) -->
+                                                <div class="mb-3">
+                                                    <label for="keterangan" class="form-label">Alasan Penolakan</label>
+                                                    <textarea name="keterangan" class="form-control" rows="4" id="keterangan{{ $item->id }}"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Batal</button>
+                                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
 
 
                         </td>
@@ -143,10 +195,8 @@
                                 {{-- INFO --}}
                                 <div class="alert alert-light border">
                                     <strong>Kapal :</strong> {{ $item->nama_kapal }} <br>
-                                    <strong>Perusahaan :</strong> {{ $item->user->nama_perusahaan }} <br>
                                     <strong>Lokasi :</strong> {{ $item->lokasi_kapal }} <br>
-                                    <strong>Jenis Dokumen :</strong> {{ $item->jenis_dokumen }} <br>
-                                    <strong>Tanggal Estimasi Pemeriksaan:</strong>
+                                    <strong>Tanggal :</strong>
                                     {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
                                 </div>
 
@@ -169,15 +219,14 @@
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Mulai</label>
                                     <input type="datetime-local" name="waktu_mulai" class="form-control" required
-                                        data-id="{{ $item->id }}" lang="id" id="waktu_mulai" >
+                                        data-id="{{ $item->id }}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
                                     <input type="datetime-local" name="waktu_selesai" class="form-control" required
-                                        data-id="{{ $item->id }}" lang="id" id="waktu_selesai" >
+                                        data-id="{{ $item->id }}">
                                 </div>
-
 
 
 
@@ -223,31 +272,61 @@
             <p>✅ Semua pengajuan sudah diagendakan!</p>
         </div>
     </div>
+    <script>
+        $(document).ready(function() {
+
+            const table = $('#pengajuanTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+                pageLength: 10,
+
+                // Kolom Aksi & No tidak bisa di-sort
+                columnDefs: [{
+                    orderable: false
+                }],
+
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1 + settings
+                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                    });
+                }
+            });
+
+        });
+
+        /* ==============================
+            RESET FILTER
+        ============================== */
+        function resetFilter() {
+            $('#filterTahun').val('');
+            $('#filterBulan').val('');
+            $('#filterPerusahaan').val('');
+            $('#filterJenisDokumen').val('');
+            $('#pengajuanTable').DataTable().draw();
+        }
+    </script>
 @endsection
 @push('script')
-<script>
-    // Mencegah input manual pada datetime-local input
-    document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        input.addEventListener('keydown', function(event) {
-            event.preventDefault(); // Mencegah input manual
-        });
-    });
-</script>
-    <script>
-        // Menangani input dengan format 24 jam pada saat pemilihan waktu
-        document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-            input.addEventListener('input', function(event) {
-                var value = event.target.value;
-                var timePart = value.split('T')[1]; // Ambil bagian waktu
-                var [hours, minutes] = timePart.split(':'); // Pisahkan jam dan menit
-                if (hours.length === 1) { // Jika jam hanya satu digit, tambahkan nol
-                    hours = '0' + hours;
-                }
-                event.target.value = event.target.value.split('T')[0] + 'T' + hours + ':' +
-                minutes; // Gabungkan kembali
-            });
-        });
-    </script>
     <script>
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
@@ -585,124 +664,4 @@
             });
         });
     </script> --}}
-
-    <script>
-        $(document).ready(function() {
-
-            const table = $('#pengajuanTable').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                lengthChange: true,
-                pageLength: 10,
-
-                // Kolom Aksi & No tidak bisa di-sort
-                columnDefs: [{
-                    orderable: false
-                }],
-
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    emptyTable: "Tidak ada data pengajuan"
-                },
-                drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
-                    var api = this.api();
-                    api.column(0, {
-                        page: 'current'
-                    }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
-                    });
-                }
-            });
-
-
-            /* ==============================
-                ISI FILTER DINAMIS
-            ============================== */
-
-            const tahunSet = new Set();
-            const bulanSet = new Set();
-            const perusahaanSet = new Set();
-
-            table.rows().every(function() {
-                const data = this.data();
-
-                // Tanggal (kolom 1)
-                const dateParts = data[1].split('-'); // d-m-Y
-                tahunSet.add(dateParts[2]);
-                bulanSet.add(dateParts[1]);
-
-                // Perusahaan (kolom 3)
-                if (data[3] && data[3] !== '-') {
-                    perusahaanSet.add(data[3]);
-                }
-            });
-
-            [...tahunSet].sort().forEach(t =>
-                $('#filterTahun').append(`<option value="${t}">${t}</option>`)
-            );
-
-            [...bulanSet].sort().forEach(b =>
-                $('#filterBulan').append(`<option value="${b}">${b}</option>`)
-            );
-
-            [...perusahaanSet].sort().forEach(p =>
-                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
-            );
-
-            /* ==============================
-                FILTER CUSTOM
-            ============================== */
-
-            $.fn.dataTable.ext.search.push(function(settings, data) {
-
-                const filterTahun = $('#filterTahun').val();
-                const filterBulan = $('#filterBulan').val();
-                const filterPerusahaan = $('#filterPerusahaan').val();
-                const filterDokumen = $('#filterJenisDokumen').val();
-
-                const date = data[1].split('-'); // d-m-Y
-                const bulan = date[1];
-                const tahun = date[2];
-
-                const perusahaan = data[3];
-                const dokumen = data[5];
-
-                if (filterTahun && tahun !== filterTahun) return false;
-                if (filterBulan && bulan !== filterBulan) return false;
-                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
-                if (filterDokumen && dokumen !== filterDokumen) return false;
-
-                return true;
-            });
-
-            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen')
-                .on('change', function() {
-                    table.draw();
-                });
-
-        });
-
-        /* ==============================
-            RESET FILTER
-        ============================== */
-        function resetFilter() {
-            $('#filterTahun').val('');
-            $('#filterBulan').val('');
-            $('#filterPerusahaan').val('');
-            $('#filterJenisDokumen').val('');
-            $('#pengajuanTable').DataTable().draw();
-        }
-    </script>
 @endpush

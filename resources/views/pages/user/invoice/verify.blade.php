@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Invoice Terverifikasi</title>
     <style>
-        @page { size: A4; margin: 0; }
+        @page {
+            size: A4;
+            margin: 0;
+        }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -28,7 +33,7 @@
             background: #fff;
             border-radius: 12px;
             padding: 30px 30px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             border: 1px solid #ddd;
         }
 
@@ -125,73 +130,92 @@
             }
         }
 
+        a.btn {
+            background-color: #4CAF50;
+            /* Green */
+            color: white;
+            text-align: center;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            align-items: center;
+        }
+
+        a.btn:hover {
+            background-color: #45a049;
+            /* Darker green on hover */
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <!-- INVOICE CARD -->
-    <div class="card">
+        <!-- INVOICE CARD -->
+        <div class="card">
 
-        <!-- KOP SURAT -->
-        <div class="kop">
-            <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes">
-            <div class="kop-text">
-                <div>KEMENTERIAN KESEHATAN REPUBLIK INDONESIA</div>
-                <div>KANTOR KESEHATAN PELABUHAN</div>
-                <div>Wilayah Kerja {{ $penagihan->pengajuan->wilayah_kerja }}</div>
+            <!-- KOP SURAT -->
+            <div class="kop">
+                <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes">
+                <div class="kop-text">
+                    <div>KEMENTERIAN KESEHATAN REPUBLIK INDONESIA</div>
+                    <div>BALAI KEKARANTINAAN KESEHATAN KELAS I PONTIANAK</div>
+                </div>
             </div>
-        </div>
 
-        <h3>✅ INVOICE TERVERIFIKASI</h3>
-        <hr>
+            <h3>✅ INVOICE TERVERIFIKASI</h3>
+            <hr>
 
-        <!-- INFO UTAMA -->
-        <table>
-            <tr>
-                <td width="30%">Nama Kapal</td>
-                <td>: {{ $penagihan->pengajuan->nama_kapal }}</td>
-            </tr>
-            <tr>
-                <td>Perusahaan</td>
-                <td>: {{ $penagihan->pengajuan->user->nama_perusahaan }}</td>
-            </tr>
-            <tr>
-                <td>Wilayah Kerja</td>
-                <td>: {{ $penagihan->pengajuan->wilayah_kerja }}</td>
-            </tr>
-            <tr>
-                <td>Tanggal Pemeriksaan</td>
-                <td>: {{ \Carbon\Carbon::parse($penagihan->pengajuan->tgl_estimasi_pemeriksaan)->translatedFormat('d F Y') }}</td>
-            </tr>
-            <tr>
-                <td>Total Pembayaran</td>
-                <td>: <strong>Rp {{ number_format($penagihan->total_tarif,0,',','.') }}</strong></td>
-            </tr>
-            <tr>
-                <td>Status</td>
-                <td>: <span class="status">LUNAS</span></td>
-            </tr>
-        </table>
+            <!-- INFO UTAMA -->
+            <table>
+                <tr>
+                    <td width="30%">Nama Kapal</td>
+                    <td>: {{ $penagihan->pengajuan->nama_kapal }}</td>
+                </tr>
+                <tr>
+                    <td>Perusahaan</td>
+                    <td>: {{ $penagihan->pengajuan->user->nama_perusahaan }}</td>
+                </tr>
+                <tr>
+                    <td>Wilayah Kerja</td>
+                    <td>: {{ $penagihan->pengajuan->wilayah_kerja }}</td>
+                </tr>
+                <tr>
+                    <td>Tanggal Pemeriksaan</td>
+                    <td>:
+                        {{ \Carbon\Carbon::parse($penagihan->pengajuan->tgl_estimasi_pemeriksaan)->translatedFormat('d F Y') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Pembayaran</td>
+                    <td>: <strong>Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>: <span class="status">LUNAS</span></td>
+                </tr>
+            </table>
+            <a href="{{ route('invoice.show', $penagihan->id) }}" class="btn btn-success mt-5" target="blank">
+                ⬇️ Download PDF Invoice
+            </a>
 
-        <hr>
+            <hr>
 
-        <!-- FOOTER -->
-        <div class="footer">
-            Invoice ini sah dan terdaftar di sistem<br>
-            Kantor Kesehatan Pelabuhan
+            <!-- FOOTER -->
+            <div class="footer">
+                Invoice ini sah dan terdaftar di sistem<br>
+                Balai Kekarantinaan Kesehatan Kelas I Pontianak
+            </div>
+
+
+
+
+
         </div>
 
     </div>
-
-    <!-- QR CODE -->
-    <div class="qr-container">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ route('invoice.show', $penagihan->id) }}" alt="QR Code">
-        <span>Scan untuk melihat invoice</span>
-    </div>
-
-</div>
 
 </body>
+
 </html>
