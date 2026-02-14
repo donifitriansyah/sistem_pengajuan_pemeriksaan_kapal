@@ -44,7 +44,11 @@
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
         </a>
-        
+                <a href="{{ route('admin.approval.index') }}"
+            class="tab {{ request()->routeIs('admin.approval.index') ? 'active' : '' }}">
+            Approval User
+        </a>
+
         <a href="{{ route('pengajuan.petugas') }}"
             class="tab {{ request()->routeIs('pengajuan.petugas') ? 'active' : '' }}">
             Semua Data Pengajuan

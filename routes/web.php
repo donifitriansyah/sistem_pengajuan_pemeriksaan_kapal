@@ -121,7 +121,6 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
 
     Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
-
 });
 
 Route::middleware(['auth', 'petugas'])->group(function () {
@@ -135,13 +134,37 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
 
+    Route::get('/admin/approval', [ApprovalUserController::class, 'index'])
+        ->name('admin.approval.index');
+
+
     Route::post(
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
 
+    Route::get('admin/users', [UserManagementController::class, 'index'])
+        ->name('users');
 
+    Route::put('/users/{id}/reset-password',
+        [UserManagementController::class, 'resetPassword']
+    )->name('reset');
 
+    Route::put('/users/{id}/reject', [UserManagementController::class, 'reject'])
+        ->name('user.reject');
+
+    Route::put('/users/{id}/reset-password',
+        [UserManagementController::class, 'resetPassword']
+    )->name('user.reset');
+
+    Route::get('/user/{id}/edit', [UserManagementController::class, 'edit'])
+        ->name('user.edit');
+
+    Route::put('/user/{id}', [UserManagementController::class, 'update'])
+        ->name('user.update');
+
+    Route::delete('/user/{id}', [UserManagementController::class, 'destroy'])
+        ->name('user.destroy');
 
     Route::post('/petugas/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
 
@@ -151,7 +174,6 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
 
     Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
-
 
     Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
         [DashboardPetugasController::class, 'verifikasi']
@@ -164,7 +186,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
 
 require __DIR__.'/auth.php';
