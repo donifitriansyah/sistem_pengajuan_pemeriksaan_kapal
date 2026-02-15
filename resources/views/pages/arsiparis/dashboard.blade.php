@@ -49,6 +49,7 @@
                     <th>Nama Perusahaan</th>
                     <th>Lokasi Pemeriksaan</th>
                     <th>Jenis Dokumen</th>
+                    <th>Kode Bayar</th>
                     <th>Surat Pengajuan</th>
                     <th>Status Arsip</th>
                     <th style="width:120px">Aksi</th>
@@ -74,6 +75,9 @@
                             <span class="badge bg-primary">
                                 {{ $item->jenis_dokumen }}
                             </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
                         </td>
 
                         <td>

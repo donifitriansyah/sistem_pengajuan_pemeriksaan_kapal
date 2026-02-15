@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
                 'unique:'.User::class,
             ],
 
-            'password' => ['required', 'confirmed','min:6', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed','min:6'],
         ]);
 
         // Format nomor HP -> +62xxxxxxxxx

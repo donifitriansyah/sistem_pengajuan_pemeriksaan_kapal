@@ -10,7 +10,7 @@
 
     <div class="content-card">
         <div class="content-header">
-            <h2>Management User</h2>
+            <h2>Approval User</h2>
         </div>
         <table id="tableApproval">
             <thead>
@@ -59,34 +59,7 @@
                             @endif
                         </td>
 
-
                         <td>
-
-                            {{-- FORM APPROVE --}}
-                            <form id="approve-form-{{ $user->id }}" action="{{ route('admin.user.approve', $user->id) }}"
-                                method="POST" style="display:none;">
-                                @csrf
-                                @method('PUT')
-                            </form>
-
-                            {{-- FORM REJECT --}}
-                            <form id="reject-form-{{ $user->id }}"
-                                action="{{ route('admin.user.reject', $user->id) }}" method="POST" style="display:none;">
-                                @csrf
-                                @method('PUT')
-                            </form>
-                            <form id="reset-form-{{ $user->id }}" action="{{ route('admin.user.reset', $user->id) }}"
-                                method="POST" style="display:none;">
-                                @csrf
-                                @method('PUT')
-                            </form>
-
-                            {{-- BUTTON DELETE --}}
-                            @if (auth()->id() !== $user->id)
-                                <button onclick="confirmDelete({{ $user->id }})" class="btn btn-danger btn-sm">
-                                    Hapus
-                                </button>
-                            @endif
 
                             {{-- JIKA STATUS NONAKTIF → TAMPIL SETUJUI --}}
                             @if ($user->status == 'nonaktif')

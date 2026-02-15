@@ -11,6 +11,38 @@ use Illuminate\Support\Facades\Auth;
 
 class UserDashboardController extends Controller
 {
+    public function cekInvoice($kodeBayar)
+    {
+        $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
+
+        if (! $invoice) {
+            return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
+        }
+
+        // Ambil penagihan_id untuk mencari pembayaran
+        $penagihan_id = $invoice->penagihan_id;
+        $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
+
+        if (! $pembayaran) {
+            return response()->json(['error' => 'Data pembayaran tidak ditemukan.'], 404);
+        }
+
+        $statusPembayaran = $pembayaran->status;
+
+        // Menyusun URL untuk verifikasi invoice
+        $verifyUrl = route('invoice.verify', $penagihan_id);
+
+        return response()->json([
+            'nama_kapal' => $invoice->nama_kapal,
+            'jenis_dokumen' => $invoice->jenis_dokumen,
+            'lokasi_kapal' => $invoice->lokasi_kapal,
+            'wilayah_kerja' => $invoice->wilayah_kerja,
+            'penagihan_id' => $invoice->penagihan_id,
+            'status_pembayaran' => $statusPembayaran,
+            'verify_url' => $verifyUrl, // Kirimkan URL untuk QR Code
+        ]);
+    }
+
     public function index()
     {
         // Ambil pengajuan milik user login

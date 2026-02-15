@@ -49,6 +49,7 @@
                     <th>Nama Perusahaan</th>
                     <th>Lokasi Pemeriksaan</th>
                     <th>Jenis Dokumen</th>
+                    <th>Kode Bayar</th>
                     <th>Surat Pengajuan</th>
                     <th>Status Arsip</th>
                     <th style="width:120px">Aksi</th>
@@ -82,6 +83,9 @@
                                 class="btn btn-sm btn-info">
                                 Lihat File
                             </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
                         </td>
 
                         <td>

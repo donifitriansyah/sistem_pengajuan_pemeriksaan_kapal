@@ -44,8 +44,8 @@
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
         </a>
-                <a href="{{ route('admin.approval.index') }}"
-            class="tab {{ request()->routeIs('admin.approval.index') ? 'active' : '' }}">
+                <a href="{{ route('petugas.approval.index') }}"
+            class="tab {{ request()->routeIs('petugas.approval.index') ? 'active' : '' }}">
             Approval User
         </a>
 

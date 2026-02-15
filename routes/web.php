@@ -46,6 +46,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('approval', ApprovalUserController::class);
 
+    Route::get('/admin/approval', [ApprovalUserController::class, 'index'])
+        ->name('approval.index');
+
     Route::put('/admin/user/{id}/approve',
         [ApprovalUserController::class, 'approve']
     )->name('user.approve');
@@ -98,6 +101,11 @@ Route::get('/invoice/{penagihan}/download', [UserDashboardController::class, 'do
 Route::get('/invoice/verify/{penagihan}', [UserDashboardController::class, 'verify'])
     ->name('invoice.verify');
 
+    // Cek status invoice berdasarkan kode bayar
+Route::get('/cek-invoice/{kodeBayar}', [UserDashboardController::class, 'cekInvoice']);
+
+
+
 Route::middleware(['auth', 'arsiparis'])->group(function () {
 
     Route::get('/dashboard/arsiparis', [DashboardController::class, 'index'])
@@ -134,9 +142,8 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
 
-    Route::get('/admin/approval', [ApprovalUserController::class, 'index'])
-        ->name('admin.approval.index');
-
+    Route::get('/petugas/approval', [ApprovalUserController::class, 'indexPetugas'])
+        ->name('petugas.approval.index');
 
     Route::post(
         '/petugas/penagihan/{pengajuan}',

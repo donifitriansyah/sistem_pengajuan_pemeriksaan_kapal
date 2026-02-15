@@ -32,6 +32,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('login')">Login</button>
             <button class="tab" onclick="switchTab('register')">Registrasi</button>
+            <button class="tab" onclick="switchTab('invoice')">Cek Invoice</button>
             {{-- <button class="tab" onclick="switchTab('invoice')">Cek Invoice</button> --}}
         </div>
 
@@ -172,8 +173,8 @@
 
 
 
-        {{-- <!-- CEK INVOICE -->
-        <div id="invoice" class="tab-content">
+        <!-- CEK INVOICE -->
+        <div id="invoiceTab" class="tab-content">
             <div class="form-group">
                 <label>Kode Bayar</label>
                 <div class="invoice-input-row">
@@ -188,17 +189,32 @@
             <div id="errorMsg" class="invoice-error"></div>
 
             <div id="preview" class="invoice-box">
-                <div class="invoice-row"><span class="invoice-label">Nama Kapal</span><span id="namaKapal">-</span>
+                <div class="invoice-row">
+                    <span class="invoice-label">Nama Kapal</span><span id="namaKapal">-</span>
                 </div>
-                <div class="invoice-row"><span class="invoice-label">Jenis Tarif</span><span id="jenisTarif">-</span>
+                <div class="invoice-row">
+                    <span class="invoice-label">Jenis Tarif</span><span id="jenisTarif">-</span>
                 </div>
-                <div class="invoice-row"><span class="invoice-label">Lokasi</span><span id="lokasi">-</span></div>
-                <div class="invoice-row"><span class="invoice-label">Agent</span><span id="agent">-</span></div>
-                <div class="invoice-row"><span class="invoice-label">Tarif</span><span id="tarif">-</span></div>
-                <div class="invoice-row"><span class="invoice-label">Status</span><span id="status">-</span></div>
-                <button onclick="downloadInvoice()">📄 Download PDF</button>
+                <div class="invoice-row">
+                    <span class="invoice-label">Lokasi</span><span id="lokasi">-</span>
+                </div>
+                <div class="invoice-row">
+                    <span class="invoice-label">Agent</span><span id="agent">-</span>
+                </div>
+                <div class="invoice-row">
+                    <span class="invoice-label">Tarif</span><span id="tarif">-</span>
+                </div>
+                <div class="invoice-row">
+                    <span class="invoice-label">Status Pembayaran</span><span id="status">-</span>
+                </div>
+
+                <!-- Tempat untuk QR Code -->
+                <div id="qrCodeContainer" style="text-align:center; margin-top: 20px;">
+                    <!-- QR Code akan dimuat di sini -->
+                </div>
             </div>
-        </div> --}}
+        </div>
+
 
     </div>
 
@@ -247,5 +263,59 @@
             }
 
         }
+    </script>
+    <script>
+        function cekInvoice() {
+            let kodeBayar = document.getElementById("kodeBayar").value;
+            let errorMsg = document.getElementById("errorMsg");
+            let preview = document.getElementById("preview");
+            let qrCodeContainer = document.getElementById("qrCodeContainer");
+
+            if (kodeBayar === "") {
+                errorMsg.innerHTML = "Kode Bayar tidak boleh kosong!";
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById("cekBtn").disabled = true;
+            document.querySelector(".spinner").style.display = "inline-block";
+
+            fetch(`/cek-invoice/${kodeBayar}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Hide spinner and enable button
+                    document.querySelector(".spinner").style.display = "none";
+                    document.getElementById("cekBtn").disabled = false;
+
+                    if (data.error) {
+                        errorMsg.innerHTML = data.error;
+                        preview.style.display = "none";
+                    } else {
+                        errorMsg.innerHTML = "";
+                        preview.style.display = "block";
+
+                        // Populate invoice data
+                        document.getElementById("namaKapal").innerText = data.nama_kapal;
+                        document.getElementById("jenisTarif").innerText = data.jenis_dokumen;
+                        document.getElementById("lokasi").innerText = data.lokasi_kapal;
+                        document.getElementById("agent").innerText = data.wilayah_kerja;
+                        document.getElementById("tarif").innerText = data.penagihan_id;
+                        document.getElementById("status").innerText = data.status_pembayaran;
+
+                        // Generate and display QR Code
+                        let qrCodeUrl =
+                            `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.verify_url)}`;
+                        qrCodeContainer.innerHTML =
+                            `<img src="${qrCodeUrl}" alt="QR Code"><div style="font-size:12px; text-align:center; margin-top:10px;">Scan untuk verifikasi invoice</div>`;
+                    }
+                })
+                .catch(error => {
+                    errorMsg.innerHTML = "Terjadi kesalahan, coba lagi.";
+                    document.querySelector(".spinner").style.display = "none";
+                    document.getElementById("cekBtn").disabled = false;
+                });
+        }
+    </script>
+
     </script>
 @endsection

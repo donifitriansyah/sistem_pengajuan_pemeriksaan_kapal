@@ -67,6 +67,7 @@
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat Tugas</th>
+                    <th>Kode Bayar</th>
                     <th>Surat Pengajuan</th>
                     <th>Aksi</th>
                 </tr>
@@ -91,6 +92,9 @@
                                 class="btn btn-sm btn-info">
                                 Lihat File
                             </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
                         </td>
 
                         <td>

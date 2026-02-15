@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Penagihan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -61,5 +62,12 @@ class PengajuanPemeriksaanKapal extends Model
             'id', // Local key on PengajuanPemeriksaanKapal
             'user_id' // Local key on PenagihanPetugas table
         );
+    }
+
+    // In PengajuanPemeriksaanKapal model
+    public function pembayaran()
+    {
+        // Ambil penagihan_id dari pengajuan_pemeriksaan_kapal
+        return $this->hasOneThrough(Pembayaran::class, Penagihan::class, 'id', 'penagihan_id');
     }
 }

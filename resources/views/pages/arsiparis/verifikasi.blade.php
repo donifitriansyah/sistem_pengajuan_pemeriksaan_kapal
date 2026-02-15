@@ -68,6 +68,7 @@
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat</th>
+                    <th>Kode Bayar</th>
                     <th>File</th>
                     <th>Status</th>
                     <th>Aksi</th>
@@ -88,6 +89,9 @@
                             <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
                         </td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_masuk ?? '-' }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
+                        </td>
                         <td>
                             <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
                                 class="btn btn-sm btn-info">

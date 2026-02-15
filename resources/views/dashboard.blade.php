@@ -194,8 +194,8 @@
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
                     <th>Jenis Dokumen</th>
-                    <th>Status Verifikasi</th>
-                    <th>Status Bayar</th>
+                    <th>Kode Bayar</th>
+                    <th>Status Pengajuan</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -209,25 +209,8 @@
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
                         <td>{{ $item->jenis_dokumen }}</td>
-                        <td>
-                            @if ($item->penagihan)
-                                <span>
-                                    @if ($item->penagihan->status_bayar === 'belum_bayar')
-                                        Belum Bayar
-                                    @elseif($item->penagihan->status_bayar === 'menunggu')
-                                        Menunggu Verifikasi
-                                    @elseif($item->penagihan->status_bayar === 'ditolak')
-                                        Ditolak
-                                    @elseif($item->penagihan->status_bayar === 'diterima')
-                                        Lunas
-                                    @endif
-                                </span>
-                            @else
-                                <span>Belum Ada Tagihan</span>
-                            @endif
-                        </td>
+                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
                         <td>{{ $item->status }}</td>
-
                         <td>
                             {{-- Aksi sesuai status --}}
                             @if (!$item->penagihan)
@@ -482,19 +465,51 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <script>
         $(document).ready(function() {
-            var table = $('#pengajuanTable').DataTable({
+
+            const table = $('#pengajuanTable').DataTable({
                 paging: true,
                 searching: true,
                 ordering: true,
                 info: true,
+                lengthChange: true,
+                pageLength: 10,
+
+                // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
-                        orderable: false,
-                    } // Kolom Aksi tidak bisa di-sort
-                ]
+                    orderable: false
+                }],
+
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1 + settings
+                        ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                    });
+                }
             });
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
 
             // Populasi Tahun & Bulan
             var years = new Set();

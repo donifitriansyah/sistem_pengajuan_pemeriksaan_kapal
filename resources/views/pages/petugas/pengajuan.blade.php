@@ -75,6 +75,7 @@
                     <th>Jenis Dokumen</th>
                     <th>Status</th>
                     <th>Wilker</th>
+                    <th>Kode Bayar</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -103,6 +104,8 @@
                             @endif
                         </td>
                         <td>{{ $item->wilayah_kerja }}</td>
+
+                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
 
                         <td>
                             {{-- tombol aksi sesuai status --}}

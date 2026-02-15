@@ -7,7 +7,6 @@ use App\Models\User;
 
 class ApprovalUserController extends Controller
 {
-
     public function index()
     {
         // User yang belum aktif
@@ -15,6 +14,21 @@ class ApprovalUserController extends Controller
 
         return view('pages.admin.approval', compact('users'));
     }
+
+    public function indexPetugas()
+{
+    // Mendapatkan Wilker pengguna yang login
+    $wilkerLogin = auth()->user()->wilayah_kerja; // Asumsi kolom 'wilker' ada di tabel users
+
+    // Menyaring pengguna dengan status 'nonaktif' dan wilker yang sama dengan petugas yang login
+    $users = User::where('status', 'nonaktif')  // Menyaring berdasarkan status 'nonaktif'
+                 ->where('wilayah_kerja', $wilkerLogin) // Menyaring berdasarkan wilker petugas yang login
+                 ->orderBy('created_at', 'desc') // Mengurutkan berdasarkan waktu pembuatan
+                 ->get();
+
+    return view('pages.petugas.approval', compact('users'));
+}
+
 
     public function approve($id)
     {
