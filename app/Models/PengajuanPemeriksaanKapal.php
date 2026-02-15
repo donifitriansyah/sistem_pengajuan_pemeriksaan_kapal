@@ -42,6 +42,13 @@ class PengajuanPemeriksaanKapal extends Model
         return $this->belongsTo(Penagihan::class);
     }
 
+    // In PengajuanPemeriksaanKapal model
+public function penagihanId()
+{
+    return $this->belongsTo(Penagihan::class, 'penagihan_id');
+}
+
+
     public function agendaSuratPengajuan()
     {
         return $this->belongsTo(AgendaSuratPengajuan::class, 'agenda_surat_pengajuan_id');

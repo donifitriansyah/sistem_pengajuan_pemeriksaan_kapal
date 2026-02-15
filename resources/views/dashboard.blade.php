@@ -181,8 +181,18 @@
                 </select>
             </div>
             <button class="btn btn-outline" id="resetFilter">Reset</button>
-            <button class="btn btn-success" id="exportExcel">📥 Excel</button>
+            <button class="btn btn-success" id="exportExcel" onclick="exportToExcel()">📥 Excel</button>
         </div>
+
+        <script>
+            function exportToExcel() {
+                // Ambil user_id dari session atau data lain
+                const userId = {{ auth()->user()->id }}; // Ganti dengan cara mengambil user_id yang benar
+
+                // Kirimkan request untuk mengunduh Excel
+                window.location.href = `/export-excel?user_id=${userId}`;
+            }
+        </script>
 
         <table id="pengajuanTable" class="table table-striped table-bordered">
             <thead>
@@ -500,7 +510,7 @@
                         page: 'current'
                     }).nodes().each(function(cell, i) {
                         cell.innerHTML = i + 1 + settings
-                        ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
                     });
                 }
             });

@@ -90,6 +90,7 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     )->name('pengajuan.store');
 
     Route::put('/pengajuan/{id}', [UserDashboardController::class, 'update'])->name('user.pengajuan.update');
+    Route::get('/export-excel', [UserDashboardController::class, 'exportExcel'])->name('export.excel');
 });
 
 Route::get('/invoice/{penagihan}', [UserDashboardController::class, 'show'])

@@ -3,6 +3,28 @@
     Dashboard Petugas
 @endsection
 @section('content')
+<div class="scorecard-container">
+        <div class="scorecard total">
+            <div class="scorecard-label">Total Pengajuan</div>
+            <div class="scorecard-value" id="totalPengajuan">{{ $totalPengajuan }}</div>
+        </div>
+        <div class="scorecard belum-tagihan">
+            <div class="scorecard-label">Belum Diagendakan</div>
+            <div class="scorecard-value" id="totalBelumTagihan">{{ $totalBelumTagihan }}</div>
+        </div>
+        <div class="scorecard belum-bayar">
+            <div class="scorecard-label">Butuh Verifikasi</div>
+            <div class="scorecard-value" id="totalBelumBayar">{{ $totalBelumBayar }}</div>
+        </div>
+        <div class="scorecard menunggu">
+            <div class="scorecard-label">Surat Masuk</div>
+            <div class="scorecard-value" id="totalMenunggu">{{ $totalMenunggu }}</div>
+        </div>
+        <div class="scorecard lunas">
+            <div class="scorecard-label">Surat Keluar</div>
+            <div class="scorecard-value" id="totalLunas">{{ $totalLunas }}</div>
+        </div>
+    </div>
 
 
     <div class="content-card">

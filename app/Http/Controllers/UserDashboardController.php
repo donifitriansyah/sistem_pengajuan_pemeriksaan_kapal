@@ -8,9 +8,19 @@ use App\Models\PengajuanPemeriksaanKapal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PengajuanExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserDashboardController extends Controller
 {
+    public function exportExcel(Request $request)
+    {
+        $userId = $request->user_id; // Ambil user_id dari parameter request
+
+        // Mengekspor data berdasarkan user_id
+        return Excel::download(new PengajuanExport($userId), 'pengajuan.xlsx');
+    }
+
     public function cekInvoice($kodeBayar)
     {
         $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
