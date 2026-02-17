@@ -14,6 +14,10 @@
         <a href="{{ route('admin.users') }}" class="tab {{ request()->routeIs('admin.users') ? 'active' : '' }}">
             Management User
         </a>
+
+        <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            Ganti Password
+        </a>
     @elseif(auth()->check() && auth()->user()->role === 'arsiparis')
         <a href="{{ route('arsiparis.dashboard') }}"
             class="tab {{ request()->routeIs('arsiparis.dashboard') ? 'active' : '' }}">
@@ -35,6 +39,9 @@
             class="tab {{ request()->routeIs('arsiparis.surat-keluar') ? 'active' : '' }}">
             Data Surat Keluar
         </a>
+        <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            Ganti Password
+        </a>
     @elseif(auth()->check() && auth()->user()->role === 'petugas')
         <a href="{{ route('petugas.dashboard') }}"
             class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
@@ -44,7 +51,7 @@
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
         </a>
-                <a href="{{ route('petugas.approval.index') }}"
+        <a href="{{ route('petugas.approval.index') }}"
             class="tab {{ request()->routeIs('petugas.approval.index') ? 'active' : '' }}">
             Approval User
         </a>
@@ -53,16 +60,25 @@
             class="tab {{ request()->routeIs('pengajuan.petugas') ? 'active' : '' }}">
             Semua Data Pengajuan
         </a>
+        <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            Ganti Password
+        </a>
     @elseif(auth()->check() && auth()->user()->role === 'keuangan')
         <a href="{{ route('petugas.pembayaran') }}"
             class="tab {{ request()->routeIs('petugas.pembayaran') ? 'active' : '' }}">
             Data Pembayaran
+        </a>
+                <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            Ganti Password
         </a>
         {{-- ================= USER ================= --}}
     @else
         <a href="{{ route('user.dashboard') }}"
             class="tab {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
             Pengajuan
+        </a>
+                <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            Ganti Password
         </a>
 
         {{-- <a href="{{ route('user.pengajuan') }}"
