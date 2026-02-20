@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Kwitansi Pembayaran</title>
+    <title>Invoice Pembayaran</title>
     <style>
         @page {
             size: A4;
@@ -114,42 +114,21 @@
             </div>
         </div>
 
-        <div class="judul" style="margin-top: -30px">KWITANSI PEMBAYARAN</div>
+        <div class="judul" style="margin-top: -30px">INVOICE PEMBAYARAN</div>
         <p><strong>{{ $penagihan->nomor_surat_keluar }}</strong></p>
 
 
 
         <!-- INFO UTAMA -->
-        <table>
-            <tr>
-                <td width="30%">Sudah Terima Dari</td>
-                <td width="2%">:</td>
-                <td><strong>{{ $penagihan->pengajuan->user->nama_perusahaan ?? '-' }}</strong></td>
-            </tr>
-            <tr>
-                <td>Uang Sejumlah</td>
-                <td>:</td>
-                <td><strong>Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}</strong></td>
-            </tr>
 
-            <tr>
-                <td>Untuk Pembayaran</td>
-                <td>:</td>
-                <td>
-                    ({{ $penagihan->pengajuan->jenis_dokumen }})
-                </td>
-            </tr>
-            <tr>
-                <td>Kode Bayar</td>
-                <td>:</td>
-                <td>
-                    {{ $penagihan->pengajuan->kode_bayar }}
-                </td>
-            </tr>
-        </table>
 
         <!-- DATA KAPAL -->
         <table>
+            <tr>
+                <td width="30%">Nama Perusahaan</td>
+                <td width="2%">:</td>
+                <td><strong>{{ $penagihan->pengajuan->user->nama_perusahaan ?? '-' }}</strong></td>
+            </tr>
             <tr>
                 <td width="30%">Nama Kapal</td>
                 <td width="2%">:</td>
@@ -175,6 +154,26 @@
                 <td>Jenis Pembiayaan</td>
                 <td>:</td>
                 <td>{{ $jenis_tarif_name }}</td>
+            </tr>
+             <tr>
+                <td>Uang Sejumlah</td>
+                <td>:</td>
+                <td><strong>Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}</strong></td>
+            </tr>
+
+            <tr>
+                <td>Untuk Pembayaran</td>
+                <td>:</td>
+                <td>
+                    ({{ $penagihan->pengajuan->jenis_dokumen }})
+                </td>
+            </tr>
+            <tr>
+                <td>Kode Bayar</td>
+                <td>:</td>
+                <td>
+                    {{ $penagihan->pengajuan->kode_bayar }}
+                </td>
             </tr>
         </table>
         <p>
@@ -235,6 +234,7 @@
                 <img
                     src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ route('invoice.verify', $penagihan->id) }}">
                 <div style="font-size:12px; text-align:center;">Scan untuk verifikasi invoice</div>
+                <div style="font-size:12px; text-align:center; color: red;">Segera Lakukan Pembayaran</div>
             </div>
         </div>
 

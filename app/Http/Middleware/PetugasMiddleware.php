@@ -18,7 +18,7 @@ class PetugasMiddleware
             return redirect()->route('login');
         }
 
-        if (auth()->user()->role !== 'petugas') {
+        if (auth()->user()->role !== 'kawilker') {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

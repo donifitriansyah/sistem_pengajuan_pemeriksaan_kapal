@@ -23,13 +23,13 @@ Route::get('/', function () {
         switch ($user->role) {
             case 'admin':
                 return redirect()->route('admin.dashboard');
-            case 'arsiparis':
-                return redirect()->route('arsiparis.dashboard');
-            case 'petugas':
+            case 'arsiparis_wilker':
+                return redirect()->route('arsiparis.verifikasi');
+            case 'kawilker':
                 return redirect()->route('petugas.dashboard');
             case 'petugas-kapal':
                 return redirect()->route('petugas-kapal.dashboard');
-            case 'keuangan':
+            case 'bendahara_wilker':
                 return redirect()->route('petugas.pembayaran');
             default:
                 return redirect()->route('user.dashboard');
@@ -93,8 +93,11 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
     Route::get('/export-excel', [UserDashboardController::class, 'exportExcel'])->name('export.excel');
 });
 
-Route::get('/invoice/{penagihan}', [UserDashboardController::class, 'show'])
+Route::get('/kwitansi/{penagihan}', [UserDashboardController::class, 'show'])
     ->name('invoice.show');
+
+Route::get('/invoice/{penagihan}', [UserDashboardController::class, 'showKwitansi'])
+    ->name('kwitansi.show');
 
 Route::get('/invoice/{penagihan}/download', [UserDashboardController::class, 'download'])
     ->name('invoice.download');
@@ -102,10 +105,8 @@ Route::get('/invoice/{penagihan}/download', [UserDashboardController::class, 'do
 Route::get('/invoice/verify/{penagihan}', [UserDashboardController::class, 'verify'])
     ->name('invoice.verify');
 
-    // Cek status invoice berdasarkan kode bayar
+// Cek status invoice berdasarkan kode bayar
 Route::get('/cek-invoice/{kodeBayar}', [UserDashboardController::class, 'cekInvoice']);
-
-
 
 Route::middleware(['auth', 'arsiparis'])->group(function () {
 
@@ -132,7 +133,16 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
 
 });
 
+Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(function () {
+    Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
+        [DashboardPetugasController::class, 'verifikasi']
+    )->name('admin.pembayaran.verifikasi');
+});
+
 Route::middleware(['auth', 'petugas'])->group(function () {
+
+    Route::get('/petugas/pembayaran', [DashboardPetugasController::class, 'indexPembayaranPetugas'])
+        ->name('petugas.dashboard.petugas');
 
     Route::get('/dashboard/petugas', [DashboardPetugasController::class, 'index'])
         ->name('petugas.dashboard');
@@ -145,6 +155,10 @@ Route::middleware(['auth', 'petugas'])->group(function () {
 
     Route::get('/petugas/approval', [ApprovalUserController::class, 'indexPetugas'])
         ->name('petugas.approval.index');
+
+    Route::put('/petugas/user/{id}/approve',
+        [ApprovalUserController::class, 'approvePetugas']
+    )->name('petugas.user.approve');
 
     Route::post(
         '/petugas/penagihan/{pengajuan}',
@@ -183,9 +197,13 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
     Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
 
-    Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
-        [DashboardPetugasController::class, 'verifikasi']
-    )->name('admin.pembayaran.verifikasi');
+    Route::post(
+        '/keuangan/penagihan/{pengajuan}',
+        [PenugasanController::class, 'storeKeuangan']
+    )->name('petugas.penagihan.store');
+
+    Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
+        ->name('petugas.dashboard');
 
 });
 

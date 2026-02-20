@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
+use App\Models\AgendaSuratPengajuan;
 use App\Models\Pembayaran;
 use App\Models\Penagihan;
 use App\Models\PengajuanPemeriksaanKapal;
@@ -11,125 +12,6 @@ use Illuminate\Http\Request;
 
 class DashboardPetugasController extends Controller
 {
-    // public function index()
-    // {
-    //     // Fetch PengajuanPemeriksaanKapal that are not yet billed (penagihan_id is null) and already have an agenda
-    //     $pengajuan = PengajuanPemeriksaanKapal::whereNull('penagihan_id') // Not yet billed
-    //         ->whereNotNull('agenda_surat_pengajuan_id') // Already scheduled
-    //         ->get();
-
-    //     // Fetch all petugas-kapal (or any user with the role 'petugas-kapal')
-    //     $petugas = User::where('role', 'petugas-kapal')->get();
-
-    //     // Fetch all penagihan records (to check which petugas are assigned)
-    //     $penagihanData = Penagihan::with('petugas') // You can add relations if needed, like 'petugas'
-    //         ->get();
-
-    //     // Pass the data to the view
-    //     return view('pages.petugas.dashboard', [
-    //         'pengajuan' => $pengajuan,
-    //         'petugas' => $petugas,
-    //         'penagihanData' => $penagihanData, // Make sure this is passed
-    //     ]);
-    // }
-    // public function index()
-    // {
-    //     // Get the logged-in user
-    //     $user = auth()->user();
-
-    //     // Check if the user has a valid wilayah kerja (assuming the 'wilayah_kerja' field is in the 'users' table)
-    //     $wilayah_kerja = $user->wilayah_kerja;
-
-    //     // Fetch PengajuanPemeriksaanKapal that are not yet billed (penagihan_id is null)
-    //     // and already have an agenda, filtering by the user's wilayah kerja
-    //     $pengajuan = PengajuanPemeriksaanKapal::whereNull('penagihan_id') // Not yet billed
-    //         ->whereNotNull('agenda_surat_pengajuan_id') // Already scheduled
-    //         ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah kerja
-    //         ->get();
-
-    //     // Fetch all petugas-kapal (or any user with the role 'petugas-kapal')
-    //     $petugas = User::where('role', 'petugas-kapal')->get();
-
-    //     // Fetch all penagihan records (to check which petugas are assigned)
-    //     $penagihanData = Penagihan::with('petugas') // You can add relations if needed, like 'petugas'
-    //         ->get();
-
-    //     // Pass the data to the view
-    //     return view('pages.petugas.dashboard', [
-    //         'pengajuan' => $pengajuan,
-    //         'petugas' => $petugas,
-    //         'penagihanData' => $penagihanData, // Make sure this is passed
-    //     ]);
-    // }
-    // public function index()
-    // {
-    //     // Get the logged-in user
-    //     $user = auth()->user();
-
-    //     // Get the logged-in user's wilayah_kerja
-    //     $wilayah_kerja = $user->wilayah_kerja;
-
-    //     // Fetch PengajuanPemeriksaanKapal that are not yet billed (penagihan_id is null)
-    //     // and already have an agenda, filtering by the user's wilayah kerja
-    //     $pengajuan = PengajuanPemeriksaanKapal::whereNull('penagihan_id') // Not yet billed
-    //         ->whereNotNull('agenda_surat_pengajuan_id') // Already scheduled
-    //         ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah kerja
-    //         ->get();
-
-    //     // Fetch petugas-kapal (users with role 'petugas-kapal') and filter by wilayah_kerja
-    //     $petugas = User::where('role', 'petugas-kapal')
-    //         ->where('wilayah_kerja', $wilayah_kerja) // Filter petugas by wilayah_kerja
-    //         ->get();
-
-    //     // Fetch penagihan records, filtering based on wilayah_kerja if necessary
-    //     $penagihanData = Penagihan::with('petugas') // Add relations as needed
-    //         ->whereHas('petugas', function ($query) use ($wilayah_kerja) {
-    //             $query->where('wilayah_kerja', $wilayah_kerja); // Ensure petugas are from the same wilayah_kerja
-    //         })
-    //         ->get();
-
-    //     // Pass the data to the view
-    //     return view('pages.petugas.dashboard', [
-    //         'pengajuan' => $pengajuan,
-    //         'petugas' => $petugas,
-    //         'penagihanData' => $penagihanData, // Make sure this is passed
-    //     ]);
-    // }
-
-    // public function index()
-    // {
-    //     // Get the logged-in user
-    //     $user = auth()->user();
-
-    //     // Get the logged-in user's wilayah_kerja
-    //     $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
-
-    //     // Fetch all PengajuanPemeriksaanKapal, regardless of whether they have an agenda or not
-    //     // and filter by the user's wilayah kerja, including the related agenda_surat_pengajuan
-    //     $pengajuan = PengajuanPemeriksaanKapal::with(['user', 'agendaSuratPengajuan']) // Eager load 'agendaSuratPengajuan' relation
-    //         ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah kerja
-    //         ->latest()
-    //         ->get();
-
-    //     // Fetch all petugas-kapal (users with role 'petugas-kapal') and filter by wilayah_kerja
-    //     $petugas = User::where('role', 'petugas-kapal')
-    //         ->where('wilayah_kerja', $wilayah_kerja) // Filter petugas by wilayah_kerja
-    //         ->get();
-
-    //     // Fetch penagihan records, filtering based on wilayah_kerja if necessary
-    //     $penagihanData = Penagihan::with('petugas') // Add relations as needed
-    //         ->whereHas('petugas', function ($query) use ($wilayah_kerja) {
-    //             $query->where('wilayah_kerja', $wilayah_kerja); // Ensure petugas are from the same wilayah_kerja
-    //         })
-    //         ->get();
-
-    //     // Pass the filtered data to the view
-    //     return view('pages.petugas.dashboard', [
-    //         'pengajuan' => $pengajuan,
-    //         'petugas' => $petugas,
-    //         'penagihanData' => $penagihanData, // Make sure this is passed
-    //     ]);
-    // }
     public function index()
     {
         // Get the logged-in user
@@ -146,8 +28,8 @@ class DashboardPetugasController extends Controller
             ->get();
 
         // Fetch all petugas-kapal (users with role 'petugas-kapal') and filter by wilayah_kerja
-        $petugas = User::where('role', 'petugas-kapal')
-            ->where('wilayah_kerja', $wilayah_kerja) // Filter petugas by wilayah_kerja
+        $petugas = User::where('wilayah_kerja', $wilayah_kerja)
+            ->whereNotIn('role', ['admin', 'user'])
             ->get();
 
         // Fetch penagihan records, filtering based on wilayah_kerja if necessary
@@ -167,52 +49,101 @@ class DashboardPetugasController extends Controller
 
     public function indexPengajuan()
     {
+        // Get the logged-in user
+        $user = auth()->user();
+
+        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan',
+            'agendaSuratPengajuan',
+        ])
+            ->whereHas('user', function ($query) use ($user) {
+                // Filter based on wilayah_kerja of the logged-in user
+                $query->where('wilayah_kerja', $user->wilayah_kerja);
+            })
+            ->get();
+
+        // Fetch petugas based on wilayah_kerja of the logged-in user
+        $petugas = User::where('wilayah_kerja', $wilayah_kerja)
+            ->whereNotIn('role', ['admin', 'user'])
+            ->get();
+
         return view('pages.petugas.pengajuan', [
-            'pengajuan' => PengajuanPemeriksaanKapal::with(['user', 'penagihan', 'agendaSuratPengajuan'])->get(),
-            'petugas' => User::where('role', 'petugas')->get(),
+            'pengajuan' => $pengajuan,
+            'petugas' => $petugas, // Send filtered petugas to the view
         ]);
     }
 
     public function indexPembayaran()
     {
-        return view('pages.petugas.pembayaran', [
-            'pengajuan' => PengajuanPemeriksaanKapal::with([
-                'user',
-                'penagihan.pembayaran',
-                'agendaSuratPengajuan',
-            ])
-                ->get(),
-        ]);
-    }
+        // Get the logged-in user
+        $user = auth()->user();
 
-    // public function indexPemeriksa()
-    // {
-    //     return view('pages.petugas.pemeriksa', [
-    //         'pengajuan' => PengajuanPemeriksaanKapal::with([
-    //             'user',
-    //             'penagihan.pembayaran',
-    //             'penagihan.petugas',  // Add this to load petugas data
-    //             'agendaSuratPengajuan',
-    //         ])
-    //             ->get(),
-    //     ]);
-    // }
-    public function indexPemeriksa()
-    {
-        // Mengambil semua pengajuan beserta data yang diperlukan
+        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
         $pengajuan = PengajuanPemeriksaanKapal::with([
             'user',
             'penagihan.pembayaran',
-            'penagihan.petugas',  // Memuat petugas
             'agendaSuratPengajuan',
-        ])->get();
+        ])
+            ->whereHas('user', function ($query) use ($user) {
+                // Filter based on wilayah_kerja of the logged-in user
+                $query->where('wilayah_kerja', $user->wilayah_kerja);
+            })
+            ->get();
 
-        // Mengambil pengguna dengan role 'petugas'
-        $petugas = User::where('role', 'petugas-kapal')->get();
+        return view('pages.petugas.pembayaran', [
+            'pengajuan' => $pengajuan, // Send filtered pengajuan to the view
+        ]);
+    }
+    public function indexPembayaranPetugas()
+    {
+        // Get the logged-in user
+        $user = auth()->user();
+
+        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'agendaSuratPengajuan',
+        ])
+            ->whereHas('user', function ($query) use ($user) {
+                // Filter based on wilayah_kerja of the logged-in user
+                $query->where('wilayah_kerja', $user->wilayah_kerja);
+            })
+            ->get();
+
+        return view('pages.petugas.pembayaran', [
+            'pengajuan' => $pengajuan, // Send filtered pengajuan to the view
+        ]);
+    }
+
+    public function indexPemeriksa()
+    {
+        // Get the logged-in user
+        $user = auth()->user();
+
+        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'penagihan.petugas',  // Load petugas
+            'agendaSuratPengajuan',
+        ])
+            ->whereHas('user', function ($query) use ($user) {
+                // Filter based on wilayah_kerja of the logged-in user
+                $query->where('wilayah_kerja', $user->wilayah_kerja);
+            })
+            ->get();
+
+        // Fetch 'petugas' where wilayah_kerja matches the logged-in user's wilayah_kerja
+        $petugas = User::where('wilayah_kerja', $user->wilayah_kerja) // Use $user->wilayah_kerja
+            ->whereNotIn('role', ['admin', 'user'])
+            ->get();
 
         return view('pages.petugas.pemeriksa', [
             'pengajuan' => $pengajuan,
-            'petugas' => $petugas, // Mengirim data petugas ke view
+            'petugas' => $petugas, // Send filtered petugas to the view
         ]);
     }
 
@@ -289,6 +220,8 @@ class DashboardPetugasController extends Controller
         $request->validate([
             'status' => 'required|in:Diterima,Ditolak', // Ensure status is either diterima or ditolak
             'keterangan' => 'nullable|string|max:255', // Optional keterangan field
+            'nomor_surat_pengajuan' => 'required_if:status,Diterima|string|max:255', // Nomor surat hanya diperlukan jika diterima
+            'tanggal_surat' => 'required_if:status,Diterima|date', // Tanggal surat hanya diperlukan jika diterima
         ]);
 
         // Find the PengajuanPemeriksaanKapal by ID
@@ -301,10 +234,126 @@ class DashboardPetugasController extends Controller
             $pengajuan->keterangan = $request->keterangan ?? ''; // Set the keterangan if provided
             $pengajuan->save(); // Save the updated record
 
+            // If the status is "Diterima", run arsipkan method to handle surat masuk and keluar
+            if ($request->status === 'Diterima') {
+                $this->arsipkan($request, $id); // Call the arsipkan method
+            }
+
             // Redirect with success message
             return redirect()->back()->with('success', 'Pengajuan berhasil diperbarui.');
         }
 
         return redirect()->back()->with('error', 'Status pengajuan tidak dapat diperbarui.');
+    }
+
+    public function arsipkan(Request $request, $id)
+    {
+        // Find the PengajuanPemeriksaanKapal record to archive
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        // Get the current year
+        $currentYear = date('Y');
+
+        // Get the logged-in user's wilker
+        $wilker = auth()->user()->wilayah_kerja;
+
+        // Set the wilayah kerja code based on the wilker
+        $wilkerCode = '';
+        switch ($wilker) {
+            case 'Dwikora':
+                $wilkerCode = 'C.X.1.11';
+                break;
+            case 'Kendawangan':
+                $wilkerCode = 'C.X.1.9';
+                break;
+            case 'Ketapang':
+                $wilkerCode = 'C.X.1.8';
+                break;
+            case 'Kijing':
+                $wilkerCode = 'C.X.1.12';
+                break;
+            case 'Padang Tikar':
+                $wilkerCode = 'C.X.1.10';
+                break;
+            default:
+                $wilkerCode = 'C.X.1.11'; // Default if no match
+                break;
+        }
+
+        // Generate the nomor surat masuk otomatis (incrementing logic)
+        $lastSuratMasuk = AgendaSuratPengajuan::where('nomor_surat_masuk', 'like', 'AR.02.01/'.$wilkerCode.'/%/'.$currentYear)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $suratMasukNumber = $lastSuratMasuk ? (int) explode('/', $lastSuratMasuk->nomor_surat_masuk)[2] + 1 : 1;
+        $nomorSuratMasuk = 'AR.02.01/'.$wilkerCode.'/'.$suratMasukNumber.'/'.$currentYear;
+
+        // Generate the nomor surat keluar otomatis (incrementing logic)
+        $lastSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', 'like', 'SR.04.02/'.$wilkerCode.'/%/'.$currentYear)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $suratKeluarNumber = $lastSuratKeluar ? (int) explode('/', $lastSuratKeluar->nomor_surat_keluar)[2] + 1 : 1;
+        $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
+
+        // Check if the generated nomor_surat_keluar already exists in the database
+        $existingSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', $nomorSuratKeluar)->first();
+
+        // If the nomor_surat_keluar already exists, regenerate it by incrementing the number
+        if ($existingSuratKeluar) {
+            $suratKeluarNumber++;
+            $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
+        }
+
+        // Create a new AgendaSuratPengajuan record
+        $agenda = AgendaSuratPengajuan::create([
+            'nomor_surat_pengajuan' => $request->input('nomor_surat_pengajuan'), // Nomor surat pengajuan diisi manual oleh arsiparis
+            'nomor_surat_masuk' => $nomorSuratMasuk,  // Automatically generated and incremented
+            'nomor_surat_keluar' => $nomorSuratKeluar, // Automatically generated and ensured unique
+            'tanggal_surat' => $request->input('tanggal_surat'), // Tanggal surat dari arsiparis
+        ]);
+
+        // Update the PengajuanPemeriksaanKapal record with the new agenda_surat_pengajuan_id
+        $pengajuan->update([
+            'agenda_surat_pengajuan_id' => $agenda->id, // Link the new AgendaSuratPengajuan
+        ]);
+
+        // Redirect back with a success message
+        return back()->with('success', 'Pengajuan berhasil diarsipkan.');
+    }
+
+    public function indexKeuangan()
+    {
+        // Get the logged-in user
+        $user = auth()->user();
+
+        // Get the logged-in user's wilayah_kerja
+        $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
+
+        // Fetch all PengajuanPemeriksaanKapal, regardless of whether they have an agenda or not
+        // and filter by the user's wilayah kerja, including the related agenda_surat_pengajuan
+        $pengajuan = PengajuanPemeriksaanKapal::with(['user', 'agendaSuratPengajuan']) // Eager load 'agendaSuratPengajuan' relation
+            ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah kerja
+            ->latest()
+            ->get();
+
+        // Fetch all petugas-kapal (users with role 'petugas-kapal') and filter by wilayah_kerja
+        $petugas = User::where('wilayah_kerja', $wilayah_kerja)
+            ->whereNotIn('role', ['admin', 'user'])
+            ->get();
+
+        // Fetch penagihan records, filtering based on wilayah_kerja if necessary
+        $penagihanData = Penagihan::with('petugas') // Add relations as needed
+            ->whereHas('petugas', function ($query) use ($wilayah_kerja) {
+                $query->where('wilayah_kerja', $wilayah_kerja); // Ensure petugas are from the same wilayah_kerja
+            })
+            ->get();
+
+        // Pass the filtered data to the view
+        return view('pages.petugas.dashboard', [
+            'pengajuan' => $pengajuan,
+            'petugas' => $petugas,
+            'penagihanData' => $penagihanData, // Make sure this is passed
+        ]);
     }
 }

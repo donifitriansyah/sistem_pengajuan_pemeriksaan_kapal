@@ -90,7 +90,6 @@
                         <th>Jenis Dokumen</th>
                         <th>Kode Bayar</th>
                         <th>Status Pembayaran</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,21 +122,12 @@
                                     @endif
                                 @endif
                             </td>
-                            <td>
-                                <button class="btn btn-primary btn-sm">View</button>
-                                <button class="btn btn-warning btn-sm">Edit</button>
-                                <button class="btn btn-danger btn-sm">Delete</button>
-                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
 
-            <!-- Empty State -->
-            <div id="emptyPengajuan" class="empty-state"
-                style="display: {{ $pengajuanPemeriksaans->isEmpty() ? 'block' : 'none' }};">
-                <p>Belum ada pengajuan untuk wilker Anda</p>
-            </div>
+
         </div>
     </div>
 

@@ -17,11 +17,10 @@ class ArsiparisMiddleware
         }
 
         // Cek role
-        if (Auth::user()->role !== 'arsiparis') {
+        if (Auth::user()->role !== 'arsiparis_wilker') {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
         return $next($request);
     }
 }
-    

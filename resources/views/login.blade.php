@@ -1,6 +1,24 @@
 @extends('layouts.back')
 @section('content')
     <style>
+        .status-label {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status-lunas {
+            background-color: #28a745;
+            /* Green color */
+            color: white;
+        }
+
+        .status-belum-bayar {
+            background-color: #dc3545;
+            /* Red color */
+            color: white;
+        }
+
         .password-wrapper {
             position: relative;
         }
@@ -158,7 +176,6 @@
                         <option value="Dwikora">Dwikora</option>
                         <option value="Kijing">Kijing</option>
                         <option value="Padang Tikar">Padang Tikar</option>
-                        <option value="Teluk Batang">Teluk Batang</option>
                         <option value="Ketapang">Ketapang</option>
                         <option value="Kendawangan">Kendawangan</option>
                     </select>
@@ -193,19 +210,23 @@
                     <span class="invoice-label">Nama Kapal</span><span id="namaKapal">-</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="invoice-label">Jenis Tarif</span><span id="jenisTarif">-</span>
+                    <span class="invoice-label">Jenis Dokumen</span><span id="jenisTarif">-</span>
                 </div>
                 <div class="invoice-row">
                     <span class="invoice-label">Lokasi</span><span id="lokasi">-</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="invoice-label">Agent</span><span id="agent">-</span>
+                    <span class="invoice-label">Nama Perusahaan</span><span id="namaPerusahaan">-</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="invoice-label">Tarif</span><span id="tarif">-</span>
+                    <span class="invoice-label">Wilayah Kerja</span><span id="wilker">-</span>
                 </div>
                 <div class="invoice-row">
-                    <span class="invoice-label">Status Pembayaran</span><span id="status">-</span>
+                    <span class="invoice-label">Total Tarif</span><span id="tarif">-</span>
+                </div>
+                <div class="invoice-row">
+                    <span class="invoice-label">Status Pembayaran</span>
+                    <span id="status" class="status-label">-</span>
                 </div>
 
                 <!-- Tempat untuk QR Code -->
@@ -298,9 +319,31 @@
                         document.getElementById("namaKapal").innerText = data.nama_kapal;
                         document.getElementById("jenisTarif").innerText = data.jenis_dokumen;
                         document.getElementById("lokasi").innerText = data.lokasi_kapal;
-                        document.getElementById("agent").innerText = data.wilayah_kerja;
-                        document.getElementById("tarif").innerText = data.penagihan_id;
-                        document.getElementById("status").innerText = data.status_pembayaran;
+                        document.getElementById("namaPerusahaan").innerText = data.nama_perusahaan;
+                        document.getElementById("wilker").innerText = data.wilayah_kerja;
+
+                        // Format total_tarif as Rupiah (without decimals)
+                        const totalTarif = new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            maximumFractionDigits: 0 // Remove decimals
+                        }).format(data.total_tarif);
+
+                        document.getElementById("tarif").innerText = totalTarif;
+
+                        // Set the status based on payment status
+                        const statusElement = document.getElementById("status");
+                        statusElement.innerText = data.status_pembayaran;
+
+                        if (data.status_pembayaran.toLowerCase() === 'diterima') {
+                            statusElement.classList.add('status-lunas');
+                            statusElement.classList.remove('status-belum-bayar');
+                            statusElement.innerText = 'Lunas';
+                        } else {
+                            statusElement.classList.add('status-belum-bayar');
+                            statusElement.classList.remove('status-lunas');
+                            statusElement.innerText = 'Belum Bayar';
+                        }
 
                         // Generate and display QR Code
                         let qrCodeUrl =

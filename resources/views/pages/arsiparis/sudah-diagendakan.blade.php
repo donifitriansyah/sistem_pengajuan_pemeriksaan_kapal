@@ -71,8 +71,8 @@
                     <th>Nama Perusahaan</th>
                     <th>Lokasi Pemeriksaan</th>
                     <th>Jenis Dokumen</th>
-                    <th>Kode Bayar</th>
                     <th>Surat Pengajuan</th>
+                    <th>Kode Bayar</th>
                     <th>Status Arsip</th>
                     <th style="width:120px">Aksi</th>
                 </tr>

@@ -60,6 +60,14 @@
                         </td>
 
                         <td>
+{{-- FORM APPROVE --}}
+                            <form id="approve-form-{{ $user->id }}" action="{{ route('petugas.user.approve', $user->id) }}"
+                                method="POST" style="display:none;">
+                                @csrf
+                                @method('PUT')
+                            </form>
+
+
 
                             {{-- JIKA STATUS NONAKTIF → TAMPIL SETUJUI --}}
                             @if ($user->status == 'nonaktif')

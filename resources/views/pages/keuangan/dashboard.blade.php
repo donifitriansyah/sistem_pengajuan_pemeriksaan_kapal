@@ -67,6 +67,7 @@
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat</th>
                     <th>Nomor Surat Tugas</th>
+                    <th>Kode Bayar</th>
                     <th>Bukti Bayar</th>
                     <th>Aksi</th>
                 </tr>
@@ -86,6 +87,7 @@
                         </td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_pengajuan ?? '-' }}</td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
+                        <td>{{ $item->kode_bayar }}</td>
                         <td>
                             @if ($item->penagihan && $item->penagihan->pembayaran)
                                 <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
@@ -96,7 +98,6 @@
                                 <span class="badge bg-secondary">Belum Upload</span>
                             @endif
                         </td>
-
                         <td>
                             @if ($item->penagihan && $item->penagihan->pembayaran)
                                 @if ($item->penagihan->pembayaran->status === 'menunggu')

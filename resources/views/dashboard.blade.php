@@ -68,7 +68,7 @@
 
                                     {{-- Tanggal --}}
                                     <div class="mb-3">
-                                        <label class="form-label">Tanggal Estimasi</label>
+                                        <label class="form-label">Tanggal Estimasi Pemeriksaan</label>
                                         <input type="date" name="tgl_estimasi_pemeriksaan" class="form-control" required>
                                     </div>
 
@@ -110,7 +110,6 @@
                                             <option>Dwikora</option>
                                             <option>Kijing</option>
                                             <option>Padang Tikar</option>
-                                            <option>Teluk Batang</option>
                                             <option>Ketapang</option>
                                             <option>Kendawangan</option>
                                         </select>
@@ -175,7 +174,6 @@
                     <option value="Dwikora">Dwikora</option>
                     <option value="Kijing">Kijing</option>
                     <option value="Padang Tikar">Padang Tikar</option>
-                    <option value="Teluk Batang">Teluk Batang</option>
                     <option value="Ketapang">Ketapang</option>
                     <option value="Kendawangan">Kendawangan</option>
                 </select>
@@ -206,7 +204,7 @@
                     <th>Jenis Dokumen</th>
                     <th>Kode Bayar</th>
                     <th>Status Pengajuan</th>
-                    <th>Aksi</th>
+                    <th>Status Pembayaran</th>
                 </tr>
             </thead>
             <tbody>
@@ -226,13 +224,22 @@
                             @if (!$item->penagihan)
                                 <span class="badge bg-secondary">Belum Ada Tagihan</span>
                             @elseif($item->penagihan->status_bayar === 'belum_bayar')
-                                <span class="badge bg-warning text-dark">Belum Bayar</span>
+                                <span class="badge bg-warning text-dark mb-2">Belum Bayar</span>
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success ">
+                                        Lihat Invoice
+                                    </a>
                                 <div class="mt-1">
                                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                         data-bs-target="#modalBayar{{ $item->id }}">Bayar Tagihan</button>
+
                                 </div>
                             @elseif($item->penagihan->status_bayar === 'menunggu')
                                 <span class="badge bg-info">Menunggu Verifikasi</span>
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                    class="btn btn-sm btn-success">
+                                    Lihat Invoice
+                                </a>
                             @elseif($item->penagihan->status_bayar === 'ditolak')
                                 <span class="badge bg-danger">Pembayaran Ditolak</span>
                                 <div class="mt-1">
@@ -243,7 +250,8 @@
                                 <span class="badge bg-success">Lunas</span>
                                 <div class="mt-1">
                                     <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">Lihat Invoice</a>
+                                        class="btn btn-sm btn-success mb-2">Lihat Kwitansi</a>
+                                    
                                 </div>
                             @endif
 
@@ -302,9 +310,6 @@
                                                 <option value="Padang Tikar"
                                                     {{ $item->wilayah_kerja === 'Padang Tikar' ? 'selected' : '' }}>Padang
                                                     Tikar</option>
-                                                <option value="Teluk Batang"
-                                                    {{ $item->wilayah_kerja === 'Teluk Batang' ? 'selected' : '' }}>Teluk
-                                                    Batang</option>
                                                 <option value="Ketapang"
                                                     {{ $item->wilayah_kerja === 'Ketapang' ? 'selected' : '' }}>Ketapang
                                                 </option>

@@ -18,11 +18,11 @@
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
-    @elseif(auth()->check() && auth()->user()->role === 'arsiparis')
-        <a href="{{ route('arsiparis.dashboard') }}"
+    @elseif(auth()->check() && auth()->user()->role === 'arsiparis_wilker')
+        {{-- <a href="{{ route('arsiparis.dashboard') }}"
             class="tab {{ request()->routeIs('arsiparis.dashboard') ? 'active' : '' }}">
             Data Pengajuan Belum Diagendakan
-        </a>
+        </a> --}}
         <a href="{{ route('arsiparis.verifikasi') }}"
             class="tab {{ request()->routeIs('arsiparis.verifikasi') ? 'active' : '' }}">
             Data Pengajuan Verifikasi
@@ -42,10 +42,14 @@
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
-    @elseif(auth()->check() && auth()->user()->role === 'petugas')
+    @elseif(auth()->check() && auth()->user()->role === 'kawilker')
         <a href="{{ route('petugas.dashboard') }}"
             class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
             Data Penagihan
+        </a>
+        <a href="{{ route('petugas.dashboard.petugas') }}"
+            class="tab {{ request()->routeIs('petugas.dashboard.petugas') ? 'active' : '' }}">
+            Data Pembayaran
         </a>
         <a href="{{ route('petugas.pemeriksa') }}"
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
@@ -63,12 +67,16 @@
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
-    @elseif(auth()->check() && auth()->user()->role === 'keuangan')
+    @elseif(auth()->check() && auth()->user()->role === 'bendahara_wilker')
+        <a href="{{ route('petugas.dashboard') }}"
+            class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
+            Data Penagihan
+        </a>
         <a href="{{ route('petugas.pembayaran') }}"
             class="tab {{ request()->routeIs('petugas.pembayaran') ? 'active' : '' }}">
             Data Pembayaran
         </a>
-                <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+        <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
         {{-- ================= USER ================= --}}
@@ -77,7 +85,7 @@
             class="tab {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
             Pengajuan
         </a>
-                <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+        <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
 

@@ -48,15 +48,15 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        if ($user->role === 'arsiparis') {
-            return redirect()->route('arsiparis.dashboard');
+        if ($user->role === 'arsiparis_wilker') {
+            return redirect()->route('arsiparis.verifikasi');
         }
 
-        if ($user->role === 'petugas') {
+        if ($user->role === 'kawilker') {
             return redirect()->route('petugas.dashboard');
         }
 
-        if ($user->role === 'keuangan') {
+        if ($user->role === 'bendahara_wilker') {
             return redirect()->route('petugas.pembayaran');
         }
 

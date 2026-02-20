@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PengajuanExport;
 use App\Models\Pembayaran;
 use App\Models\Penagihan;
 use App\Models\PengajuanPemeriksaanKapal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Exports\PengajuanExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UserDashboardController extends Controller
@@ -22,36 +22,42 @@ class UserDashboardController extends Controller
     }
 
     public function cekInvoice($kodeBayar)
-    {
-        $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
+{
+    $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
 
-        if (! $invoice) {
-            return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
-        }
-
-        // Ambil penagihan_id untuk mencari pembayaran
-        $penagihan_id = $invoice->penagihan_id;
-        $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
-
-        if (! $pembayaran) {
-            return response()->json(['error' => 'Data pembayaran tidak ditemukan.'], 404);
-        }
-
-        $statusPembayaran = $pembayaran->status;
-
-        // Menyusun URL untuk verifikasi invoice
-        $verifyUrl = route('invoice.verify', $penagihan_id);
-
-        return response()->json([
-            'nama_kapal' => $invoice->nama_kapal,
-            'jenis_dokumen' => $invoice->jenis_dokumen,
-            'lokasi_kapal' => $invoice->lokasi_kapal,
-            'wilayah_kerja' => $invoice->wilayah_kerja,
-            'penagihan_id' => $invoice->penagihan_id,
-            'status_pembayaran' => $statusPembayaran,
-            'verify_url' => $verifyUrl, // Kirimkan URL untuk QR Code
-        ]);
+    if (! $invoice) {
+        return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
     }
+
+    // Ambil penagihan_id untuk mencari pembayaran
+    $penagihan_id = $invoice->penagihan_id;
+    $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
+
+    // Jika pembayaran tidak ditemukan, set status sebagai 'Belum Bayar'
+    $statusPembayaran = $pembayaran ? $pembayaran->status : 'Belum Bayar';
+
+    // Ambil nama perusahaan dan nama agen dari tabel users
+    $namaPerusahaan = $invoice->user->nama_perusahaan ?? 'N/A'; // Pastikan nama_perusahaan ada di tabel users=
+
+    // Menyusun URL untuk verifikasi invoice
+    $verifyUrl = route('invoice.verify', $penagihan_id);
+
+    // Pastikan total_tarif tidak null
+    $totalTarif = $invoice->penagihan ? $invoice->penagihan->total_tarif : 0; // Jika tidak ada total_tarif, set ke 0
+
+    return response()->json([
+        'nama_kapal' => $invoice->nama_kapal,
+        'jenis_dokumen' => $invoice->jenis_dokumen,
+        'jenis_tarif' => $invoice->jenis_tarif,
+        'lokasi_kapal' => $invoice->lokasi_kapal,
+        'wilayah_kerja' => $invoice->wilayah_kerja,
+        'penagihan_id' => $invoice->penagihan_id,
+        'total_tarif' => $totalTarif,
+        'nama_perusahaan' => $namaPerusahaan, // Menampilkan nama perusahaan=
+        'status_pembayaran' => $statusPembayaran,
+        'verify_url' => $verifyUrl,
+    ]);
+}
 
     public function index()
     {
@@ -74,7 +80,7 @@ class UserDashboardController extends Controller
             'nama_kapal' => 'required|string|max:255',
             'lokasi_kapal' => 'required|string|max:255',
             'jenis_dokumen' => 'required|in:PHQC,SSCEC,COP,P3K',
-            'wilayah_kerja' => 'required|in:Dwikora,Kijing,Padang Tikar,Teluk Batang,Ketapang,Kendawangan',  // Wilayah is required
+            'wilayah_kerja' => 'required|in:Dwikora,Kijing,Padang Tikar,,Ketapang,Kendawangan',  // Wilayah is required
             'surat_permohonan' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',  // Optional file upload
             'waktu_kedatangan_kapal' => 'required|date',  // Time format validation
             'status' => 'nullable|string|in:Menunggu Verifikasi,Diterima,Ditolak',  // Optional status
@@ -86,7 +92,6 @@ class UserDashboardController extends Controller
             'Dwikora' => 'DW',
             'Kijing' => 'KJ',
             'Padang Tikar' => 'PT',
-            'Teluk Batang' => 'TB',
             'Ketapang' => 'KT',
             'Kendawangan' => 'KD',
         ];
@@ -337,6 +342,112 @@ class UserDashboardController extends Controller
         $total_tarif = $penagihan->total_tarif;
 
         return view('pages.user.invoice.print', compact(
+            'penagihan',
+            'waktu_mulai',
+            'waktu_selesai',
+            'days_difference',
+            'jumlah_petugas',
+            'jenis_tarif_name',
+            'total_transportasi_per_petugas',
+            'total_uang_harian_per_petugas',
+            'total_penginapan_per_petugas',
+            'total_transportasi',
+            'total_uang_harian',
+            'total_penginapan',
+            'total',
+            'total_tarif'
+        ));
+    }
+
+    public function showKwitansi(Penagihan $penagihan)
+    {
+        $penagihan->load([
+            'pengajuan.user',
+            'pengajuan.agendaSuratPengajuan',
+            'pembayaran',
+        ]);
+
+        // =========================
+        // TARIF DASAR
+        // =========================
+        $transportasi = 170000;
+        $uang_harian_dalam_kota = 150000;
+        $uang_harian_luar_kota = 380000;
+        $penginapan = 60000;
+
+        $jumlah_petugas = $penagihan->jumlah_petugas;
+        $jenis_tarif = $penagihan->jenis_tarif;
+
+        // =========================
+        // HITUNG DURASI HARI
+        // =========================
+        $waktu_mulai = \Carbon\Carbon::parse($penagihan->waktu_mulai);
+        $waktu_selesai = \Carbon\Carbon::parse($penagihan->waktu_selesai);
+
+        $days_difference = $waktu_mulai->startOfDay()
+            ->diffInDays($waktu_selesai->startOfDay()) + 1;
+
+        // =========================
+        // INIT NILAI
+        // =========================
+        $total_transportasi_per_petugas = 0;
+        $total_uang_harian_per_petugas = 0;
+        $total_penginapan_per_petugas = 0;
+
+        // =========================
+        // JENIS TARIF
+        // =========================
+        $jenisTarifMapping = [
+            '170000' => 'Dalam Kota (< 8 Jam)',
+            '320000' => 'Dalam Kota (> 8 Jam)',
+            '380000' => 'Luar Kota',
+        ];
+
+        $jenis_tarif_name = $jenisTarifMapping[$jenis_tarif] ?? 'Unknown';
+
+        // =========================
+        // LOGIKA TARIF FINAL
+        // =========================
+        if ($jenis_tarif == '170000') {
+
+            // Dalam Kota < 8 Jam
+            $total_transportasi_per_petugas = $transportasi;
+
+        } elseif ($jenis_tarif == '320000') {
+
+            // Dalam Kota > 8 Jam
+            $total_transportasi_per_petugas = $transportasi;
+            $total_uang_harian_per_petugas = $uang_harian_dalam_kota;
+
+        } elseif ($jenis_tarif == '380000') {
+
+            // ✅ LUAR KOTA (REVISI FINAL)
+            $total_uang_harian_per_petugas = $uang_harian_luar_kota;
+        }
+
+        // =========================
+        // HITUNG TOTAL
+        // =========================
+        $total_per_petugas_per_day =
+            $total_transportasi_per_petugas +
+            $total_uang_harian_per_petugas +
+            $total_penginapan_per_petugas;
+
+        $total_transportasi =
+            $total_transportasi_per_petugas * $jumlah_petugas * $days_difference;
+
+        $total_uang_harian =
+            $total_uang_harian_per_petugas * $jumlah_petugas * $days_difference;
+
+        $total_penginapan =
+            $total_penginapan_per_petugas * $jumlah_petugas * $days_difference;
+
+        $total =
+            $total_per_petugas_per_day * $jumlah_petugas * $days_difference;
+
+        $total_tarif = $penagihan->total_tarif;
+
+        return view('pages.user.invoice.printkwitansi', compact(
             'penagihan',
             'waktu_mulai',
             'waktu_selesai',

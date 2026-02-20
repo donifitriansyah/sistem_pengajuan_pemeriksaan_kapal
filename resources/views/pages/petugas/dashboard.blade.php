@@ -60,15 +60,15 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Tanggal Estimasi</th>
+                    <th>Tanggal Estimasi Pemeriksaan</th>
                     <th>Waktu Kedatangan Kapal</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat Tugas</th>
-                    <th>Kode Bayar</th>
                     <th>Surat Pengajuan</th>
+                    <th>Kode Bayar</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -314,44 +314,6 @@
             });
         }
 
-        // // Update tarif total tetap sama
-        // document.querySelectorAll('.tarif').forEach(select => {
-        //     select.addEventListener('change', function() {
-        //         const id = this.dataset.id;
-
-        //         // Get the selected tariff (parse as integer to avoid floating-point issues)
-        //         const tarif = parseInt(this.value) || 0; // Ensure it's an integer
-        //         const jumlah = parseInt(document.querySelector(`.jumlah-petugas[data-id="${id}"]`).value) ||
-        //             0; // Ensure it's an integer
-
-        //         // Get the start and end time
-        //         const waktuMulai = new Date(document.querySelector(`[name="waktu_mulai"]`).value);
-        //         const waktuSelesai = new Date(document.querySelector(`[name="waktu_selesai"]`).value);
-
-        //         // Calculate the difference in milliseconds
-        //         const waktuDifferenceInMs = waktuSelesai - waktuMulai;
-
-        //         // Convert milliseconds to days (rounding the difference correctly)
-        //         const daysDifference = Math.ceil(waktuDifferenceInMs / (1000 * 3600 *
-        //         24)); // Convert ms to days
-
-        //         // Calculate the total tarif (ensure integer)
-        //         let total = tarif * jumlah * daysDifference;
-
-        //         // Round the total value to the nearest whole number (to avoid decimals)
-        //         total = Math.round(total); // Round to nearest integer
-
-        //         // Update the display for total tarif (formatted as currency)
-        //         document.getElementById(`totalDisplay${id}`).value = new Intl.NumberFormat('id-ID', {
-        //             style: 'currency',
-        //             currency: 'IDR'
-        //         }).format(total); // Format the total as currency
-
-        //         // Set the hidden input value (which will be sent to the server and saved to the database)
-        //         document.getElementById(`totalValue${id}`).value =
-        //         total; // Set the rounded value (no decimals)
-        //     });
-        // });
         // Update tarif total tetap sama
         document.querySelectorAll('.tarif').forEach(function(select) {
             select.addEventListener('change', function() {
@@ -441,154 +403,7 @@
             });
         });
     </script>
-    {{-- <script>
-        document.querySelectorAll('.jumlah-petugas').forEach(select => {
-            select.addEventListener('change', function() {
 
-                const id = this.dataset.id;
-                const jumlah = parseInt(this.value);
-                const container = document.getElementById(`petugas-container-${id}`);
-                container.innerHTML = '';
-
-                if (!jumlah) return;
-
-                for (let i = 0; i < jumlah; i++) {
-                    let options = '<option value="">-- Pilih Petugas --</option>';
-
-                    petugasData.forEach(p => {
-                        options +=
-                            `<option value="${p.id}" data-nama="${p.nama_petugas ?? p.nama ?? p.name}">${p.nama_petugas ?? p.nama ?? p.name}</option>`;
-                    });
-
-                    container.innerHTML += `
-                <div class="mb-3">
-                    <label class="form-label">Petugas ${i + 1}</label>
-                    <select name="petugas[]" class="form-select petugas-select" data-index="${i}" data-id="${id}" required>
-                        ${options}
-                    </select>
-                </div>
-            `;
-                }
-
-                // Tambahkan event listener untuk setiap dropdown baru
-                updatePetugasOptions(id);
-            });
-        });
-
-        function updatePetugasOptions(pengajuanId) {
-            const selects = document.querySelectorAll(`#petugas-container-${pengajuanId} .petugas-select`);
-
-            selects.forEach(select => {
-                select.addEventListener('change', () => {
-                    const selectedValues = Array.from(selects)
-                        .map(s => s.value)
-                        .filter(v => v); // ambil yang ada isinya
-
-                    // update opsi di semua select
-                    selects.forEach(s => {
-                        const currentValue = s.value;
-
-                        Array.from(s.options).forEach(opt => {
-                            if (opt.value === "") return; // biarkan option kosong
-                            if (selectedValues.includes(opt.value) && opt.value !==
-                                currentValue) {
-                                opt.disabled =
-                                    true; // disable yang sudah dipilih di dropdown lain
-                            } else {
-                                opt.disabled = false;
-                            }
-                        });
-                    });
-                });
-            });
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            const petugasData = @json($petugas);
-            const penagihanData = @json($penagihanData); // Data of assigned petugas
-
-            // Function to calculate tarif based on selected hours and type
-            function calculateTarif(waktuMulai, waktuSelesai, tarifType, jumlahPetugas) {
-                const start = new Date(waktuMulai);
-                const end = new Date(waktuSelesai);
-                const timeDiff = (end - start) / (1000 * 3600 * 24); // difference in days
-
-                let totalTarif = 0;
-
-                // Calculate tarif based on the selected tarif type
-                if (tarifType === "320000") { // Dalam Kota > 8 Jam
-                    totalTarif = 320000 * timeDiff * jumlahPetugas;
-                } else if (tarifType === "170000") { // Dalam Kota < 8 Jam
-                    totalTarif = 170000 * timeDiff * jumlahPetugas;
-                } else if (tarifType === "380000") { // Luar Kota
-                    totalTarif = 380000 * timeDiff * jumlahPetugas;
-                }
-
-                return totalTarif;
-            }
-
-            // Update total tarif when jenis tarif or jumlah petugas is selected
-            document.querySelectorAll('.tarif').forEach(select => {
-                select.addEventListener('change', function() {
-                    const id = this.dataset.id;
-                    const tarif = this.value || 0;
-                    const jumlah = document.querySelector(`.jumlah-petugas[data-id="${id}"]`)
-                        .value || 0;
-                    const waktuMulai = document.querySelector(
-                        `input[name="waktu_mulai"][data-id="${id}"]`).value;
-                    const waktuSelesai = document.querySelector(
-                        `input[name="waktu_selesai"][data-id="${id}"]`).value;
-
-                    const total = calculateTarif(waktuMulai, waktuSelesai, tarif, jumlah);
-
-                    // Display total in rupiah format
-                    document.getElementById(`totalDisplay${id}`).value = new Intl.NumberFormat(
-                        'id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                        }).format(total);
-                    document.getElementById(`totalValue${id}`).value = total;
-                });
-            });
-
-            // Disable selected petugas options that are already assigned
-            function disableAssignedPetugas(pengajuanId) {
-                const selectedPetugasIds = penagihanData
-                    .filter(p => p.waktu_mulai && p.waktu_selesai) // Filter only assigned petugas
-                    .map(p => p.petugas_id); // Get their assigned petugas id
-
-                const selects = document.querySelectorAll(`#petugas-container-${pengajuanId} .petugas-select`);
-
-                selects.forEach(select => {
-                    select.addEventListener('change', () => {
-                        const selectedPetugas = select.value;
-
-                        // Disable selected petugas in all other selects
-                        selects.forEach(s => {
-                            const currentValue = s.value;
-
-                            // Disable the selected petugas option
-                            Array.from(s.options).forEach(opt => {
-                                if (opt.value !== "" && selectedPetugasIds.includes(
-                                        opt.value) && opt.value !== currentValue) {
-                                    opt.disabled = true;
-                                } else {
-                                    opt.disabled = false;
-                                }
-                            });
-                        });
-                    });
-                });
-            }
-
-            // Trigger disable petugas for each pengajuan
-            document.querySelectorAll('.jumlah-petugas').forEach(select => {
-                select.addEventListener('change', function() {
-                    const id = this.dataset.id;
-                    disableAssignedPetugas(id);
-                });
-            });
-        });
-    </script> --}}
 
     <script>
         $(document).ready(function() {

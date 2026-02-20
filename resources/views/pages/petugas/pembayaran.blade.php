@@ -55,7 +55,7 @@
         @endif
 
 
-        <table class="table table-bordered">
+        <table id="tablePengajuan" class="table">
             <thead>
                 <tr>
                     <th>No</th>
@@ -67,9 +67,9 @@
                     <th>Jenis Dokumen</th>
                     <th>Nomor Surat</th>
                     <th>Nomor Surat Tugas</th>
+                    <th>Kode Bayar</th>
                     <th>Bukti Bayar</th>
-                    <th>Aksi</th>
-                    <th>Invoice</th>
+                    <th>Status Pembayaran</th>
                 </tr>
             </thead>
 
@@ -87,6 +87,7 @@
                         </td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_pengajuan ?? '-' }}</td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
+                        <td>{{ $item->kode_bayar }}</td>
                         <td>
                             @if ($item->penagihan && $item->penagihan->pembayaran)
                                 <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
@@ -95,64 +96,72 @@
                                 </a>
                             @else
                                 <span class="badge bg-secondary">Belum Upload</span>
+
                             @endif
                         </td>
 
                         <td>
+                            {{-- Menampilkan status pembayaran --}}
                             @if ($item->penagihan && $item->penagihan->pembayaran)
                                 @if ($item->penagihan->pembayaran->status === 'menunggu')
-                                    <span class="badge bg-warning text-dark mb-1 d-block">
+                                    <span class="badge bg-warning text-dark d-block mb-2">
                                         Menunggu Verifikasi
                                     </span>
-
                                     <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                         data-bs-target="#verifikasiModal{{ $item->id }}">
                                         Verifikasi
                                     </button>
-                                @elseif ($item->penagihan->pembayaran->status === 'diterima')
-                                    <span class="badge bg-success">Lunas</span>
+                                {{-- @elseif ($item->penagihan->pembayaran->status === 'diterima')
+                                    <span class="badge bg-success d-block mb-2">Lunas</span>
                                 @elseif ($item->penagihan->pembayaran->status === 'ditolak')
-                                    <span class="badge bg-danger">Ditolak</span>
+                                    <span class="badge bg-danger d-block mb-2">Ditolak</span> --}}
                                 @endif
                             @else
-                                <span class="badge bg-secondary">Belum Bayar</span>
+                                <span class="badge bg-secondary d-block mb-2">Belum Bayar</span>
                             @endif
-                        </td>
 
-                         <td>
-                            {{-- Aksi sesuai status --}}
-                            @if (!$item->penagihan)
-                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
-                            @elseif($item->penagihan->status_bayar === 'belum_bayar')
-                                <span class="badge bg-warning text-dark">Belum Bayar</span>
-                                <div class="mt-1">
+                            {{-- Menampilkan status tagihan --}}
+                            @if ($item->penagihan)
+                                @if ($item->penagihan->status_bayar === 'belum_bayar' && !$item->penagihan->pembayaran)
+                                    {{-- <span class="badge bg-warning text-dark d-block mb-2">Belum Bayar</span> --}}
                                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#modalBayar{{ $item->id }}">Bayar Tagihan</button>
-                                </div>
-                            @elseif($item->penagihan->status_bayar === 'menunggu')
-                                <span class="badge bg-info">Menunggu Verifikasi</span>
-                            @elseif($item->penagihan->status_bayar === 'ditolak')
-                                <span class="badge bg-danger">Pembayaran Ditolak</span>
-                                <div class="mt-1">
+                                        data-bs-target="#modalBayar{{ $item->id }}">
+                                        Bayar Tagihan
+                                    </button>
+                                @elseif($item->penagihan->status_bayar === 'menunggu')
+                                    {{-- <span class="badge bg-info d-block mb-2">Menunggu Verifikasi</span> --}}
+                                @elseif($item->penagihan->status_bayar === 'ditolak')
+                                    {{-- <span class="badge bg-danger d-block mb-2">Pembayaran Ditolak</span>
                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#modalBayar{{ $item->id }}">Upload Ulang Bukti</button>
-                                </div>
-                            @elseif($item->penagihan->status_bayar === 'diterima')
-                                <span class="badge bg-success">Lunas</span>
-                                <div class="mt-1">
+                                        data-bs-target="#modalBayar{{ $item->id }}">
+                                        Upload Ulang Bukti
+                                    </button> --}}
+                                @elseif($item->penagihan->status_bayar === 'diterima')
+                                    <span class="badge bg-success d-block mb-2">Lunas</span>
                                     <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">Lihat Invoice</a>
-                                </div>
+                                        class="btn btn-sm btn-success mb-2">
+                                        Lihat Kwitansi
+                                    </a>
+                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success ">
+                                        Lihat Invoice
+                                    </a>
+                                @endif
+                            @else
+                                <span class="badge bg-secondary d-block mb-2">Belum Ada Tagihan</span>
+                               
                             @endif
 
+                            {{-- Tombol Edit Pengajuan hanya jika status pengajuan Ditolak --}}
                             @if ($item->status === 'Ditolak')
-                                <!-- Button to Edit "Ditolak" status -->
-                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal"
                                     data-bs-target="#editPengajuanModal{{ $item->id }}">
                                     Edit Pengajuan
                                 </button>
                             @endif
                         </td>
+
+
 
                     </tr>
                     @if ($item->penagihan && $item->penagihan->pembayaran)
@@ -216,6 +225,49 @@
             <p>✅ Semua pengajuan sudah diagendakan!</p>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+
+            const table = $('#tablePengajuan').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+                pageLength: 10,
+
+                // Kolom Aksi & No tidak bisa di-sort
+                columnDefs: [{
+                    orderable: false
+                }],
+
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1 + settings
+                        ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                    });
+                }
+            });
+
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

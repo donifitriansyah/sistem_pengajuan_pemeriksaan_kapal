@@ -1,7 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="scorecard-container">
+    <style>
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .filter-container label {
+            margin-right: 10px;
+        }
+
+        .filter-container input {
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .filter-container button {
+            padding: 6px 12px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .filter-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <div class="scorecard-container">
         <div class="scorecard total">
             <div class="scorecard-label">Total Pengajuan</div>
             <div class="scorecard-value" id="totalPengajuan">{{ $totalPengajuan }}</div>
@@ -30,41 +62,18 @@
         </div>
 
         <div class="filter-container">
-            <div class="filter-group">
-                <label>Tahun</label>
-                <select id="filterTahun">
-                    <option value="">Semua Tahun</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Bulan</label>
-                <select id="filterBulan">
-                    <option value="">Semua Bulan</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Perusahaan</label>
-                <select id="filterPerusahaan">
-                    <option value="">Semua Perusahaan</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Jenis Dokumen</label>
-                <select id="filterJenisDokumen">
-                    <option value="">Semua Dokumen</option>
-                    <option value="PHQC">PHQC</option>
-                    <option value="SSCEC">SSCEC</option>
-                    <option value="COP">COP</option>
-                    <option value="P3K">P3K</option>
-                </select>
-            </div>
-            <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate">
 
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate">
 
-
+            <button onclick="filterTable()">Filter</button>
+            <button onclick="resetFilter()">Reset Filter</button>
+            <button onclick="downloadTableAsExcel()">Download Excel</button>
         </div>
 
-        <table id="tablePengajuan" >
+        <table id="tablePengajuan">
             <thead>
                 <tr>
                     <th width="50">No</th>
@@ -113,9 +122,65 @@
         </table>
 
     </div>
-    <script>
-        $(document).ready(function() {
+    <!-- Add SheetJS library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
+    <script>
+        // Function to filter the table based on date range
+        // Function to filter the table based on date range
+        function filterTable() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const rows = document.querySelectorAll("#tablePengajuan tbody tr");
+
+            rows.forEach(row => {
+                const dateCell = row.cells[1].innerText.trim(); // Get the 'Tanggal Surat' cell content
+                const rowDate = new Date(dateCell.split('-').reverse().join(
+                    '-')); // Convert to Date object (dd-mm-yyyy to yyyy-mm-dd)
+
+                const filterStartDate = startDate ? new Date(startDate) : null;
+                const filterEndDate = endDate ? new Date(endDate) : null;
+
+                let showRow = true;
+
+                // Show or hide the row based on date range
+                if (filterStartDate && rowDate < filterStartDate) {
+                    showRow = false;
+                }
+
+                if (filterEndDate && rowDate > filterEndDate) {
+                    showRow = false;
+                }
+
+                row.style.display = showRow ? '' : 'none';
+            });
+
+            // Manually reset row numbers after the filter is applied
+            resetRowNumbers();
+        }
+
+        // Function to manually reset row numbers
+        function resetRowNumbers() {
+            const rows = document.querySelectorAll("#tablePengajuan tbody tr");
+            let rowNumber = 1;
+
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    row.cells[0].innerText = rowNumber; // Update the row number in the first column
+                    rowNumber++;
+                }
+            });
+        }
+
+        // Function to download the table as an Excel file using SheetJS
+        function downloadTableAsExcel() {
+            const wb = XLSX.utils.table_to_book(document.getElementById('tablePengajuan'), {
+                sheet: "Sheet1"
+            });
+            XLSX.writeFile(wb, "surat_keluar.xlsx");
+        }
+
+        $(document).ready(function() {
             const table = $('#tablePengajuan').DataTable({
                 paging: true,
                 searching: true,
@@ -123,12 +188,9 @@
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
-
-                // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
                     orderable: false
                 }],
-
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
@@ -142,108 +204,17 @@
                     emptyTable: "Tidak ada data pengajuan"
                 },
                 drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
-                    var api = this.api();
-                    api.column(0, {
-                        page: 'current'
-                    }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                        ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
-                    });
+                    // Ensure the row numbers are updated after each table draw
+                    resetRowNumbers
+                        (); // This ensures that row numbers are recalculated every time the table is drawn
                 }
             });
 
+            // Redraw table and reset row numbers when applying filters
+            $('#startDate, #endDate').on('change', function() {
+                filterTable();
+                table.draw(); // Trigger the row number recalculation after filtering
+            });
         });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const filterTahun = document.getElementById('filterTahun');
-            const filterBulan = document.getElementById('filterBulan');
-            const filterPerusahaan = document.getElementById('filterPerusahaan');
-            const filterJenisDokumen = document.getElementById('filterJenisDokumen');
-
-            const rows = document.querySelectorAll('table tbody tr');
-
-            /* =========================
-               ISI OPTION TAHUN & BULAN
-            ========================== */
-            const tahunSet = new Set();
-            const bulanSet = new Set();
-            const perusahaanSet = new Set();
-
-            rows.forEach(row => {
-                const tanggal = row.cells[1]?.innerText.trim(); // dd-mm-yyyy
-                const perusahaan = row.cells[3]?.innerText.trim();
-
-                if (tanggal) {
-                    const [dd, mm, yyyy] = tanggal.split('-');
-                    tahunSet.add(yyyy);
-                    bulanSet.add(mm);
-                }
-
-                if (perusahaan && perusahaan !== '-') {
-                    perusahaanSet.add(perusahaan);
-                }
-            });
-
-            [...tahunSet].sort().forEach(tahun => {
-                filterTahun.innerHTML += `<option value="${tahun}">${tahun}</option>`;
-            });
-
-            [...bulanSet].sort().forEach(bulan => {
-                filterBulan.innerHTML += `<option value="${bulan}">${bulan}</option>`;
-            });
-
-            [...perusahaanSet].sort().forEach(p => {
-                filterPerusahaan.innerHTML += `<option value="${p}">${p}</option>`;
-            });
-
-            /* =========================
-               APPLY FILTER
-            ========================== */
-            function applyFilter() {
-                const tahun = filterTahun.value;
-                const bulan = filterBulan.value;
-                const perusahaan = filterPerusahaan.value.toLowerCase();
-                const jenis = filterJenisDokumen.value.toLowerCase();
-
-                rows.forEach(row => {
-                    const tanggalText = row.cells[1].innerText; // dd-mm-yyyy
-                    const perusahaanText = row.cells[3].innerText.toLowerCase();
-                    const jenisText = row.cells[6].innerText.toLowerCase();
-
-                    const [dd, mm, yyyy] = tanggalText.split('-');
-
-                    let show = true;
-
-                    if (tahun && yyyy !== tahun) show = false;
-                    if (bulan && mm !== bulan) show = false;
-                    if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
-                    if (jenis && !jenisText.includes(jenis)) show = false;
-
-                    row.style.display = show ? '' : 'none';
-                });
-            }
-
-            filterTahun.addEventListener('change', applyFilter);
-            filterBulan.addEventListener('change', applyFilter);
-            filterPerusahaan.addEventListener('change', applyFilter);
-            filterJenisDokumen.addEventListener('change', applyFilter);
-        });
-
-        /* =========================
-           RESET FILTER
-        ========================= */
-        function resetFilter() {
-            document.getElementById('filterTahun').value = '';
-            document.getElementById('filterBulan').value = '';
-            document.getElementById('filterPerusahaan').value = '';
-            document.getElementById('filterJenisDokumen').value = '';
-
-            document.querySelectorAll('table tbody tr').forEach(row => {
-                row.style.display = '';
-            });
-        }
     </script>
 @endsection

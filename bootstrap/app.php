@@ -2,12 +2,14 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\ArsiparisMiddleware;
+use App\Http\Middleware\CheckRoles;
 use App\Http\Middleware\KeuanganMiddleware;
 use App\Http\Middleware\PetugasMiddleware;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+
 
 
 
@@ -27,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'arsiparis' => ArsiparisMiddleware::class,
             'petugas' => PetugasMiddleware::class,
             'keuangan' => KeuanganMiddleware::class,
+            'checkroles' => CheckRoles::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

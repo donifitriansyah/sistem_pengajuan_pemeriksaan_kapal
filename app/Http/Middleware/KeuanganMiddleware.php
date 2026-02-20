@@ -17,7 +17,7 @@ class KeuanganMiddleware
         }
 
         // Cek role
-        if (Auth::user()->role !== 'keuangan') {
+        if (Auth::user()->role !== 'bendahara_wilker') {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
