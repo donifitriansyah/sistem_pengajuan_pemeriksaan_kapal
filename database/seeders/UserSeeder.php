@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
             ['nama_petugas' => 'ERWIN KURNIAWAN, A.Md.Kep', 'username' => 'ERWIN_KURNIAWAN', 'wilayah_kerja' => 'padang tikar', 'role' => 'arsiparis_wilker', 'nip' => '199207222025211051'],
             ['nama_petugas' => 'WILLIANUS DEO, A.Md.Kep.', 'username' => 'WILLIANUS', 'wilayah_kerja' => 'padang tikar', 'role' => 'arsiparis_wilker', 'nip' => '199402252025211053'],
             // Admin user
-            ['nama_petugas' => 'ADMIN', 'username' => 'ADMIN', 'wilayah_kerja' => 'dwikora', 'role' => 'admin', 'nip' => '199402252025211053'], // Admin role
+            ['nama_petugas' => 'ADMIN', 'username' => 'ADMIN', 'wilayah_kerja' => 'dwikora', 'role' => 'admin', 'nip' => '19940225202521105'], // Admin role
         ];
 
         foreach ($users as $user) {
