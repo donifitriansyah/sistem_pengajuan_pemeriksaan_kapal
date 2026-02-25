@@ -151,7 +151,7 @@
                     <option value="">Pilih Bulan</option>
                 </select>
             </div>
-            {{-- <div class="filter-group">
+            <div class="filter-group">
                 <select id="filterStatus">
                     <option value="">Pilih Status</option>
                     <option value="Belum Ada Tagihan">Belum Ada Tagihan</option>
@@ -159,7 +159,7 @@
                     <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                     <option value="Lunas">Lunas</option>
                 </select>
-            </div> --}}
+            </div>
             <div class="filter-group">
                 <select id="filterJenisDokumen">
                     <option value="">Pilih Dokumen</option>
@@ -168,7 +168,7 @@
                     <option value="COP">COP</option>
                 </select>
             </div>
-            {{-- <div class="filter-group">
+            <div class="filter-group">
                 <select id="filterWilker">
                     <option value="">Pilih Wilker</option>
                     <option value="Dwikora">Dwikora</option>
@@ -177,7 +177,7 @@
                     <option value="Ketapang">Ketapang</option>
                     <option value="Kendawangan">Kendawangan</option>
                 </select>
-            </div> --}}
+            </div>
             <button class="btn btn-outline" id="resetFilter">Reset</button>
             <button class="btn btn-success" id="exportExcel" onclick="exportToExcel()">📥 Excel</button>
         </div>
@@ -577,7 +577,7 @@
             });
         });
     </script> --}}
-        <script>
+    <script>
         $(document).ready(function() {
 
             const table = $('#pengajuanTable').DataTable({
@@ -588,8 +588,8 @@
                 lengthChange: true,
                 pageLength: 10,
 
-                // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
+                    targets: [0, 9], // No & Aksi tidak sortable
                     orderable: false
                 }],
 
@@ -605,39 +605,30 @@
                     },
                     emptyTable: "Tidak ada data pengajuan"
                 },
+
                 drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
                     var api = this.api();
                     api.column(0, {
                         page: 'current'
                     }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                        cell.innerHTML = i + 1 + settings._iDisplayStart;
                     });
                 }
             });
 
-
             /* ==============================
-                ISI FILTER DINAMIS
+                ISI FILTER DINAMIS (Tahun & Bulan)
             ============================== */
 
             const tahunSet = new Set();
             const bulanSet = new Set();
-            const perusahaanSet = new Set();
 
             table.rows().every(function() {
                 const data = this.data();
 
-                // Tanggal (kolom 1)
                 const dateParts = data[1].split('-'); // d-m-Y
                 tahunSet.add(dateParts[2]);
                 bulanSet.add(dateParts[1]);
-
-                // Perusahaan (kolom 3)
-                if (data[3] && data[3] !== '-') {
-                    perusahaanSet.add(data[3]);
-                }
             });
 
             [...tahunSet].sort().forEach(t =>
@@ -648,10 +639,6 @@
                 $('#filterBulan').append(`<option value="${b}">${b}</option>`)
             );
 
-            [...perusahaanSet].sort().forEach(p =>
-                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
-            );
-
             /* ==============================
                 FILTER CUSTOM
             ============================== */
@@ -660,25 +647,31 @@
 
                 const filterTahun = $('#filterTahun').val();
                 const filterBulan = $('#filterBulan').val();
-                const filterPerusahaan = $('#filterPerusahaan').val();
+                const filterStatus = $('#filterStatus').val();
                 const filterDokumen = $('#filterJenisDokumen').val();
+                const filterWilker = $('#filterWilker').val();
 
                 const date = data[1].split('-'); // d-m-Y
                 const bulan = date[1];
                 const tahun = date[2];
 
-                const perusahaan = data[3];
-                const dokumen = data[5];
+                const wilayah = data[4];
+                const dokumen = data[6];
+                const statusPembayaran = data[9]; // kolom status pembayaran
 
                 if (filterTahun && tahun !== filterTahun) return false;
                 if (filterBulan && bulan !== filterBulan) return false;
-                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
+                if (filterWilker && wilayah !== filterWilker) return false;
                 if (filterDokumen && dokumen !== filterDokumen) return false;
+
+                if (filterStatus) {
+                    if (!statusPembayaran.includes(filterStatus)) return false;
+                }
 
                 return true;
             });
 
-            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen')
+            $('#filterTahun, #filterBulan, #filterStatus, #filterJenisDokumen, #filterWilker')
                 .on('change', function() {
                     table.draw();
                 });
@@ -688,13 +681,14 @@
         /* ==============================
             RESET FILTER
         ============================== */
-        function resetFilter() {
+        $('#resetFilter').on('click', function() {
             $('#filterTahun').val('');
             $('#filterBulan').val('');
-            $('#filterPerusahaan').val('');
+            $('#filterStatus').val('');
             $('#filterJenisDokumen').val('');
+            $('#filterWilker').val('');
             $('#pengajuanTable').DataTable().draw();
-        }
+        });
     </script>
     <script>
         function hitungScorecard() {
