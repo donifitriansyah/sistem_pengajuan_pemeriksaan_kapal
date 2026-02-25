@@ -56,7 +56,7 @@
         @endif
 
 
-        <table id="pengajuanTable" class="table table-striped table-bordered">
+        <table id="pengajuanTable" class="nowrap w-100">
             <thead>
                 <tr>
                     <th>No</th>
@@ -420,6 +420,9 @@
                 columnDefs: [{
                     orderable: false
                 }],
+
+                scrollX: true,
+
 
                 language: {
                     search: "Cari:",
