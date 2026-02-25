@@ -14,6 +14,9 @@ class SuratKeluarController extends Controller
          $user = auth()->user();
         $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
         $suratKeluar = AgendaSuratPengajuan::with(['pengajuan.user'])
+            ->whereHas('pengajuan', function ($query) use ($wilayah_kerja) {
+                $query->where('wilayah_kerja', $wilayah_kerja);
+            })
             ->whereNotNull('nomor_surat_keluar')
             ->orderBy('tanggal_surat', 'desc')
             ->get();

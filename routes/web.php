@@ -137,6 +137,10 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
     Route::put('/admin/pembayaran/{pembayaran}/verifikasi',
         [DashboardPetugasController::class, 'verifikasi']
     )->name('admin.pembayaran.verifikasi');
+    Route::post(
+        '/petugas/penagihan/{pengajuan}',
+        [PenugasanController::class, 'store']
+    )->name('petugas.penagihan.store');
 });
 
 Route::middleware(['auth', 'petugas'])->group(function () {
@@ -159,11 +163,6 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::put('/petugas/user/{id}/approve',
         [ApprovalUserController::class, 'approvePetugas']
     )->name('petugas.user.approve');
-
-    Route::post(
-        '/petugas/penagihan/{pengajuan}',
-        [PenugasanController::class, 'store']
-    )->name('petugas.penagihan.store');
 
     Route::get('admin/users', [UserManagementController::class, 'index'])
         ->name('users');
@@ -197,13 +196,9 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
     Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
 
-    Route::post(
-        '/keuangan/penagihan/{pengajuan}',
-        [PenugasanController::class, 'storeKeuangan']
-    )->name('petugas.penagihan.store');
 
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
-        ->name('petugas.dashboard');
+        ->name('petugas.keuangan');
 
 });
 

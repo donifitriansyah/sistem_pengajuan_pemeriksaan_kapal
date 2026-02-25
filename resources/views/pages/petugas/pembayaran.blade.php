@@ -107,6 +107,10 @@
                                     <span class="badge bg-warning text-dark d-block mb-2">
                                         Menunggu Verifikasi
                                     </span>
+                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success mb-2">
+                                        Lihat Invoice
+                                    </a>
                                     <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                         data-bs-target="#verifikasiModal{{ $item->id }}">
                                         Verifikasi
@@ -124,10 +128,10 @@
                             @if ($item->penagihan)
                                 @if ($item->penagihan->status_bayar === 'belum_bayar' && !$item->penagihan->pembayaran)
                                     {{-- <span class="badge bg-warning text-dark d-block mb-2">Belum Bayar</span> --}}
-                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                    {{-- <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                         data-bs-target="#modalBayar{{ $item->id }}">
                                         Bayar Tagihan
-                                    </button>
+                                    </button> --}}
                                 @elseif($item->penagihan->status_bayar === 'menunggu')
                                     {{-- <span class="badge bg-info d-block mb-2">Menunggu Verifikasi</span> --}}
                                 @elseif($item->penagihan->status_bayar === 'ditolak')
@@ -149,7 +153,7 @@
                                 @endif
                             @else
                                 <span class="badge bg-secondary d-block mb-2">Belum Ada Tagihan</span>
-                               
+
                             @endif
 
                             {{-- Tombol Edit Pengajuan hanya jika status pengajuan Ditolak --}}

@@ -68,8 +68,8 @@
             Ganti Password
         </a>
     @elseif(auth()->check() && auth()->user()->role === 'bendahara_wilker')
-        <a href="{{ route('petugas.dashboard') }}"
-            class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
+        <a href="{{ route('petugas.keuangan') }}"
+            class="tab {{ request()->routeIs('petugas.keuangan') ? 'active' : '' }}">
             Data Penagihan
         </a>
         <a href="{{ route('petugas.pembayaran') }}"

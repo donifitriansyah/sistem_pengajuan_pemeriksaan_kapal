@@ -10,14 +10,17 @@ class SuratMasukController extends Controller
 {
     public function index()
     {
-         $user = auth()->user();
+        $user = auth()->user();
         $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
         $suratKeluar = AgendaSuratPengajuan::with(['pengajuan.user'])
+            ->whereHas('pengajuan', function ($query) use ($wilayah_kerja) {
+                $query->where('wilayah_kerja', $wilayah_kerja);
+            })
             ->whereNotNull('nomor_surat_keluar')
             ->orderBy('tanggal_surat', 'desc')
             ->get();
 
-         // Total Pengajuan
+        // Total Pengajuan
         $totalPengajuan = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
             ->where('status', 'diterima')
             ->count();
@@ -57,6 +60,6 @@ class SuratMasukController extends Controller
             'totalBelumBayar',
             'totalMenunggu',
             'totalLunas',
-            ));
+        ));
     }
 }

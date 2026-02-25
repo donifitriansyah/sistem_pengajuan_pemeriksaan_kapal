@@ -229,14 +229,14 @@
         </table>
 
         <!-- FOOTER QR -->
-        <div class="footer">
+        {{-- <div class="footer">
             <div class="qr">
                 <img
                     src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ route('invoice.verify', $penagihan->id) }}">
                 <div style="font-size:12px; text-align:center;">Scan untuk verifikasi invoice</div>
                 <div style="font-size:12px; text-align:center; color: red;">Segera Lakukan Pembayaran</div>
             </div>
-        </div>
+        </div> --}}
 
     </div>
 
