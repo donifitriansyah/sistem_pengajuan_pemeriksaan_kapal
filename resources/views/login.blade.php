@@ -41,7 +41,7 @@
     <div class="card">
 
         <div class="logo-container">
-            <img src="https://lh3.googleusercontent.com/d/1GypYsK22OTiKiLfW0WWnJ779Wx209LDe" alt="Logo Kemenkes"
+            <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes"
                 onerror="this.style.display='none'">
         </div>
 

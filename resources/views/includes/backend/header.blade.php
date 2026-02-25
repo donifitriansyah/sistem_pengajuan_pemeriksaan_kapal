@@ -1,6 +1,6 @@
 <div class="header">
     <div class="header-left">
-        <img src="https://lh3.googleusercontent.com/d/1GypYsK22OTiKiLfW0WWnJ779Wx209LDe" alt="Logo" class="logo-small"
+        <img src="{{ asset('logokemenkes.png') }}" alt="Logo" class="logo-small"
             onerror="this.style.display='none'">
         <div class="header-title">
             <h1>@yield('header-title')</h1>
