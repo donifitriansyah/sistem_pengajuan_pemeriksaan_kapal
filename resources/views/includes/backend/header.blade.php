@@ -3,7 +3,7 @@
         <img src="{{ asset('logokemenkes.png') }}" alt="Logo" class="logo-small"
             onerror="this.style.display='none'">
         <div class="header-title">
-            <h1>@yield('header-title')</h1>
+            {{-- <h1>@yield('header-title')</h1> --}}
             <h1>Sistem Pengajuan Pemeriksaan Kapal</h1>
         </div>
     </div>
