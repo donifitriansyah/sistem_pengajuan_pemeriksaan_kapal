@@ -211,10 +211,13 @@ class DashboardPetugasController extends Controller
     {
         // Validate the request
         $request->validate([
-            'status' => 'required|in:Diterima,Ditolak', // Ensure status is either diterima or ditolak
-            'keterangan' => 'nullable|string|max:255', // Optional keterangan field
-            'nomor_surat_pengajuan' => 'required_if:status,Diterima|string|max:255', // Nomor surat hanya diperlukan jika diterima
-            'tanggal_surat' => 'required_if:status,Diterima|date', // Tanggal surat hanya diperlukan jika diterima
+            'status' => 'required|in:Diterima,Ditolak',
+
+            'keterangan' => 'nullable|string|max:255',
+
+            'nomor_surat_pengajuan' => 'nullable|required_if:status,Diterima|string|max:255',
+
+            'tanggal_surat' => 'nullable|required_if:status,Diterima|date',
         ]);
 
         // Find the PengajuanPemeriksaanKapal by ID

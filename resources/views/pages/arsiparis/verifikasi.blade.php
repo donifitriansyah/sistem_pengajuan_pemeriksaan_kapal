@@ -79,87 +79,86 @@
         @endif
 
 
-        <table id="pengajuanTable" ">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Tanggal Estimasi</th>
-                            <th>Waktu Kedatangan Kapal</th>
-                            <th>Nama Kapal</th>
-                            <th>Perusahaan</th>
-                            <th>Lokasi</th>
-                            <th>Jenis Dokumen</th>
-                            <th>Nomor Surat</th>
-                            <th>Kode Bayar</th>
-                            <th>File</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
+        <table id="pengajuanTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal Estimasi</th>
+                    <th>Waktu Kedatangan Kapal</th>
+                    <th>Nama Kapal</th>
+                    <th>Perusahaan</th>
+                    <th>Lokasi</th>
+                    <th>Jenis Dokumen</th>
+                    <th>Nomor Surat</th>
+                    <th>Kode Bayar</th>
+                    <th>File</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
 
-                    <tbody>
-                          @foreach ($pengajuan as $item)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('d-m-Y') }}</td>
+            <tbody>
+                @foreach ($pengajuan as $item)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('d-m-Y') }}</td>
 
-                <td>{{ $item->nama_kapal }}</td>
-                <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
-                <td>{{ $item->lokasi_kapal }}</td>
-                <td>
-                    <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
-                </td>
-                <td>{{ $item->agendaSuratPengajuan->nomor_surat_masuk ?? '-' }}</td>
-                <td>
-                    <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
-                </td>
-                <td>
-                    <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
-                        class="btn btn-sm btn-info">
-                        Lihat File
-                    </a>
-                </td>
-                <td>{{ $item->status }}</td>
+                        <td>{{ $item->nama_kapal }}</td>
+                        <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
+                        <td>{{ $item->lokasi_kapal }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
+                        </td>
+                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_masuk ?? '-' }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
+                                class="btn btn-sm btn-info">
+                                Lihat File
+                            </a>
+                        </td>
+                        <td>{{ $item->status }}</td>
 
-                <td>
-                    <!-- Check if agenda_surat_pengajuan_id is null, show "Belum Diarsipkan" -->
-                    @if (is_null($item->agenda_surat_pengajuan_id))
-                        <span class="badge bg-danger">Belum Diarsipkan</span>
-                    @else
-                        <!-- Check if penagihan exists -->
-                        @php
-                            $penagihan = $item->penagihan;
-                        @endphp
-
-                        @if ($penagihan)
-                            <!-- If penagihan exists, check the payment status -->
-                            @if ($penagihan->isLunas())
-                                <span class="badge bg-success">Lunas</span>
+                        <td>
+                            <!-- Check if agenda_surat_pengajuan_id is null, show "Belum Diarsipkan" -->
+                            @if (is_null($item->agenda_surat_pengajuan_id))
+                                <span class="badge bg-danger">Belum Diarsipkan</span>
                             @else
-                                <span class="badge bg-warning">Belum Bayar</span>
+                                <!-- Check if penagihan exists -->
+                                @php
+                                    $penagihan = $item->penagihan;
+                                @endphp
+
+                                @if ($penagihan)
+                                    <!-- If penagihan exists, check the payment status -->
+                                    @if ($penagihan->isLunas())
+                                        <span class="badge bg-success">Lunas</span>
+                                    @else
+                                        <span class="badge bg-warning">Belum Bayar</span>
+                                    @endif
+                                @else
+                                    <!-- If no penagihan exists, show the button to create penagihan -->
+                                    <button class="btn btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#modalPenagihan{{ $item->id }}">
+                                        Buat Penagihan
+                                    </button>
+                                @endif
                             @endif
-                        @else
-                            <!-- If no penagihan exists, show the button to create penagihan -->
-                            <button class="btn btn-warning" data-bs-toggle="modal"
-                                data-bs-target="#modalPenagihan{{ $item->id }}">
-                                Buat Penagihan
-                            </button>
-                        @endif
-                    @endif
 
-                    <!-- Verifikasi dan Tolak Buttons -->
-                    @if ($item->status === 'Menunggu Verifikasi')
-                        <!-- Trigger the modal when the user wants to update the status -->
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#statusModal{{ $item->id }}">
-                            Verifikasi / Tolak
-                        </button>
-                    @endif
+                            <!-- Verifikasi dan Tolak Buttons -->
+                            @if ($item->status === 'Menunggu Verifikasi')
+                                <!-- Trigger the modal when the user wants to update the status -->
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#statusModal{{ $item->id }}">
+                                    Verifikasi / Tolak
+                                </button>
+                            @endif
 
 
-                    <!-- Modal for Verifikasi and Tolak -->
-                    {{-- <div class="modal fade" id="statusModal{{ $item->id }}" tabindex="-1"
+                            <div class="modal fade" id="statusModal{{ $item->id }}" tabindex="-1"
                                 aria-labelledby="statusModalLabel{{ $item->id }}" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
@@ -173,19 +172,38 @@
                                                     aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
+                                                <!-- Nomor Surat Pengajuan Field (Visible if "Diterima" is selected) -->
+                                                <div class="mb-3" id="nomor_surat_field_{{ $item->id }}"
+                                                    style="display:none;">
+                                                    <label class="form-label">Nomor Surat Pengajuan</label>
+                                                    <input type="text" name="nomor_surat_pengajuan" class="form-control"
+                                                        placeholder="Masukkan Nomor Surat Pengajuan" required>
+                                                </div>
+
+                                                <!-- Pilih Status Field -->
                                                 <div class="mb-3">
                                                     <label class="form-label">Pilih Status</label>
-                                                    <select name="status" class="form-select" required>
+                                                    <select name="status" class="form-select" required
+                                                        onchange="toggleFields(this, {{ $item->id }})">
                                                         <option value="">Pilih Status</option>
                                                         <option value="Diterima">Diterima</option>
                                                         <option value="Ditolak">Ditolak</option>
                                                     </select>
                                                 </div>
 
+                                                <!-- Tanggal Surat Field (Visible if "Diterima" is selected) -->
+                                                <div class="mb-3" id="tanggal_surat_field_{{ $item->id }}"
+                                                    style="display:none;">
+                                                    <label class="form-label">Tanggal Surat</label>
+                                                    <input type="date" name="tanggal_surat" class="form-control"
+                                                        required>
+                                                </div>
+
                                                 <!-- Keterangan Field (Only visible if "Ditolak" is selected) -->
-                                                <div class="mb-3">
-                                                    <label for="keterangan" class="form-label">Alasan Penolakan</label>
-                                                    <textarea name="keterangan" class="form-control" rows="4" id="keterangan{{ $item->id }}"></textarea>
+                                                <div class="mb-3" id="keterangan_field_{{ $item->id }}"
+                                                    style="display:none;">
+                                                    <label class="form-label">Alasan Penolakan</label>
+                                                    <textarea name="keterangan" class="form-control" rows="4"></textarea>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
@@ -196,84 +214,59 @@
                                         </form>
                                     </div>
                                 </div>
-                            </div> --}}
-                    <!-- Modal for Verifikasi and Tolak -->
-
-                    <!-- Modal for Verifikasi and Tolak -->
-                    <div class="modal fade" id="statusModal{{ $item->id }}" tabindex="-1"
-                        aria-labelledby="statusModalLabel{{ $item->id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <form action="{{ route('pengajuan.updateStatus', $item->id) }}" method="POST">
-                                    @csrf
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="statusModalLabel{{ $item->id }}">Pilih Status
-                                            Pengajuan</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Nomor Surat Pengajuan Field (Visible if "Diterima" is selected) -->
-                                        <div class="mb-3" id="nomor_surat_field" style="display:none;">
-                                            <label class="form-label">Nomor Surat Pengajuan</label>
-                                            <input type="text" name="nomor_surat_pengajuan" class="form-control"
-                                                placeholder="Masukkan Nomor Surat Pengajuan" required>
-                                        </div>
-
-                                        <!-- Pilih Status Field -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Pilih Status</label>
-                                            <select name="status" class="form-select" required
-                                                onchange="toggleNomorSuratField(this)">
-                                                <option value="">Pilih Status</option>
-                                                <option value="Diterima">Diterima</option>
-                                                <option value="Ditolak">Ditolak</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Tanggal Surat Field (Visible if "Diterima" is selected) -->
-                                        <div class="mb-3" id="tanggal_surat_field" style="display:none;">
-                                            <label class="form-label">Tanggal Surat</label>
-                                            <input type="date" name="tanggal_surat" class="form-control" required>
-                                        </div>
-
-                                        <!-- Keterangan Field (Only visible if "Ditolak" is selected) -->
-                                        <div class="mb-3">
-                                            <label for="keterangan" class="form-label">Alasan Penolakan</label>
-                                            <textarea name="keterangan" class="form-control" rows="4" id="keterangan{{ $item->id }}"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">Simpan</button>
-                                    </div>
-                                </form>
                             </div>
-                        </div>
-                    </div>
 
-                    <script>
-                        function toggleNomorSuratField(selectElement) {
-                            var nomorSuratField = document.getElementById('nomor_surat_field');
-                            var tanggalSuratField = document.getElementById('tanggal_surat_field');
-                            if (selectElement.value === 'Diterima') {
-                                nomorSuratField.style.display = 'block';
-                                tanggalSuratField.style.display = 'block';
-                            } else {
-                                nomorSuratField.style.display = 'none';
-                                tanggalSuratField.style.display = 'none';
-                            }
-                        }
-                    </script>
+                            <script>
+                                function toggleFields(selectElement, id) {
+
+                                    var nomorSurat = document.querySelector('#nomor_surat_field_' + id + ' input');
+                                    var tanggalSurat = document.querySelector('#tanggal_surat_field_' + id + ' input');
+                                    var keterangan = document.querySelector('#keterangan_field_' + id + ' textarea');
+
+                                    var nomorSuratDiv = document.getElementById('nomor_surat_field_' + id);
+                                    var tanggalSuratDiv = document.getElementById('tanggal_surat_field_' + id);
+                                    var keteranganDiv = document.getElementById('keterangan_field_' + id);
+
+                                    if (selectElement.value === 'Diterima') {
+
+                                        nomorSuratDiv.style.display = 'block';
+                                        tanggalSuratDiv.style.display = 'block';
+                                        keteranganDiv.style.display = 'none';
+
+                                        nomorSurat.required = true;
+                                        tanggalSurat.required = true;
+                                        keterangan.required = false;
+
+                                    } else if (selectElement.value === 'Ditolak') {
+
+                                        nomorSuratDiv.style.display = 'none';
+                                        tanggalSuratDiv.style.display = 'none';
+                                        keteranganDiv.style.display = 'block';
+
+                                        nomorSurat.required = false;
+                                        tanggalSurat.required = false;
+                                        keterangan.required = true;
+
+                                    } else {
+
+                                        nomorSuratDiv.style.display = 'none';
+                                        tanggalSuratDiv.style.display = 'none';
+                                        keteranganDiv.style.display = 'none';
+
+                                        nomorSurat.required = false;
+                                        tanggalSurat.required = false;
+                                        keterangan.required = false;
+                                    }
+                                }
+                            </script>
 
 
 
 
-                </td>
+                        </td>
 
-            </tr>
-            @endforeach
+                    </tr>
+                @endforeach
             </tbody>
         </table>
         @foreach ($pengajuan as $item)
@@ -360,8 +353,6 @@
             </div>
             {{-- =============== END MODAL =============== --}}
         @endforeach
-
-
         <script>
             const petugasData = @json($petugas);
         </script>
