@@ -201,6 +201,7 @@
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
+                    <th>Lokasi Kapal</th>
                     <th>Jenis Dokumen</th>
                     <th>Kode Bayar</th>
                     <th>Status Pengajuan</th>
@@ -215,6 +216,7 @@
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
+                        <td>{{ $item->lokasi_kapal }}</td>
                         <td>{{ $item->jenis_dokumen }}</td>
                         <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
                         <td>{{ $item->status }}</td>
