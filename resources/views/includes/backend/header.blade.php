@@ -4,7 +4,7 @@
             onerror="this.style.display='none'">
         <div class="header-title">
             <h1>@yield('header-title')</h1>
-            <p class="subtitle">Sistem Pengajuan Pemeriksaan Kapal</p>
+            <h1>Sistem Pengajuan Pemeriksaan Kapal</h1>
         </div>
     </div>
     <div class="header-right">
