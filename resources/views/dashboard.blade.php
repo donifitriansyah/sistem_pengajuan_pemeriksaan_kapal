@@ -197,7 +197,6 @@
                 <tr>
                     <th>No</th>
                     <th>Tanggal Estimasi Pemeriksaan</th>
-                    <th>Tanggal Kedatangan Kapal</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
