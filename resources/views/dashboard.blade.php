@@ -1,7 +1,9 @@
 @extends('layouts.app')
 @section('title')
+Dashboard
 @endsection
 @section('header-title')
+Dashboard
 @endsection
 @section('content')
     <!-- Scorecard -->
