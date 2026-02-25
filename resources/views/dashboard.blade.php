@@ -194,7 +194,8 @@ Dashboard
             }
         </script>
 
-        <table id="pengajuanTable" class="table table-striped table-bordered">
+        <div class="table-responsive">
+            <table id="pengajuanTable" class="table table-striped table-bordered nowrap">
             <thead>
                 <tr>
                     <th>No</th>
@@ -383,6 +384,7 @@ Dashboard
             </tbody>
 
         </table>
+        </div>
 
 
         <div id="emptyState" class="empty-state" style="display:none;">
@@ -594,6 +596,8 @@ Dashboard
                     targets: [0, 9], // No & Aksi tidak sortable
                     orderable: false
                 }],
+
+                scrollX: true,
 
                 language: {
                     search: "Cari:",
