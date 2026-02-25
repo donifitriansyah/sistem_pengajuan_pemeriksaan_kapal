@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@section('title')
+    Dashboard Keuangan
+@endsection
 @section('content')
     <div class="content-card">
         <div class="content-header">

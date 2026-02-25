@@ -1,5 +1,4 @@
 <?php
-// app/Exports/PengajuanExport.php
 
 namespace App\Exports;
 
@@ -18,26 +17,24 @@ class PengajuanExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return PengajuanPemeriksaanKapal::where('user_id', $this->userId)
-            ->get([
-                'tgl_estimasi_pemeriksaan',
-                'nama_kapal',
-                'lokasi_kapal',
-                'jenis_dokumen',
-                'wilayah_kerja',
-                'surat_permohonan_dan_dokumen',
-                'kode_bayar',
-                'status',
-                'keterangan',
-                'penagihan_id', // Pastikan penagihan_id ada di sini
-            ])->map(function ($item) {
-                // Cek jika penagihan ada dan ambil status pembayaran
-                $statusPembayaran = $item->penagihan && $item->penagihan->pembayaran
-                    ? $item->penagihan->pembayaran->status
-                    : 'Belum Ada Pembayaran'; // Jika tidak ada pembayaran, tampilkan 'Belum Ada Pembayaran'
+        return PengajuanPemeriksaanKapal::with('pembayaran')
+            ->where('user_id', $this->userId)
+            ->get()
+            ->map(function ($item) {
 
-                $item->status_bayar = $statusPembayaran; // Menambahkan status pembayaran
-                return $item;
+                $statusPembayaran = $item->pembayaran?->status ?? 'Belum Ada Pembayaran';
+
+                return [
+                    $item->tgl_estimasi_pemeriksaan,
+                    $item->nama_kapal,
+                    $item->lokasi_kapal,
+                    $item->jenis_dokumen,
+                    $item->wilayah_kerja,
+                    $item->kode_bayar,
+                    $item->status,
+                    $item->keterangan,
+                    $statusPembayaran,
+                ];
             });
     }
 
@@ -49,11 +46,10 @@ class PengajuanExport implements FromCollection, WithHeadings
             'Lokasi Kapal',
             'Jenis Dokumen',
             'Wilayah Kerja',
-            'Surat Permohonan dan Dokumen',
             'Kode Bayar',
             'Status Pengajuan',
             'Keterangan',
-            'Status Pembayaran', // Kolom baru untuk status pembayaran
+            'Status Pembayaran',
         ];
     }
 }

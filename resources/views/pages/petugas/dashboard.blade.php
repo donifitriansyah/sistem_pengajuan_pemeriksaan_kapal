@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('header-title')
+@section('title')
     Dashboard Petugas
 @endsection
 @section('content')

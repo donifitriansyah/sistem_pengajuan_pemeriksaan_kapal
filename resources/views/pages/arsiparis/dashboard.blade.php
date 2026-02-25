@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@section('title')
+    Dashboard Arsiparis
+@endsection
 @section('content')
     <div class="scorecard-container">
         <div class="scorecard total">
