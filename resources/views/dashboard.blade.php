@@ -73,7 +73,7 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Waktu Kedatangan Kapal</label>
+                                        <label class="form-label">Tanggal Kedatangan Kapal</label>
                                         <input type="date" name="waktu_kedatangan_kapal" class="form-control" required>
                                     </div>
 
@@ -196,8 +196,8 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Tanggal</th>
-                    <th>Waktu Kedatangan Kapal</th>
+                    <th>Tanggal Estimasi Pemeriksaan</th>
+                    <th>Tanggal Kedatangan Kapal</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Wilayah</th>
@@ -212,7 +212,6 @@
                     <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d') }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
@@ -251,7 +250,7 @@
                                 <div class="mt-1">
                                     <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
                                         class="btn btn-sm btn-success mb-2">Lihat Kwitansi</a>
-                                    
+
                                 </div>
                             @endif
 
@@ -343,7 +342,7 @@
 
                                         <!-- Waktu Kedatangan Kapal -->
                                         <div class="mb-3">
-                                            <label class="form-label">Waktu Kedatangan Kapal</label>
+                                            <label class="form-label">Tanggal Kedatangan Kapal</label>
                                             <input type="datetime-local" name="waktu_kedatangan_kapal"
                                                 class="form-control"
                                                 value="{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d\TH:i') }}"
