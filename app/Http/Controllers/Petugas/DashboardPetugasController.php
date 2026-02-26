@@ -109,33 +109,30 @@ class DashboardPetugasController extends Controller
 }
 
     public function indexPemeriksa()
-    {
-        // Get the logged-in user
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
-        $pengajuan = PengajuanPemeriksaanKapal::with([
-            'user',
-            'penagihan.pembayaran',
-            'penagihan.petugas',  // Load petugas
-            'agendaSuratPengajuan',
-        ])
-            ->whereHas('user', function ($query) use ($user) {
-                // Filter based on wilayah_kerja of the logged-in user
-                $query->where('wilayah_kerja', $user->wilayah_kerja);
-            })
-            ->get();
+  
 
-        // Fetch 'petugas' where wilayah_kerja matches the logged-in user's wilayah_kerja
-        $petugas = User::where('wilayah_kerja', $user->wilayah_kerja) // Use $user->wilayah_kerja
-            ->whereNotIn('role', ['admin', 'user'])
-            ->get();
+    $pengajuan = PengajuanPemeriksaanKapal::with([
+        'user',
+        'penagihan.pembayaran',
+        'penagihan.petugas',
+        'agendaSuratPengajuan',
+    ])
+        ->where('wilayah_kerja', $user->wilayah_kerja)
+        ->latest() // tampil terbaru dulu
+        ->get();
 
-        return view('pages.petugas.pemeriksa', [
-            'pengajuan' => $pengajuan,
-            'petugas' => $petugas, // Send filtered petugas to the view
-        ]);
-    }
+    $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
+        ->whereNotIn('role', ['admin', 'user'])
+        ->get();
+
+    return view('pages.petugas.pemeriksa', [
+        'pengajuan' => $pengajuan,
+        'petugas' => $petugas,
+    ]);
+}
 
     public function verifikasi(Request $request, Pembayaran $pembayaran)
     {
