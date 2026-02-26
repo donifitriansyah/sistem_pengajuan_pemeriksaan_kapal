@@ -246,6 +246,9 @@
                     orderable: false
                 }],
 
+                scrollX: true,
+
+
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
