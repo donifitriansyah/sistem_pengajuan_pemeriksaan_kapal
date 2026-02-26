@@ -91,21 +91,22 @@ class DashboardPetugasController extends Controller
 
 
     public function indexPembayaranPetugas()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        $pengajuan = PengajuanPemeriksaanKapal::with([
-            'user',
-            'penagihan.pembayaran',
-            'agendaSuratPengajuan',
-        ])
-            ->where('wilayah_kerja', $user->wilayah_kerja)
-            ->get();
+    $pengajuan = PengajuanPemeriksaanKapal::with([
+        'user',
+        'penagihan.pembayaran',
+        'agendaSuratPengajuan',
+    ])
+        ->where('wilayah_kerja', $user->wilayah_kerja)
+        ->latest() // sama dengan orderBy('created_at', 'desc')
+        ->get();
 
-        return view('pages.petugas.pembayaran', [
-            'pengajuan' => $pengajuan,
-        ]);
-    }
+    return view('pages.petugas.pembayaran', [
+        'pengajuan' => $pengajuan,
+    ]);
+}
 
     public function indexPemeriksa()
     {
