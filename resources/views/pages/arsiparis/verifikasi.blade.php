@@ -171,12 +171,6 @@
                                             </div>
                                             <div class="modal-body">
                                                 <!-- Nomor Surat Pengajuan Field (Visible if "Diterima" is selected) -->
-                                                <div class="mb-3" id="nomor_surat_field_{{ $item->id }}"
-                                                    style="display:none;">
-                                                    <label class="form-label">Nomor Surat Pengajuan</label>
-                                                    <input type="text" name="nomor_surat_pengajuan" class="form-control"
-                                                        placeholder="Masukkan Nomor Surat Pengajuan" required>
-                                                </div>
 
                                                 <!-- Pilih Status Field -->
                                                 <div class="mb-3">
@@ -189,6 +183,12 @@
                                                     </select>
                                                 </div>
 
+                                                <div class="mb-3" id="nomor_surat_field_{{ $item->id }}"
+                                                    style="display:none;">
+                                                    <label class="form-label">Nomor Surat Pengajuan</label>
+                                                    <input type="text" name="nomor_surat_pengajuan" class="form-control"
+                                                        placeholder="Masukkan Nomor Surat Pengajuan" required>
+                                                </div>
                                                 <!-- Tanggal Surat Field (Visible if "Diterima" is selected) -->
                                                 <div class="mb-3" id="tanggal_surat_field_{{ $item->id }}"
                                                     style="display:none;">

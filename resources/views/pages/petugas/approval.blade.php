@@ -88,7 +88,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">
+                        <td colspan="10" class="text-center">
                             Tidak ada user menunggu persetujuan
                         </td>
                     </tr>
