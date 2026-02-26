@@ -89,25 +89,21 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+
     public function indexPembayaranPetugas()
     {
-        // Get the logged-in user
         $user = auth()->user();
 
-        // Fetch pengajuan where wilayah_kerja matches the logged-in user's wilayah_kerja
         $pengajuan = PengajuanPemeriksaanKapal::with([
             'user',
             'penagihan.pembayaran',
             'agendaSuratPengajuan',
         ])
-            ->whereHas('user', function ($query) use ($user) {
-                // Filter based on wilayah_kerja of the logged-in user
-                $query->where('wilayah_kerja', $user->wilayah_kerja);
-            })
+            ->where('wilayah_kerja', $user->wilayah_kerja)
             ->get();
 
         return view('pages.petugas.pembayaran', [
-            'pengajuan' => $pengajuan, // Send filtered pengajuan to the view
+            'pengajuan' => $pengajuan,
         ]);
     }
 
