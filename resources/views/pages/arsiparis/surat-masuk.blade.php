@@ -96,7 +96,7 @@
                     </td> --}}
 
                         <td>
-                            {{ \Carbon\Carbon::parse($item->tanggal_surat)->format('d-m-Y') }}
+                            {{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}
                         </td>
                         <td>{{ $item->nomor_surat_pengajuan }}</td>
 

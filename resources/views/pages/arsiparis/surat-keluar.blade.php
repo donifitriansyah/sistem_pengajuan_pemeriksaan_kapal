@@ -91,7 +91,7 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>
-                            {{ \Carbon\Carbon::parse($item->tanggal_surat)->format('d-m-Y') }}
+                            {{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}
                         </td>
 
                         <td class="bold">
