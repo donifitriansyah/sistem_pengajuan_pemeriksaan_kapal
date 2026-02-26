@@ -17,7 +17,7 @@ class SuratMasukController extends Controller
                 $query->where('wilayah_kerja', $wilayah_kerja);
             })
             ->whereNotNull('nomor_surat_keluar')
-            ->orderBy('tanggal_surat', 'desc')
+            ->orderBy('nomor_surat_keluar', 'desc')
             ->get();
 
         // Total Pengajuan
