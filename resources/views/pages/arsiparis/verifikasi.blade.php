@@ -450,7 +450,7 @@
                 const bulan = date[1];
                 const tahun = date[2];
 
-                const perusahaan = data[3];
+                const perusahaan = data[4];
                 const dokumen = data[5];
                 const status = data[8]; // sesuaikan dengan kolom status kamu
 

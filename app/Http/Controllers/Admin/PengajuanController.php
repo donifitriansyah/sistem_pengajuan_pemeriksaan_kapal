@@ -19,7 +19,7 @@ class PengajuanController extends Controller
             'lokasi_kapal' => 'required|string|max:255',
             'jenis_dokumen' => 'required|in:PHQC,SSCEC,COP,P3K',
             'wilayah_kerja' => 'required|in:Dwikora,Kijing,Padang Tikar,Ketapang,Kendawangan',
-            'surat_permohonan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
             'waktu_kedatangan_kapal' => 'required|date',  // Validate the time format
             'status' => 'nullable|string|in:Menunggu Verifikasi,Diterima,Ditolak',  // Validate the 'status' field
             'keterangan' => 'nullable|string',  // Validate the 'keterangan' field (optional)

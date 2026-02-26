@@ -52,7 +52,7 @@
 
 
 
-                {{-- MODAL --}}
+                {{-- MODAL Pengajuan --}}
                 <div class="modal fade" id="modalPengajuan" tabindex="-1">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -395,6 +395,7 @@
         <div id="paginationContainer" class="pagination-container" style="display:none;"></div>
     </div>
 
+    {{-- Modal Bayar --}}
     @foreach ($pengajuan as $item)
         @if ($item->penagihan && in_array($item->penagihan->status_bayar, ['belum_bayar', 'ditolak']))
             <div class="modal fade" id="modalBayar{{ $item->id }}" tabindex="-1">
@@ -646,4 +647,25 @@
         // Jalankan saat load
         document.addEventListener('DOMContentLoaded', hitungScorecard);
     </script>
+    @if ($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = new bootstrap.Modal(document.getElementById('modalPengajuan'));
+        modal.show();
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            html: `
+                <ul style="text-align:left;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            `,
+            confirmButtonText: 'OK'
+        });
+    });
+</script>
+@endif
 @endsection
