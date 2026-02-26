@@ -29,7 +29,7 @@
 
     <div class="content-card">
         <div class="content-header">
-            <h2>Daftar Penagihan</h2>
+            <h2>Daftar Pengajuan Verifikasi</h2>
             <div class="header-actions">
             </div>
         </div>
@@ -60,6 +60,7 @@
                     <option value="PHQC">PHQC</option>
                     <option value="SSCEC">SSCEC</option>
                     <option value="COP">COP</option>
+                    <option value="P3K">P3K</option>
                 </select>
             </div>
             <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
@@ -83,8 +84,7 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Tanggal Estimasi</th>
-                    <th>Waktu Kedatangan Kapal</th>
+                    <th>Tanggal Diajukan</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
@@ -100,8 +100,7 @@
                 @foreach ($pengajuan as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('d-m-Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}</td>
 
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
@@ -369,8 +368,8 @@
                 lengthChange: true,
                 pageLength: 10,
 
-                // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
+                    targets: 0, // kolom nomor
                     orderable: false
                 }],
 
@@ -386,29 +385,110 @@
                     },
                     emptyTable: "Tidak ada data pengajuan"
                 },
+
                 drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
                     var api = this.api();
                     api.column(0, {
                         page: 'current'
                     }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                        cell.innerHTML = i + 1 + settings._iDisplayStart;
                     });
                 }
             });
 
+            /* =====================================
+                ISI FILTER DINAMIS (TAHUN, BULAN, PERUSAHAAN)
+            ===================================== */
+
+            const tahunSet = new Set();
+            const bulanSet = new Set();
+            const perusahaanSet = new Set();
+
+            table.rows().every(function() {
+                const data = this.data();
+
+                // Kolom tanggal (format d-m-Y)
+                const dateParts = data[1].split('-');
+                tahunSet.add(dateParts[2]);
+                bulanSet.add(dateParts[1]);
+
+                // Kolom perusahaan (index 3)
+                const perusahaan = data[3];
+                if (perusahaan) {
+                    perusahaanSet.add(perusahaan.trim());
+                }
+            });
+
+            // Isi dropdown Tahun
+            [...tahunSet].sort().forEach(t =>
+                $('#filterTahun').append(`<option value="${t}">${t}</option>`)
+            );
+
+            // Isi dropdown Bulan
+            [...bulanSet].sort().forEach(b =>
+                $('#filterBulan').append(`<option value="${b}">${b}</option>`)
+            );
+
+            // Isi dropdown Perusahaan
+            [...perusahaanSet].sort().forEach(p =>
+                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
+            );
+
+            /* =====================================
+                FILTER CUSTOM
+            ===================================== */
+
+            $.fn.dataTable.ext.search.push(function(settings, data) {
+
+                const filterTahun = $('#filterTahun').val();
+                const filterBulan = $('#filterBulan').val();
+                const filterPerusahaan = $('#filterPerusahaan').val();
+                const filterDokumen = $('#filterJenisDokumen').val();
+                const filterStatus = $('#filterStatus').val();
+
+                const date = data[1].split('-');
+                const bulan = date[1];
+                const tahun = date[2];
+
+                const perusahaan = data[3];
+                const dokumen = data[5];
+                const status = data[8]; // sesuaikan dengan kolom status kamu
+
+                if (filterTahun && tahun !== filterTahun) return false;
+                if (filterBulan && bulan !== filterBulan) return false;
+                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
+                if (filterDokumen && dokumen !== filterDokumen) return false;
+
+                if (filterStatus) {
+                    if (!status.includes(filterStatus)) return false;
+                }
+
+                return true;
+            });
+
+            // Trigger filter saat dropdown berubah
+            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
+                .on('change', function() {
+                    table.draw();
+                });
+
         });
 
-        /* ==============================
+
+        /* =====================================
             RESET FILTER
-        ============================== */
+        ===================================== */
+
         function resetFilter() {
+
             $('#filterTahun').val('');
             $('#filterBulan').val('');
             $('#filterPerusahaan').val('');
             $('#filterJenisDokumen').val('');
-            $('#pengajuanTable').DataTable().draw();
+            $('#filterStatus').val('');
+
+            const table = $('#pengajuanTable').DataTable();
+            table.search('').columns().search('').draw();
         }
     </script>
 @endsection
