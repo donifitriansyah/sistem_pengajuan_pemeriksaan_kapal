@@ -68,10 +68,15 @@
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate">
 
-            <button onclick="filterTable()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
         </div>
+
+        <script>
+function resetFilter() {
+    window.location.reload();
+}
+</script>
 
         <table id="tablePengajuan">
             <thead>
@@ -138,7 +143,7 @@
             rows.forEach(row => {
                 const dateCell = row.cells[1].innerText.trim(); // Get the 'Tanggal Surat' cell content
                 const rowDate = new Date(dateCell.split('-').reverse().join(
-                '-')); // Convert to Date object (dd-mm-yyyy to yyyy-mm-dd)
+                    '-')); // Convert to Date object (dd-mm-yyyy to yyyy-mm-dd)
 
                 const filterStartDate = startDate ? new Date(startDate) : null;
                 const filterEndDate = endDate ? new Date(endDate) : null;
@@ -208,7 +213,7 @@
                 drawCallback: function(settings) {
                     // Ensure the row numbers are updated after each table draw
                     resetRowNumbers
-                (); // This ensures that row numbers are recalculated every time the table is drawn
+                        (); // This ensures that row numbers are recalculated every time the table is drawn
                 }
             });
 

@@ -68,10 +68,15 @@
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate">
 
-            <button onclick="filterTable()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
         </div>
+
+        <script>
+            function resetFilter() {
+                window.location.reload();
+            }
+        </script>
 
         <table id="tablePengajuan">
             <thead>
