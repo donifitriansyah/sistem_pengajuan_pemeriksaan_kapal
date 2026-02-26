@@ -6,9 +6,11 @@ use App\Exports\PengajuanExport;
 use App\Models\Pembayaran;
 use App\Models\Penagihan;
 use App\Models\PengajuanPemeriksaanKapal;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UserDashboardController extends Controller
@@ -57,6 +59,16 @@ class UserDashboardController extends Controller
         'status_pembayaran' => $statusPembayaran,
         'verify_url' => $verifyUrl,
     ]);
+}
+
+public function resetPassword($id)
+{
+    $user = User::findOrFail($id);
+
+    $user->password = Hash::make('123456');
+    $user->save();
+
+    return redirect()->back()->with('success', 'Password berhasil direset menjadi 123456');
 }
 
     public function index()

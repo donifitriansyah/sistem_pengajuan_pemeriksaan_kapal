@@ -56,9 +56,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('admin/users', [UserManagementController::class, 'index'])
         ->name('users');
 
-    Route::put('/users/{id}/reset-password',
-        [UserManagementController::class, 'resetPassword']
-    )->name('reset');
+    Route::post('/users/{id}/reset-password',
+        [UserManagementController::class, 'reset']
+    )->name('user.reset');
 
     Route::put('/users/{id}/reject', [UserManagementController::class, 'reject'])
         ->name('user.reject');
@@ -75,6 +75,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::delete('/user/{id}', [UserManagementController::class, 'destroy'])
         ->name('user.destroy');
+
 
 });
 
@@ -195,7 +196,6 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
 
     Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
-
 
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
         ->name('petugas.keuangan');

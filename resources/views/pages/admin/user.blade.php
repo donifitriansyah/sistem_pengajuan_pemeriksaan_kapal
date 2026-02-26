@@ -8,7 +8,7 @@
 @section('content')
     <style>
         /* Set the width of the 'Persetujuan' and 'Aksi' columns */
-        #tableApproval th:nth-child(10){
+        #tableApproval th:nth-child(10) {
             /* Aksi column */
             width: 300px;
             /* Adjust this width as needed */
@@ -95,9 +95,14 @@
 
 
                             {{-- RESET PASSWORD (SELALU ADA) --}}
-                            <button onclick="confirmReset({{ $user->id }})" class="btn btn-warning btn-sm">
-                                Reset Password
-                            </button>
+                            <form action="{{ route('admin.user.reset', $user->id) }}" method="POST"
+                                onsubmit="return confirm('Reset password menjadi 123456 ?')">
+                                @csrf
+
+                                <button type="submit" class="btn btn-warning btn-sm">
+                                    Reset Password
+                                </button>
+                            </form>
                         </td>
                         <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
                             <div class="modal-dialog modal-lg">
@@ -135,7 +140,8 @@
                                                             {{ $user->role == 'petugas' ? 'selected' : '' }}>Petugas
                                                         </option>
                                                         <option value="petugas-kapal"
-                                                            {{ $user->role == 'petugas-kapal' ? 'selected' : '' }}>Petugas Karantina
+                                                            {{ $user->role == 'petugas-kapal' ? 'selected' : '' }}>Petugas
+                                                            Karantina
                                                         </option>
                                                     </select>
                                                 </div>
@@ -254,22 +260,7 @@
         }
 
 
-        function confirmReset(id) {
-            Swal.fire({
-                title: 'Reset Password?',
-                text: 'Password akan menjadi: 12345678',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Reset',
-                cancelButtonText: 'Batal',
-            }).then((result) => {
 
-                if (result.isConfirmed) {
-                    document.getElementById('reset-form-' + id).submit();
-                }
-
-            });
-        }
         $(document).ready(function() {
             $('#tableApproval').DataTable({
                 // You can customize this to suit your needs

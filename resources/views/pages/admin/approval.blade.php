@@ -6,8 +6,6 @@
     Approval User
 @endsection
 @section('content')
-
-
     <div class="content-card">
         <div class="content-header">
             <h2>Management User</h2>
@@ -75,11 +73,9 @@
                                 @csrf
                                 @method('PUT')
                             </form>
-                            <form id="reset-form-{{ $user->id }}" action="{{ route('admin.user.reset', $user->id) }}"
-                                method="POST" style="display:none;">
-                                @csrf
-                                @method('PUT')
-                            </form>
+
+                            
+
 
                             {{-- BUTTON DELETE --}}
                             @if (auth()->id() !== $user->id)
@@ -157,22 +153,7 @@
         }
 
 
-        function confirmReset(id) {
-            Swal.fire({
-                title: 'Reset Password?',
-                text: 'Password akan menjadi: 12345678',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Reset',
-                cancelButtonText: 'Batal',
-            }).then((result) => {
 
-                if (result.isConfirmed) {
-                    document.getElementById('reset-form-' + id).submit();
-                }
-
-            });
-        }
         $(document).ready(function() {
             $('#tableApproval').DataTable({
                 // You can customize this to suit your needs

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserManagementController extends Controller
 {
@@ -19,15 +20,14 @@ class UserManagementController extends Controller
         return view('pages.admin.user', compact('users'));
     }
 
-    public function resetPassword($id)
+    public function reset($id)
     {
         $user = User::findOrFail($id);
 
-        $user->update([
-            'password' => Hash::make('12345678'),
-        ]);
+        $user->password = Hash::make('123456');
+        $user->save();
 
-        return back()->with('success', 'Password berhasil direset menjadi 12345678');
+        return redirect()->back()->with('success', 'Password berhasil direset menjadi 123456');
     }
 
     public function approve($id)
