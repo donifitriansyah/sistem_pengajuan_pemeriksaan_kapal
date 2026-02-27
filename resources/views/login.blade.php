@@ -332,13 +332,15 @@
 
                         // Set the status based on payment status
                         const statusElement = document.getElementById("status");
-                        statusElement.innerText = data.status_pembayaran;
 
-                        if (data.status_pembayaran.toLowerCase() === 'diterima') {
+                        if (data.status_pembayaran.toLowerCase() === 'lunas') {
+
                             statusElement.classList.add('status-lunas');
                             statusElement.classList.remove('status-belum-bayar');
                             statusElement.innerText = 'Lunas';
+
                         } else {
+
                             statusElement.classList.add('status-belum-bayar');
                             statusElement.classList.remove('status-lunas');
                             statusElement.innerText = 'Belum Bayar';
@@ -347,16 +349,16 @@
                         // Generate and display QR Code
                         if (data.status_pembayaran.toLowerCase() === 'lunas' && data.verify_url) {
 
-    let qrCodeUrl =
-        `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.verify_url)}`;
+                            let qrCodeUrl =
+                                `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.verify_url)}`;
 
-    qrCodeContainer.innerHTML =
-        `<img src="${qrCodeUrl}" alt="QR Code">
+                            qrCodeContainer.innerHTML =
+                                `<img src="${qrCodeUrl}" alt="QR Code">
          <div style="font-size:12px; text-align:center; margin-top:10px;">
          Scan untuk verifikasi invoice</div>`;
-} else {
-    qrCodeContainer.innerHTML = "";
-}
+                        } else {
+                            qrCodeContainer.innerHTML = "";
+                        }
                     }
                 })
                 .catch(error => {

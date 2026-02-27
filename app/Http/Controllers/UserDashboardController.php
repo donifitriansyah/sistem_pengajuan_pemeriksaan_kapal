@@ -63,36 +63,30 @@ class UserDashboardController extends Controller
 
     public function cekInvoice($kodeBayar)
     {
-        $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
+        $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)
+            ->with(['penagihan', 'user'])
+            ->first();
 
         if (! $invoice) {
             return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
         }
 
-        // Jika penagihan NULL
-        if (! $invoice->penagihan_id || ! $invoice->penagihan) {
+        $statusPembayaran = 'Belum Bayar';
+        $totalTarif = 0;
+        $verifyUrl = null;
 
-            return response()->json([
-                'nama_kapal' => $invoice->nama_kapal,
-                'jenis_dokumen' => $invoice->jenis_dokumen,
-                'jenis_tarif' => $invoice->jenis_tarif,
-                'lokasi_kapal' => $invoice->lokasi_kapal,
-                'wilayah_kerja' => $invoice->wilayah_kerja,
-                'penagihan_id' => null,
-                'total_tarif' => 0,
-                'nama_perusahaan' => $invoice->user->nama_perusahaan ?? 'N/A',
-                'status_pembayaran' => 'Belum Lunas',
-                'verify_url' => null,
-            ]);
+        if ($invoice->penagihan) {
+
+            $totalTarif = $invoice->penagihan->total_tarif ?? 0;
+
+            $pembayaran = Pembayaran::where('penagihan_id', $invoice->penagihan_id)->first();
+
+            if ($pembayaran && strtolower(trim($pembayaran->status)) === 'diterima') {
+
+                $statusPembayaran = 'Lunas';
+                $verifyUrl = route('invoice.verify', $invoice->penagihan_id);
+            }
         }
-
-        // Jika ada penagihan
-        $penagihan_id = $invoice->penagihan_id;
-        $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
-
-        $statusPembayaran = $pembayaran ? $pembayaran->status : 'Belum Lunas';
-
-        $verifyUrl = route('invoice.verify', $penagihan_id);
 
         return response()->json([
             'nama_kapal' => $invoice->nama_kapal,
@@ -100,8 +94,8 @@ class UserDashboardController extends Controller
             'jenis_tarif' => $invoice->jenis_tarif,
             'lokasi_kapal' => $invoice->lokasi_kapal,
             'wilayah_kerja' => $invoice->wilayah_kerja,
-            'penagihan_id' => $penagihan_id,
-            'total_tarif' => $invoice->penagihan->total_tarif ?? 0,
+            'penagihan_id' => $invoice->penagihan_id,
+            'total_tarif' => $totalTarif,
             'nama_perusahaan' => $invoice->user->nama_perusahaan ?? 'N/A',
             'status_pembayaran' => $statusPembayaran,
             'verify_url' => $verifyUrl,
