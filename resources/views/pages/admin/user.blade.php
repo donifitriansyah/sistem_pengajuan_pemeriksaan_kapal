@@ -241,7 +241,6 @@
             });
         }
 
-
         function confirmReject(id) {
             Swal.fire({
                 title: 'Tolak User?',
@@ -259,8 +258,27 @@
             });
         }
 
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Hapus User?',
+                text: "User yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + id).submit();
+                }
+            });
+        }
+    </script>
 
 
+
+    <script>
         $(document).ready(function() {
             $('#tableApproval').DataTable({
                 // You can customize this to suit your needs
