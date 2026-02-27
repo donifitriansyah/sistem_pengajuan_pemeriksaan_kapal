@@ -41,8 +41,7 @@
     <div class="card">
 
         <div class="logo-container">
-            <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes"
-                onerror="this.style.display='none'">
+            <img src="{{ asset('logokemenkes.png') }}" alt="Logo Kemenkes" onerror="this.style.display='none'">
         </div>
 
         <h1>Sistem Pengajuan<br>Pemeriksaan Kapal</h1>
@@ -346,10 +345,18 @@
                         }
 
                         // Generate and display QR Code
-                        let qrCodeUrl =
-                            `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.verify_url)}`;
-                        qrCodeContainer.innerHTML =
-                            `<img src="${qrCodeUrl}" alt="QR Code"><div style="font-size:12px; text-align:center; margin-top:10px;">Scan untuk verifikasi invoice</div>`;
+                        if (data.status_pembayaran.toLowerCase() === 'lunas' && data.verify_url) {
+
+    let qrCodeUrl =
+        `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.verify_url)}`;
+
+    qrCodeContainer.innerHTML =
+        `<img src="${qrCodeUrl}" alt="QR Code">
+         <div style="font-size:12px; text-align:center; margin-top:10px;">
+         Scan untuk verifikasi invoice</div>`;
+} else {
+    qrCodeContainer.innerHTML = "";
+}
                     }
                 })
                 .catch(error => {

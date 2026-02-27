@@ -23,53 +23,100 @@ class UserDashboardController extends Controller
         return Excel::download(new PengajuanExport($userId), 'pengajuan.xlsx');
     }
 
-    public function cekInvoice($kodeBayar)
-{
-    $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
+    // public function cekInvoice($kodeBayar)
+    // {
+    //     $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
 
-    if (! $invoice) {
-        return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
+    //     if (! $invoice) {
+    //         return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
+    //     }
+
+    //     // Ambil penagihan_id untuk mencari pembayaran
+    //     $penagihan_id = $invoice->penagihan_id;
+    //     $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
+
+    //     // Jika pembayaran tidak ditemukan, set status sebagai 'Belum Bayar'
+    //     $statusPembayaran = $pembayaran ? $pembayaran->status : 'Belum Bayar';
+
+    //     // Ambil nama perusahaan dan nama agen dari tabel users
+    //     $namaPerusahaan = $invoice->user->nama_perusahaan ?? 'N/A'; // Pastikan nama_perusahaan ada di tabel users=
+
+    //     // Menyusun URL untuk verifikasi invoice
+    //     $verifyUrl = route('invoice.verify', $penagihan_id);
+
+    //     // Pastikan total_tarif tidak null
+    //     $totalTarif = $invoice->penagihan ? $invoice->penagihan->total_tarif : 0; // Jika tidak ada total_tarif, set ke 0
+
+    //     return response()->json([
+    //         'nama_kapal' => $invoice->nama_kapal,
+    //         'jenis_dokumen' => $invoice->jenis_dokumen,
+    //         'jenis_tarif' => $invoice->jenis_tarif,
+    //         'lokasi_kapal' => $invoice->lokasi_kapal,
+    //         'wilayah_kerja' => $invoice->wilayah_kerja,
+    //         'penagihan_id' => $invoice->penagihan_id,
+    //         'total_tarif' => $totalTarif,
+    //         'nama_perusahaan' => $namaPerusahaan, // Menampilkan nama perusahaan=
+    //         'status_pembayaran' => $statusPembayaran,
+    //         'verify_url' => $verifyUrl,
+    //     ]);
+    // }
+
+    public function cekInvoice($kodeBayar)
+    {
+        $invoice = PengajuanPemeriksaanKapal::where('kode_bayar', $kodeBayar)->first();
+
+        if (! $invoice) {
+            return response()->json(['error' => 'Kode Bayar tidak ditemukan.'], 404);
+        }
+
+        // Jika penagihan NULL
+        if (! $invoice->penagihan_id || ! $invoice->penagihan) {
+
+            return response()->json([
+                'nama_kapal' => $invoice->nama_kapal,
+                'jenis_dokumen' => $invoice->jenis_dokumen,
+                'jenis_tarif' => $invoice->jenis_tarif,
+                'lokasi_kapal' => $invoice->lokasi_kapal,
+                'wilayah_kerja' => $invoice->wilayah_kerja,
+                'penagihan_id' => null,
+                'total_tarif' => 0,
+                'nama_perusahaan' => $invoice->user->nama_perusahaan ?? 'N/A',
+                'status_pembayaran' => 'Belum Lunas',
+                'verify_url' => null,
+            ]);
+        }
+
+        // Jika ada penagihan
+        $penagihan_id = $invoice->penagihan_id;
+        $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
+
+        $statusPembayaran = $pembayaran ? $pembayaran->status : 'Belum Lunas';
+
+        $verifyUrl = route('invoice.verify', $penagihan_id);
+
+        return response()->json([
+            'nama_kapal' => $invoice->nama_kapal,
+            'jenis_dokumen' => $invoice->jenis_dokumen,
+            'jenis_tarif' => $invoice->jenis_tarif,
+            'lokasi_kapal' => $invoice->lokasi_kapal,
+            'wilayah_kerja' => $invoice->wilayah_kerja,
+            'penagihan_id' => $penagihan_id,
+            'total_tarif' => $invoice->penagihan->total_tarif ?? 0,
+            'nama_perusahaan' => $invoice->user->nama_perusahaan ?? 'N/A',
+            'status_pembayaran' => $statusPembayaran,
+            'verify_url' => $verifyUrl,
+        ]);
     }
 
-    // Ambil penagihan_id untuk mencari pembayaran
-    $penagihan_id = $invoice->penagihan_id;
-    $pembayaran = Pembayaran::where('penagihan_id', $penagihan_id)->first();
+    public function resetPassword($id)
+    {
+        $user = User::findOrFail($id);
 
-    // Jika pembayaran tidak ditemukan, set status sebagai 'Belum Bayar'
-    $statusPembayaran = $pembayaran ? $pembayaran->status : 'Belum Bayar';
+        $user->password = Hash::make('123456');
+        $user->save();
 
-    // Ambil nama perusahaan dan nama agen dari tabel users
-    $namaPerusahaan = $invoice->user->nama_perusahaan ?? 'N/A'; // Pastikan nama_perusahaan ada di tabel users=
-
-    // Menyusun URL untuk verifikasi invoice
-    $verifyUrl = route('invoice.verify', $penagihan_id);
-
-    // Pastikan total_tarif tidak null
-    $totalTarif = $invoice->penagihan ? $invoice->penagihan->total_tarif : 0; // Jika tidak ada total_tarif, set ke 0
-
-    return response()->json([
-        'nama_kapal' => $invoice->nama_kapal,
-        'jenis_dokumen' => $invoice->jenis_dokumen,
-        'jenis_tarif' => $invoice->jenis_tarif,
-        'lokasi_kapal' => $invoice->lokasi_kapal,
-        'wilayah_kerja' => $invoice->wilayah_kerja,
-        'penagihan_id' => $invoice->penagihan_id,
-        'total_tarif' => $totalTarif,
-        'nama_perusahaan' => $namaPerusahaan, // Menampilkan nama perusahaan=
-        'status_pembayaran' => $statusPembayaran,
-        'verify_url' => $verifyUrl,
-    ]);
-}
-
-public function resetPassword($id)
-{
-    $user = User::findOrFail($id);
-
-    $user->password = Hash::make('123456');
-    $user->save();
-
-    return redirect()->back()->with('success', 'Password berhasil direset menjadi 123456');
-}
+        return redirect()->back()->with('success', 'Password berhasil direset menjadi 123456');
+    }
 
     public function index()
     {
