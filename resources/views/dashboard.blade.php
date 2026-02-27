@@ -417,6 +417,9 @@
 
 
                             <div class="modal-body">
+                                {{-- <strong>Bank: BNI</strong> <br>
+                                <strong>Nama Rekening: RPL 042 PS BKK KLS I PONTIANAK PEMERINTAH</strong> <br>
+                                <strong>Nomor Rekening: 2021619829</strong> <br> --}}
                                 <strong>Kapal :</strong> {{ $item->nama_kapal }} <br>
                                 <strong>Lokasi :</strong> {{ $item->lokasi_kapal }} <br>
                                 <strong>Tanggal :</strong>
