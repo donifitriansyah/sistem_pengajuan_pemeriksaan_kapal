@@ -355,7 +355,7 @@
                             qrCodeContainer.innerHTML =
                                 `<img src="${qrCodeUrl}" alt="QR Code">
          <div style="font-size:12px; text-align:center; margin-top:10px;">
-         Scan untuk verifikasi invoice</div>`;
+         Scan untuk verifikasi kwitansi</div>`;
                         } else {
                             qrCodeContainer.innerHTML = "";
                         }

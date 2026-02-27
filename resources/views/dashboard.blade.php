@@ -193,198 +193,197 @@
             }
         </script>
 
-         <table id="pengajuanTable" class="nowrap w-100">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Tanggal Estimasi Pemeriksaan</th>
-                        <th>Nama Kapal</th>
-                        <th>Wilayah</th>
-                        <th>Lokasi Kapal</th>
-                        <th>Jenis Dokumen</th>
-                        <th>Kode Bayar</th>
-                        <th>Status Pengajuan</th>
-                        <th>Status Pembayaran</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($pengajuan as $item)
-                        <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                            <td>{{ $item->nama_kapal }}</td>
-                            <td>{{ $item->wilayah_kerja }}</td>
-                            <td>{{ $item->lokasi_kapal }}</td>
-                            <td>{{ $item->jenis_dokumen }}</td>
-                            <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
-                            <td>{{ $item->status }}</td>
-                            <td>
-                                {{-- Aksi sesuai status --}}
-                                @if (!$item->penagihan)
-                                    <span class="badge bg-secondary">Belum Ada Tagihan</span>
-                                @elseif($item->penagihan->status_bayar === 'belum_bayar')
-                                    <span class="badge bg-warning text-dark mb-2">Belum Bayar</span>
-                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success ">
-                                        Lihat Invoice
-                                    </a>
-                                    <div class="mt-1">
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#modalBayar{{ $item->id }}">Bayar Tagihan</button>
+        <table id="pengajuanTable" class="nowrap w-100">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal Estimasi Pemeriksaan</th>
+                    <th>Nama Kapal</th>
+                    <th>Wilayah</th>
+                    <th>Lokasi Kapal</th>
+                    <th>Jenis Dokumen</th>
+                    <th>Kode Bayar</th>
+                    <th>Status Pengajuan</th>
+                    <th>Status Pembayaran</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($pengajuan as $item)
+                    <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                        <td>{{ $item->nama_kapal }}</td>
+                        <td>{{ $item->wilayah_kerja }}</td>
+                        <td>{{ $item->lokasi_kapal }}</td>
+                        <td>{{ $item->jenis_dokumen }}</td>
+                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
+                        <td>{{ $item->status }}</td>
+                        <td>
+                            {{-- Aksi sesuai status --}}
+                            @if (!$item->penagihan)
+                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
+                            @elseif($item->penagihan->status_bayar === 'belum_bayar')
+                                <span class="badge bg-warning text-dark mb-2">Belum Bayar</span>
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                    class="btn btn-sm btn-success ">
+                                    Lihat Invoice
+                                </a>
+                                <div class="mt-1">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#modalBayar{{ $item->id }}">Bayar Tagihan</button>
 
-                                    </div>
-                                @elseif($item->penagihan->status_bayar === 'menunggu')
-                                    <span class="badge bg-info">Menunggu Verifikasi</span>
-                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">
-                                        Lihat Invoice
-                                    </a>
-                                @elseif($item->penagihan->status_bayar === 'ditolak')
-                                    <span class="badge bg-danger">Pembayaran Ditolak</span>
-                                    <div class="mt-1">
-                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                            data-bs-target="#modalBayar{{ $item->id }}">Upload Ulang Bukti</button>
-                                    </div>
-                                @elseif($item->penagihan->status_bayar === 'diterima')
-                                    <span class="badge bg-success">Lunas</span>
-                                    <div class="mt-1">
-                                        <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
-                                            class="btn btn-sm btn-success mb-2">Lihat Kwitansi</a>
-
-                                    </div>
-                                @endif
-
-                                @if ($item->status === 'Ditolak')
-                                    <!-- Button to Edit "Ditolak" status -->
-                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#editPengajuanModal{{ $item->id }}">
-                                        Edit Pengajuan
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                        <div class="modal fade" id="editPengajuanModal{{ $item->id }}" tabindex="-1"
-                            aria-labelledby="editPengajuanModalLabel{{ $item->id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-
-                                    <form action="{{ route('user.pengajuan.update', $item->id) }}" method="POST"
-                                        enctype="multipart/form-data">
-                                        @csrf
-                                        @method('PUT')
-
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="editPengajuanModalLabel{{ $item->id }}">Edit
-                                                Pengajuan</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-
-                                        <div class="modal-body">
-                                            <!-- Nama Kapal -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Nama Kapal</label>
-                                                <input type="text" name="nama_kapal" class="form-control"
-                                                    value="{{ $item->nama_kapal }}" required>
-                                            </div>
-
-                                            <!-- Tanggal Estimasi Pemeriksaan -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Tanggal Estimasi Pemeriksaan</label>
-                                                <input type="date" name="tgl_estimasi_pemeriksaan"
-                                                    class="form-control"
-                                                    value="{{ old('tgl_estimasi_pemeriksaan', $item->tgl_estimasi_pemeriksaan) }}"
-                                                    required>
-                                            </div>
-
-                                            <!-- Wilayah Kerja -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Wilayah Kerja</label>
-                                                <select name="wilayah_kerja" class="form-select" required>
-                                                    <option value="">-- Pilih Wilayah --</option>
-                                                    <option value="Dwikora"
-                                                        {{ $item->wilayah_kerja === 'Dwikora' ? 'selected' : '' }}>Dwikora
-                                                    </option>
-                                                    <option value="Kijing"
-                                                        {{ $item->wilayah_kerja === 'Kijing' ? 'selected' : '' }}>Kijing
-                                                    </option>
-                                                    <option value="Padang Tikar"
-                                                        {{ $item->wilayah_kerja === 'Padang Tikar' ? 'selected' : '' }}>
-                                                        Padang
-                                                        Tikar</option>
-                                                    <option value="Ketapang"
-                                                        {{ $item->wilayah_kerja === 'Ketapang' ? 'selected' : '' }}>
-                                                        Ketapang
-                                                    </option>
-                                                    <option value="Kendawangan"
-                                                        {{ $item->wilayah_kerja === 'Kendawangan' ? 'selected' : '' }}>
-                                                        Kendawangan</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Lokasi Kapal -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Lokasi Kapal</label>
-                                                <input type="text" name="lokasi_kapal" class="form-control"
-                                                    value="{{ $item->lokasi_kapal }}" required>
-                                            </div>
-
-                                            <!-- Jenis Dokumen -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Jenis Dokumen</label>
-                                                <select name="jenis_dokumen" class="form-select" required>
-                                                    <option value="PHQC"
-                                                        {{ $item->jenis_dokumen === 'PHQC' ? 'selected' : '' }}>PHQC
-                                                    </option>
-                                                    <option value="SSCEC"
-                                                        {{ $item->jenis_dokumen === 'SSCEC' ? 'selected' : '' }}>SSCEC
-                                                    </option>
-                                                    <option value="COP"
-                                                        {{ $item->jenis_dokumen === 'COP' ? 'selected' : '' }}>COP</option>
-                                                    <option value="P3K"
-                                                        {{ $item->jenis_dokumen === 'P3K' ? 'selected' : '' }}>P3K</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Waktu Kedatangan Kapal -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Tanggal Kedatangan Kapal</label>
-                                                <input type="datetime-local" name="waktu_kedatangan_kapal"
-                                                    class="form-control"
-                                                    value="{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d\TH:i') }}"
-                                                    required>
-                                            </div>
-
-                                            <!-- Surat Permohonan (Upload) -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Upload Surat Permohonan</label>
-                                                <input type="file" name="surat_permohonan" class="form-control">
-                                                @if ($item->surat_permohonan_dan_dokumen)
-                                                    <p>Current File: <a
-                                                            href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
-                                                            target="_blank">View Current File</a></p>
-                                                @endif
-                                            </div>
-
-                                            <!-- Alasan Penolakan (Keterangan) -->
-                                            <div class="mb-3">
-                                                <label for="keterangan" class="form-label">Alasan Penolakan</label>
-                                                <textarea name="keterangan" class="form-control" rows="4" readonly>{{ $item->keterangan }}</textarea>
-                                            </div>
-                                        </div>
-
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                                        </div>
-                                    </form>
                                 </div>
+                            @elseif($item->penagihan->status_bayar === 'menunggu')
+                                <span class="badge bg-info">Menunggu Verifikasi</span>
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                    class="btn btn-sm btn-success">
+                                    Lihat Invoice
+                                </a>
+                            @elseif($item->penagihan->status_bayar === 'ditolak')
+                                <span class="badge bg-danger">Pembayaran Ditolak</span>
+                                <div class="mt-1">
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                        data-bs-target="#modalBayar{{ $item->id }}">Upload Ulang Bukti</button>
+                                </div>
+                            @elseif($item->penagihan->status_bayar === 'diterima')
+                                <span class="badge bg-success">Lunas</span>
+                                <div class="mt-1">
+                                    <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success mb-2">Lihat Kwitansi</a>
+
+                                </div>
+                            @endif
+
+                            @if ($item->status === 'Ditolak')
+                                <!-- Button to Edit "Ditolak" status -->
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#editPengajuanModal{{ $item->id }}">
+                                    Edit Pengajuan
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+                    <div class="modal fade" id="editPengajuanModal{{ $item->id }}" tabindex="-1"
+                        aria-labelledby="editPengajuanModalLabel{{ $item->id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <form action="{{ route('user.pengajuan.update', $item->id) }}" method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editPengajuanModalLabel{{ $item->id }}">Edit
+                                            Pengajuan</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <!-- Nama Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Nama Kapal</label>
+                                            <input type="text" name="nama_kapal" class="form-control"
+                                                value="{{ $item->nama_kapal }}" required>
+                                        </div>
+
+                                        <!-- Tanggal Estimasi Pemeriksaan -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal Estimasi Pemeriksaan</label>
+                                            <input type="date" name="tgl_estimasi_pemeriksaan" class="form-control"
+                                                value="{{ old('tgl_estimasi_pemeriksaan', $item->tgl_estimasi_pemeriksaan) }}"
+                                                required>
+                                        </div>
+
+                                        <!-- Wilayah Kerja -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Wilayah Kerja</label>
+                                            <select name="wilayah_kerja" class="form-select" required>
+                                                <option value="">-- Pilih Wilayah --</option>
+                                                <option value="Dwikora"
+                                                    {{ $item->wilayah_kerja === 'Dwikora' ? 'selected' : '' }}>Dwikora
+                                                </option>
+                                                <option value="Kijing"
+                                                    {{ $item->wilayah_kerja === 'Kijing' ? 'selected' : '' }}>Kijing
+                                                </option>
+                                                <option value="Padang Tikar"
+                                                    {{ $item->wilayah_kerja === 'Padang Tikar' ? 'selected' : '' }}>
+                                                    Padang
+                                                    Tikar</option>
+                                                <option value="Ketapang"
+                                                    {{ $item->wilayah_kerja === 'Ketapang' ? 'selected' : '' }}>
+                                                    Ketapang
+                                                </option>
+                                                <option value="Kendawangan"
+                                                    {{ $item->wilayah_kerja === 'Kendawangan' ? 'selected' : '' }}>
+                                                    Kendawangan</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Lokasi Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Lokasi Kapal</label>
+                                            <input type="text" name="lokasi_kapal" class="form-control"
+                                                value="{{ $item->lokasi_kapal }}" required>
+                                        </div>
+
+                                        <!-- Jenis Dokumen -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Jenis Dokumen</label>
+                                            <select name="jenis_dokumen" class="form-select" required>
+                                                <option value="PHQC"
+                                                    {{ $item->jenis_dokumen === 'PHQC' ? 'selected' : '' }}>PHQC
+                                                </option>
+                                                <option value="SSCEC"
+                                                    {{ $item->jenis_dokumen === 'SSCEC' ? 'selected' : '' }}>SSCEC
+                                                </option>
+                                                <option value="COP"
+                                                    {{ $item->jenis_dokumen === 'COP' ? 'selected' : '' }}>COP</option>
+                                                <option value="P3K"
+                                                    {{ $item->jenis_dokumen === 'P3K' ? 'selected' : '' }}>P3K</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Waktu Kedatangan Kapal -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal Kedatangan Kapal</label>
+                                            <input type="datetime-local" name="waktu_kedatangan_kapal"
+                                                class="form-control"
+                                                value="{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d\TH:i') }}"
+                                                required>
+                                        </div>
+
+                                        <!-- Surat Permohonan (Upload) -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Surat Permohonan</label>
+                                            <input type="file" name="surat_permohonan" class="form-control">
+                                            @if ($item->surat_permohonan_dan_dokumen)
+                                                <p>Current File: <a
+                                                        href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
+                                                        target="_blank">View Current File</a></p>
+                                            @endif
+                                        </div>
+
+                                        <!-- Alasan Penolakan (Keterangan) -->
+                                        <div class="mb-3">
+                                            <label for="keterangan" class="form-label">Alasan Penolakan</label>
+                                            <textarea name="keterangan" class="form-control" rows="4" readonly>{{ $item->keterangan }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        @endforeach
-                </tbody>
+                    </div>
+                @endforeach
+            </tbody>
 
-            </table>
+        </table>
 
 
         <div id="emptyState" class="empty-state" style="display:none;">
@@ -399,7 +398,7 @@
     @foreach ($pengajuan as $item)
         @if ($item->penagihan && in_array($item->penagihan->status_bayar, ['belum_bayar', 'ditolak']))
             <div class="modal fade" id="modalBayar{{ $item->id }}" tabindex="-1">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         {{-- INFO --}}
 
@@ -417,34 +416,65 @@
 
 
                             <div class="modal-body">
-                                {{-- <strong>Bank: BNI</strong> <br>
-                                <strong>Nama Rekening: RPL 042 PS BKK KLS I PONTIANAK PEMERINTAH</strong> <br>
-                                <strong>Nomor Rekening: 2021619829</strong> <br> --}}
-                                <strong>Kapal :</strong> {{ $item->nama_kapal }} <br>
-                                <strong>Lokasi :</strong> {{ $item->lokasi_kapal }} <br>
-                                <strong>Tanggal :</strong>
-                                {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }} <br>
-                                <strong>Kode Bayar :</strong> {{ $item->kode_bayar }} <br>
-                                <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
-                                    target="_blank">Dokumen Surat Permohonan</a> <br>
 
-                                <strong style="color: red">
-                                    Total Tagihan : Rp {{ number_format($item->penagihan->total_tarif, 0, ',', '.') }}
-                                </strong> <br>
+                                {{-- INFORMASI REKENING --}}
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-2">Segera Lakukan Pembayaran ke:</h6>
 
+                                    <div class="ps-3">
+                                        <div class="fw-bold text-success">Bank:<strong> BNI</strong></div>
+                                        <div class="fw-bold text-success">Nama Rekening:<strong> RPL 042 PS BKK KLS I PONTIANAK PEMERINTAH</strong> </div>
+                                        <div class="fw-bold text-success">Nomor Rekening:<strong> 2021619829</strong> </div>
+                                    </div>
+                                </div>
 
-                                @if ($item->penagihan->status_bayar === 'ditolak')
+                                <hr>
+
+                                {{-- DATA KAPAL --}}
+                                <div class="mb-3">
+                                    <h6 class="fw-bold mb-2">Data Kapal</h6>
+
+                                    <div class="ps-3">
+                                        <div><strong>Nama Kapal:</strong> {{ $item->nama_kapal }}</div>
+                                        <div><strong>Lokasi:</strong> {{ $item->lokasi_kapal }}</div>
+                                        <div>
+                                            <strong>Tanggal:</strong>
+                                            {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
+                                        </div>
+                                        <div><strong>Kode Bayar:</strong> {{ $item->kode_bayar }}</div>
+                                        <div>
+                                            <strong>Dokumen:</strong>
+                                            <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
+                                                target="_blank" class="text-decoration-none">
+                                                Lihat Surat Permohonan
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                {{-- TOTAL TAGIHAN --}}
+                                <div class="mb-3">
+                                    <h5 class="fw-bold text-danger">
+                                        Total Tagihan:
+                                        Rp {{ number_format(optional($item->penagihan)->total_tarif ?? 0, 0, ',', '.') }}
+                                    </h5>
+                                </div>
+
+                                {{-- STATUS DITOLAK --}}
+                                @if (optional($item->penagihan)->status_bayar === 'ditolak')
                                     <div class="alert alert-danger">
-                                        <strong>Pembayaran Ditolak</strong><br>
+                                        <strong>Pembayaran Ditolak</strong>
 
-                                        <span class="d-block mt-1">
-                                            Alasan:
+                                        <div class="mt-2">
+                                            <strong>Alasan:</strong>
                                             <em>
-                                                {{ $item->penagihan->pembayaran->keterangan ?? 'Tidak ada keterangan' }}
+                                                {{ optional($item->penagihan->pembayaran)->keterangan ?? 'Tidak ada keterangan' }}
                                             </em>
-                                        </span>
+                                        </div>
 
-                                        <hr class="my-2">
+                                        <hr>
 
                                         <small>
                                             Silakan upload ulang bukti pembayaran yang sesuai.
@@ -452,15 +482,15 @@
                                     </div>
                                 @endif
 
-
-                                <div class="mb-3 mt-2">
-                                    <label class="form-label">Upload Bukti Pembayaran</label>
+                                {{-- UPLOAD BUKTI --}}
+                                <div class="mb-3 mt-3">
+                                    <label class="form-label fw-semibold">Upload Bukti Pembayaran</label>
                                     <input type="file" name="bukti_bayar" class="form-control" required>
-                                    <small style="color: red">
+
+                                    <small class="text-danger">
                                         * Mohon masukan kode bayar di berita transfer
                                     </small>
                                 </div>
-
 
                             </div>
 
@@ -651,24 +681,24 @@
         document.addEventListener('DOMContentLoaded', hitungScorecard);
     </script>
     @if ($errors->any())
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var modal = new bootstrap.Modal(document.getElementById('modalPengajuan'));
-        modal.show();
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var modal = new bootstrap.Modal(document.getElementById('modalPengajuan'));
+                modal.show();
 
-        Swal.fire({
-            icon: 'error',
-            title: 'Terjadi Kesalahan!',
-            html: `
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan!',
+                    html: `
                 <ul style="text-align:left;">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             `,
-            confirmButtonText: 'OK'
-        });
-    });
-</script>
-@endif
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
 @endsection

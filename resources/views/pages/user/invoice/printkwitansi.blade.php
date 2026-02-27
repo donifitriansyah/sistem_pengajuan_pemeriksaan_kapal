@@ -228,6 +228,25 @@
             </tr>
         </table>
 
+        <table>
+            <tr>
+                <p>Segera Lakukan Pembayaran ke Bank berikut:</p>
+                <td width="20%">Nama Bank</td>
+                <td width="2%">:</td>
+                <td><strong>Bank Negara Indonesia (BNI)</strong></td>
+            </tr>
+            <tr>
+                <td width="10%">Nama Rekening:</td>
+                <td width="2%">:</td>
+                <td><strong>RPL 042 PS BKK KLS I PONTIANAK PEMERINTAH</strong></td>
+            </tr>
+            <tr>
+                <td width="10%">Nomor Rekening:</td>
+                <td width="2%">:</td>
+                <td><strong>2021619829</strong></td>
+            </tr>
+        </table>
+
         <!-- FOOTER QR -->
         {{-- <div class="footer">
             <div class="qr">
