@@ -92,7 +92,7 @@
             </thead>
 
             <tbody>
-                @forelse ($suratKeluar as $item)
+                @foreach ($suratKeluar as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>
@@ -116,13 +116,8 @@
                         </td>
 
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center">
-                            Belum ada surat keluar
-                        </td>
-                    </tr>
-                @endforelse
+
+                @endforeach
             </tbody>
         </table>
 
@@ -194,6 +189,7 @@
                 lengthChange: true,
                 pageLength: 10,
                 columnDefs: [{
+                    targets: 0,
                     orderable: false
                 }],
                 language: {
@@ -206,12 +202,15 @@
                         next: "›",
                         previous: "‹"
                     },
-                    emptyTable: "Tidak ada data pengajuan"
+                    emptyTable: "Tidak ada data surat keluar"
                 },
                 drawCallback: function(settings) {
-                    // Ensure the row numbers are updated after each table draw
-                    resetRowNumbers
-                        (); // This ensures that row numbers are recalculated every time the table is drawn
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
                 }
             });
 

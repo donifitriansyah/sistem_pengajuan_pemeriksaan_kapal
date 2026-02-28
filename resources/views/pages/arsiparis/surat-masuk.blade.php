@@ -73,10 +73,10 @@
         </div>
 
         <script>
-function resetFilter() {
-    window.location.reload();
-}
-</script>
+            function resetFilter() {
+                window.location.reload();
+            }
+        </script>
 
         <table id="tablePengajuan">
             <thead>
@@ -92,7 +92,7 @@ function resetFilter() {
             </thead>
 
             <tbody>
-                @forelse ($suratKeluar as $item)
+                @foreach ($suratKeluar as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
 
@@ -118,13 +118,7 @@ function resetFilter() {
                         </td>
 
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center">
-                            Belum ada surat keluar
-                        </td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
 
@@ -196,6 +190,7 @@ function resetFilter() {
                 lengthChange: true,
                 pageLength: 10,
                 columnDefs: [{
+                    targets: 0,
                     orderable: false
                 }],
                 language: {
@@ -208,12 +203,15 @@ function resetFilter() {
                         next: "›",
                         previous: "‹"
                     },
-                    emptyTable: "Tidak ada data pengajuan"
+                    emptyTable: "Tidak ada data surat masuk"
                 },
                 drawCallback: function(settings) {
-                    // Ensure the row numbers are updated after each table draw
-                    resetRowNumbers
-                        (); // This ensures that row numbers are recalculated every time the table is drawn
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
                 }
             });
 

@@ -89,50 +89,47 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
-
     public function indexPembayaranPetugas()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    $pengajuan = PengajuanPemeriksaanKapal::with([
-        'user',
-        'penagihan.pembayaran',
-        'agendaSuratPengajuan',
-    ])
-        ->where('wilayah_kerja', $user->wilayah_kerja)
-        ->latest() // sama dengan orderBy('created_at', 'desc')
-        ->get();
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $user->wilayah_kerja)
+            ->latest() // sama dengan orderBy('created_at', 'desc')
+            ->get();
 
-    return view('pages.petugas.pembayaran', [
-        'pengajuan' => $pengajuan,
-    ]);
-}
+        return view('pages.petugas.pembayaran', [
+            'pengajuan' => $pengajuan,
+        ]);
+    }
 
     public function indexPemeriksa()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-  
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'penagihan.petugas',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $user->wilayah_kerja)
+            ->latest() // tampil terbaru dulu
+            ->get();
 
-    $pengajuan = PengajuanPemeriksaanKapal::with([
-        'user',
-        'penagihan.pembayaran',
-        'penagihan.petugas',
-        'agendaSuratPengajuan',
-    ])
-        ->where('wilayah_kerja', $user->wilayah_kerja)
-        ->latest() // tampil terbaru dulu
-        ->get();
+        $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
+            ->whereNotIn('role', ['admin', 'user'])
+            ->get();
 
-    $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
-        ->whereNotIn('role', ['admin', 'user'])
-        ->get();
-
-    return view('pages.petugas.pemeriksa', [
-        'pengajuan' => $pengajuan,
-        'petugas' => $petugas,
-    ]);
-}
+        return view('pages.petugas.pemeriksa', [
+            'pengajuan' => $pengajuan,
+            'petugas' => $petugas,
+        ]);
+    }
 
     public function verifikasi(Request $request, Pembayaran $pembayaran)
     {
@@ -236,80 +233,185 @@ class DashboardPetugasController extends Controller
         return redirect()->back()->with('error', 'Status pengajuan tidak dapat diperbarui.');
     }
 
+    // public function arsipkan(Request $request, $id)
+    // {
+    //     // Find the PengajuanPemeriksaanKapal record to archive
+    //     $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+    //     // Get the current year
+    //     $currentYear = date('Y');
+
+    //     // Get the logged-in user's wilker
+    //     $wilker = auth()->user()->wilayah_kerja;
+
+    //     // Set the wilayah kerja code based on the wilker
+    //     $wilkerCode = '';
+    //     switch ($wilker) {
+    //         case 'dwikora':
+    //             $wilkerCode = 'C.X.1.11';
+    //             break;
+    //         case 'kendawangan':
+    //             $wilkerCode = 'C.X.1.9';
+    //             break;
+    //         case 'ketapang':
+    //             $wilkerCode = 'C.X.1.8';
+    //             break;
+    //         case 'kijing':
+    //             $wilkerCode = 'C.X.1.12';
+    //             break;
+    //         case 'padang tikar':
+    //             $wilkerCode = 'C.X.1.10';
+    //             break;
+    //         default:
+    //             $wilkerCode = 'C.X.1.11'; // Default if no match
+    //             break;
+    //     }
+
+    //     // Generate the nomor surat masuk otomatis (incrementing logic)
+    //     $lastSuratMasuk = AgendaSuratPengajuan::where('nomor_surat_masuk', 'like', 'AR.02.01/'.$wilkerCode.'/%/'.$currentYear)
+    //         ->orderBy('id', 'desc')
+    //         ->first();
+
+    //     $suratMasukNumber = $lastSuratMasuk ? (int) explode('/', $lastSuratMasuk->nomor_surat_masuk)[2] + 1 : 1;
+    //     $nomorSuratMasuk = 'AR.02.01/'.$wilkerCode.'/'.$suratMasukNumber.'/'.$currentYear;
+
+    //     // Generate the nomor surat keluar otomatis (incrementing logic)
+    //     $lastSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', 'like', 'SR.04.02/'.$wilkerCode.'/%/'.$currentYear)
+    //         ->orderBy('id', 'desc')
+    //         ->first();
+
+    //     $suratKeluarNumber = $lastSuratKeluar ? (int) explode('/', $lastSuratKeluar->nomor_surat_keluar)[2] + 1 : 1;
+    //     $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
+
+    //     // Check if the generated nomor_surat_keluar already exists in the database
+    //     $existingSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', $nomorSuratKeluar)->first();
+
+    //     // If the nomor_surat_keluar already exists, regenerate it by incrementing the number
+    //     if ($existingSuratKeluar) {
+    //         $suratKeluarNumber++;
+    //         $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
+    //     }
+
+    //     // Create a new AgendaSuratPengajuan record
+    //     $agenda = AgendaSuratPengajuan::create([
+    //         'nomor_surat_pengajuan' => $request->input('nomor_surat_pengajuan'), // Nomor surat pengajuan diisi manual oleh arsiparis
+    //         'nomor_surat_masuk' => $nomorSuratMasuk,  // Automatically generated and incremented
+    //         'nomor_surat_keluar' => $nomorSuratKeluar, // Automatically generated and ensured unique
+    //         'tanggal_surat' => $request->input('tanggal_surat'), // Tanggal surat dari arsiparis
+    //     ]);
+
+    //     // Update the PengajuanPemeriksaanKapal record with the new agenda_surat_pengajuan_id
+    //     $pengajuan->update([
+    //         'agenda_surat_pengajuan_id' => $agenda->id, // Link the new AgendaSuratPengajuan
+    //     ]);
+
+    //     // Redirect back with a success message
+    //     return back()->with('success', 'Pengajuan berhasil diarsipkan.');
+    // }
+
     public function arsipkan(Request $request, $id)
     {
-        // Find the PengajuanPemeriksaanKapal record to archive
         $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
 
-        // Get the current year
         $currentYear = date('Y');
+        $wilker = strtolower(auth()->user()->wilayah_kerja);
 
-        // Get the logged-in user's wilker
-        $wilker = auth()->user()->wilayah_kerja;
+        /*
+        |--------------------------------------------------------------------------
+        | Mapping Kode Wilker
+        |--------------------------------------------------------------------------
+        */
+        $wilkerMapping = [
+            'dwikora' => [
+                'kode' => 'C.X.1.11',
+                'start' => 262,
+            ],
+            'kendawangan' => [
+                'kode' => 'C.X.1.9',
+                'start' => 1,
+            ],
+            'ketapang' => [
+                'kode' => 'C.X.1.8',
+                'start' => 1,
+            ],
+            'kijing' => [
+                'kode' => 'C.X.1.12',
+                'start' => 1,
+            ],
+            'padang tikar' => [
+                'kode' => 'C.X.1.10',
+                'start' => 1,
+            ],
+        ];
 
-        // Set the wilayah kerja code based on the wilker
-        $wilkerCode = '';
-        switch ($wilker) {
-            case 'Dwikora':
-                $wilkerCode = 'C.X.1.11';
-                break;
-            case 'Kendawangan':
-                $wilkerCode = 'C.X.1.9';
-                break;
-            case 'Ketapang':
-                $wilkerCode = 'C.X.1.8';
-                break;
-            case 'Kijing':
-                $wilkerCode = 'C.X.1.12';
-                break;
-            case 'Padang Tikar':
-                $wilkerCode = 'C.X.1.10';
-                break;
-            default:
-                $wilkerCode = 'C.X.1.11'; // Default if no match
-                break;
-        }
+        // Default jika tidak ada
+        $wilkerCode = $wilkerMapping[$wilker]['kode'] ?? 'C.X.1.11';
+        $startNumber = $wilkerMapping[$wilker]['start'] ?? 1;
 
-        // Generate the nomor surat masuk otomatis (incrementing logic)
-        $lastSuratMasuk = AgendaSuratPengajuan::where('nomor_surat_masuk', 'like', 'AR.02.01/'.$wilkerCode.'/%/'.$currentYear)
-            ->orderBy('id', 'desc')
-            ->first();
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Nomor Surat Masuk
+        |--------------------------------------------------------------------------
+        */
+        $nomorSuratMasuk = $this->generateNomorSurat(
+            'AR.02.01',
+            $wilkerCode,
+            $currentYear,
+            $startNumber,
+            'nomor_surat_masuk'
+        );
 
-        $suratMasukNumber = $lastSuratMasuk ? (int) explode('/', $lastSuratMasuk->nomor_surat_masuk)[2] + 1 : 1;
-        $nomorSuratMasuk = 'AR.02.01/'.$wilkerCode.'/'.$suratMasukNumber.'/'.$currentYear;
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Nomor Surat Keluar
+        |--------------------------------------------------------------------------
+        */
+        $nomorSuratKeluar = $this->generateNomorSurat(
+            'SR.04.02',
+            $wilkerCode,
+            $currentYear,
+            $startNumber,
+            'nomor_surat_keluar'
+        );
 
-        // Generate the nomor surat keluar otomatis (incrementing logic)
-        $lastSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', 'like', 'SR.04.02/'.$wilkerCode.'/%/'.$currentYear)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $suratKeluarNumber = $lastSuratKeluar ? (int) explode('/', $lastSuratKeluar->nomor_surat_keluar)[2] + 1 : 1;
-        $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
-
-        // Check if the generated nomor_surat_keluar already exists in the database
-        $existingSuratKeluar = AgendaSuratPengajuan::where('nomor_surat_keluar', $nomorSuratKeluar)->first();
-
-        // If the nomor_surat_keluar already exists, regenerate it by incrementing the number
-        if ($existingSuratKeluar) {
-            $suratKeluarNumber++;
-            $nomorSuratKeluar = 'SR.04.02/'.$wilkerCode.'/'.$suratKeluarNumber.'/'.$currentYear;
-        }
-
-        // Create a new AgendaSuratPengajuan record
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Agenda
+        |--------------------------------------------------------------------------
+        */
         $agenda = AgendaSuratPengajuan::create([
-            'nomor_surat_pengajuan' => $request->input('nomor_surat_pengajuan'), // Nomor surat pengajuan diisi manual oleh arsiparis
-            'nomor_surat_masuk' => $nomorSuratMasuk,  // Automatically generated and incremented
-            'nomor_surat_keluar' => $nomorSuratKeluar, // Automatically generated and ensured unique
-            'tanggal_surat' => $request->input('tanggal_surat'), // Tanggal surat dari arsiparis
+            'nomor_surat_pengajuan' => $request->input('nomor_surat_pengajuan'),
+            'nomor_surat_masuk' => $nomorSuratMasuk,
+            'nomor_surat_keluar' => $nomorSuratKeluar,
+            'tanggal_surat' => $request->input('tanggal_surat'),
         ]);
 
-        // Update the PengajuanPemeriksaanKapal record with the new agenda_surat_pengajuan_id
+        /*
+        |--------------------------------------------------------------------------
+        | Update Pengajuan
+        |--------------------------------------------------------------------------
+        */
         $pengajuan->update([
-            'agenda_surat_pengajuan_id' => $agenda->id, // Link the new AgendaSuratPengajuan
+            'agenda_surat_pengajuan_id' => $agenda->id,
         ]);
 
-        // Redirect back with a success message
         return back()->with('success', 'Pengajuan berhasil diarsipkan.');
+    }
+
+    private function generateNomorSurat($prefix, $wilkerCode, $year, $startNumber, $field)
+    {
+        $last = AgendaSuratPengajuan::where($field, 'like', "$prefix/$wilkerCode/%/$year")
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($last) {
+            $lastNumber = (int) explode('/', $last->$field)[2];
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = $startNumber;
+        }
+
+        return "$prefix/$wilkerCode/$nextNumber/$year";
     }
 
     public function indexKeuangan()
