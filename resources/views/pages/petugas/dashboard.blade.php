@@ -3,7 +3,7 @@
     Dashboard Petugas
 @endsection
 @section('content')
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Penagihan</h2>
@@ -57,7 +57,7 @@
         @endif
 
 
-        <table id="pengajuanTable" class="nowrap w-100">
+        <table id="pengajuanTable" class="">
             <thead>
                 <tr>
                     <th>No</th>
@@ -173,14 +173,13 @@
                                 {{-- WAKTU MULAI DAN SELESAI --}}
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Mulai</label>
-                                    <input type="datetime-local" name="waktu_mulai" class="form-control" required
-                                        data-id="{{ $item->id }}" lang="id" id="waktu_mulai" >
+                                    <input type="text" name="waktu_mulai" id="waktu_mulai" class="form-control" required data-id="{{ $item->id }}" id="waktu_mulai">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
-                                    <input type="datetime-local" name="waktu_selesai" class="form-control" required
-                                        data-id="{{ $item->id }}" lang="id" id="waktu_selesai" >
+                                    
+                                        <input type="text" name="waktu_selesai" id="waktu_selesai" class="form-control" required data-id="{{ $item->id }}" id="waktu_selesai">
                                 </div>
 
 
@@ -228,16 +227,36 @@
             <p>✅ Semua pengajuan sudah diagendakan!</p>
         </div>
     </div>
-@endsection
-@push('script')
-<script>
-    // Mencegah input manual pada datetime-local input
-    document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        input.addEventListener('keydown', function(event) {
-            event.preventDefault(); // Mencegah input manual
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            flatpickr("#waktu_mulai", {
+                enableTime: true,
+                dateFormat: "d-m-Y H:i",
+                time_24hr: true,
+                allowInput: false, // ❌ tidak bisa mengetik
+                minuteIncrement: 1
+            });
+            flatpickr("#waktu_selesai", {
+                enableTime: true,
+                dateFormat: "d-m-Y H:i",
+                time_24hr: true,
+                allowInput: false, // ❌ tidak bisa mengetik
+                minuteIncrement: 1
+            });
         });
-    });
-</script>
+    </script>
+@endsection
+
+@push('script')
+    <script>
+        // Mencegah input manual pada datetime-local input
+        // document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
+        //     input.addEventListener('keydown', function(event) {
+        //         event.preventDefault(); // Mencegah input manual
+        //     });
+        // });
+    </script>
     <script>
         // Menangani input dengan format 24 jam pada saat pemilihan waktu
         document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
@@ -249,7 +268,7 @@
                     hours = '0' + hours;
                 }
                 event.target.value = event.target.value.split('T')[0] + 'T' + hours + ':' +
-                minutes; // Gabungkan kembali
+                    minutes; // Gabungkan kembali
             });
         });
     </script>
@@ -368,18 +387,6 @@
             });
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
         // Prevent petugas duplication
         document.querySelectorAll('.petugas-select').forEach(select => {
             select.addEventListener('change', function() {
@@ -422,7 +429,6 @@
                     orderable: false
                 }],
 
-                scrollX: true,
 
 
                 language: {

@@ -33,9 +33,17 @@
                 <label>Jenis Dokumen</label>
                 <select id="filterJenisDokumen">
                     <option value="">Semua Dokumen</option>
-                    <option value="PHQC">PHQC</option>
-                    <option value="SSCEC">SSCEC</option>
-                    <option value="COP">COP</option>
+
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status Pembayaran</label>
+                <select id="filterStatusPembayaran">
+                    <option value="">Semua Status Pembayaran</option>
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                    <option value="Ditolak">Ditolak</option>
                 </select>
             </div>
             <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
@@ -96,7 +104,6 @@
                                 </a>
                             @else
                                 <span class="badge bg-secondary">Belum Upload</span>
-
                             @endif
                         </td>
 
@@ -115,7 +122,7 @@
                                         data-bs-target="#verifikasiModal{{ $item->id }}">
                                         Verifikasi
                                     </button>
-                                {{-- @elseif ($item->penagihan->pembayaran->status === 'diterima')
+                                    {{-- @elseif ($item->penagihan->pembayaran->status === 'diterima')
                                     <span class="badge bg-success d-block mb-2">Lunas</span>
                                 @elseif ($item->penagihan->pembayaran->status === 'ditolak')
                                     <span class="badge bg-danger d-block mb-2">Ditolak</span> --}}
@@ -153,7 +160,6 @@
                                 @endif
                             @else
                                 <span class="badge bg-secondary d-block mb-2">Belum Ada Tagihan</span>
-
                             @endif
 
                             {{-- Tombol Edit Pengajuan hanya jika status pengajuan Ditolak --}}
@@ -246,7 +252,6 @@
                     orderable: false
                 }],
 
-                scrollX: true,
 
 
                 language: {
@@ -268,7 +273,7 @@
                         page: 'current'
                     }).nodes().each(function(cell, i) {
                         cell.innerHTML = i + 1 + settings
-                        ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
+                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
                     });
                 }
             });
@@ -284,6 +289,7 @@
             const filterPerusahaan = document.getElementById('filterPerusahaan');
             const filterJenisDokumen = document.getElementById('filterJenisDokumen');
             const searchInput = document.getElementById('searchPengajuan');
+            const filterStatusPembayaran = document.getElementById('filterStatusPembayaran');
 
             const rows = document.querySelectorAll('table tbody tr');
 
@@ -293,16 +299,20 @@
             const tahunSet = new Set();
             const bulanSet = new Set();
             const perusahaanSet = new Set();
+            const jenisDokumenSet = new Set();
 
             rows.forEach(row => {
                 const tanggal = row.cells[1].innerText; // dd-mm-yyyy
-                const perusahaan = row.cells[3].innerText.trim();
+                const perusahaan = row.cells[4].innerText.trim();
+                const jenisDokumen = row.cells[6].innerText.trim(); // Get from the "Jenis Dokumen" column
 
                 const [day, month, year] = tanggal.split('-');
 
                 tahunSet.add(year);
                 bulanSet.add(month);
                 if (perusahaan !== '-') perusahaanSet.add(perusahaan);
+                if (jenisDokumen !== '-') jenisDokumenSet.add(
+                jenisDokumen); // Add document types dynamically
             });
 
             [...tahunSet].sort().forEach(tahun => {
@@ -317,6 +327,11 @@
                 filterPerusahaan.innerHTML += `<option value="${p}">${p}</option>`;
             });
 
+            [...jenisDokumenSet].sort().forEach(dokumen => {
+                filterJenisDokumen.innerHTML +=
+                `<option value="${dokumen}">${dokumen}</option>`; // Dynamically populate Jenis Dokumen
+            });
+
             /* =====================
                FILTER + SEARCH
             ===================== */
@@ -326,14 +341,17 @@
                 const perusahaan = filterPerusahaan.value.toLowerCase();
                 const jenis = filterJenisDokumen.value.toLowerCase();
                 const search = searchInput.value.toLowerCase();
+                const statusPembayaran = filterStatusPembayaran.value.toLowerCase();
 
                 let visibleCount = 0;
 
                 rows.forEach(row => {
                     const tanggalText = row.cells[1].innerText;
                     const kapalText = row.cells[2].innerText.toLowerCase();
-                    const perusahaanText = row.cells[3].innerText.toLowerCase();
-                    const jenisText = row.cells[5].innerText.toLowerCase();
+                    const perusahaanText = row.cells[4].innerText.toLowerCase();
+                    const jenisText = row.cells[6].innerText.toLowerCase(); // Jenis Dokumen column
+                    const statusPembayaranText = row.cells[11].innerText
+                .toLowerCase(); // Status Pembayaran column
 
                     const [day, month, year] = tanggalText.split('-');
 
@@ -343,7 +361,7 @@
                     if (bulan && month !== bulan) show = false;
                     if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
                     if (jenis && !jenisText.includes(jenis)) show = false;
-
+                    if (statusPembayaran && !statusPembayaranText.includes(statusPembayaran)) show = false;
                     if (search &&
                         !kapalText.includes(search) &&
                         !perusahaanText.includes(search)
@@ -357,10 +375,12 @@
                     visibleCount === 0 ? 'block' : 'none';
             }
 
+            // Add event listeners for filter changes
             filterTahun.addEventListener('change', applyFilter);
             filterBulan.addEventListener('change', applyFilter);
             filterPerusahaan.addEventListener('change', applyFilter);
             filterJenisDokumen.addEventListener('change', applyFilter);
+            filterStatusPembayaran.addEventListener('change', applyFilter);
             searchInput.addEventListener('keyup', applyFilter);
 
         });

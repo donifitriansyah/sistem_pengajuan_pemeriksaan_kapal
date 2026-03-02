@@ -161,7 +161,6 @@
                     orderable: false
                 }],
 
-                scrollX: true,
 
                 language: {
                     search: "Cari:",
