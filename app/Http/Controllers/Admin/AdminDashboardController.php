@@ -9,13 +9,11 @@ use Illuminate\Http\Request;
 class AdminDashboardController extends Controller
 {
     public function index(Request $request)
-    {
-        // Fetch all the data you need
-        $pengajuanPemeriksaans = PengajuanPemeriksaanKapal::all();
+{
+    $pengajuanPemeriksaans = PengajuanPemeriksaanKapal::latest()->get();
 
-        // Return the view with the data
-        return view('pages.admin.daftar-pengajuan', compact('pengajuanPemeriksaans'));
-    }
+    return view('pages.admin.daftar-pengajuan', compact('pengajuanPemeriksaans'));
+}
 
     public function destroy($id)
     {
