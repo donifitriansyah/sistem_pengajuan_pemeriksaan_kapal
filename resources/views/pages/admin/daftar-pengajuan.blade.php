@@ -157,7 +157,7 @@
 
                 // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
-                    targets: [0, 10],
+                    targets: [0, 9],
                     orderable: false
                 }],
 
