@@ -132,7 +132,7 @@
                                         Hapus
                                     </button>
                                 </form>
-                            <td>
+                            </td>
 
                         </tr>
                     @endforeach
