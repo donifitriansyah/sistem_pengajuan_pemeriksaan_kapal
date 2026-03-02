@@ -16,4 +16,15 @@ class AdminDashboardController extends Controller
         // Return the view with the data
         return view('pages.admin.daftar-pengajuan', compact('pengajuanPemeriksaans'));
     }
+
+    public function destroy($id)
+    {
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        $pengajuan->delete();
+
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Data pengajuan berhasil dihapus.');
+    }
 }

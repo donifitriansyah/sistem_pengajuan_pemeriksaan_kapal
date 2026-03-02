@@ -44,6 +44,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+    Route::delete('/admin/dashboard/{id}', [AdminDashboardController::class, 'destroy'])
+    ->name('dashboard.destroy');
+
     Route::resource('approval', ApprovalUserController::class);
 
     Route::get('/admin/approval', [ApprovalUserController::class, 'index'])

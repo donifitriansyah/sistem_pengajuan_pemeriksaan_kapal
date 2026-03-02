@@ -90,6 +90,7 @@
                         <th>Jenis Dokumen</th>
                         <th>Kode Bayar</th>
                         <th>Status Pembayaran</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,6 +123,17 @@
                                     @endif
                                 @endif
                             </td>
+                            <td>
+                                <form action="{{ route('admin.dashboard.destroy', $pengajuan->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Hapus
+                                    </button>
+                                </form>
+                            <td>
+
                         </tr>
                     @endforeach
                 </tbody>
@@ -145,9 +157,11 @@
 
                 // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
-                    targets: [0, 8],
+                    targets: [0, 10],
                     orderable: false
                 }],
+
+                scrollX: true,
 
                 language: {
                     search: "Cari:",
