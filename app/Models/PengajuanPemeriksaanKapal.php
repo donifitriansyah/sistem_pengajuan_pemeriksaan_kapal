@@ -30,6 +30,16 @@ class PengajuanPemeriksaanKapal extends Model
         'user_id',
     ];
 
+        public function setNamaKapalAttribute($value)
+    {
+        $this->attributes['nama_kapal'] = strtoupper($value);
+    }
+
+    public function setLokasiKapalAttribute($value)
+    {
+        $this->attributes['lokasi_kapal'] = strtoupper($value);
+    }
+
     protected $casts = [
         'waktu_kedatangan_kapal' => 'datetime',
     ];
