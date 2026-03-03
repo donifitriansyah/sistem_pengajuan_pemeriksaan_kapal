@@ -191,7 +191,7 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::delete('/user/{id}', [UserManagementController::class, 'destroy'])
         ->name('user.destroy');
 
-    Route::post('/petugas/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
+    Route::put('/petugas/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
 
 });
 
