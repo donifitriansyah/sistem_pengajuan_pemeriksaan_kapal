@@ -336,7 +336,7 @@ class DashboardPetugasController extends Controller
             ],
             'kijing' => [
                 'kode' => 'C.X.1.12',
-                'start' => 1,
+                'start' => 42,
             ],
             'padang tikar' => [
                 'kode' => 'C.X.1.10',
