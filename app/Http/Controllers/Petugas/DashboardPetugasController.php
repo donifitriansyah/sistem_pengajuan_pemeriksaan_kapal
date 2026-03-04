@@ -22,51 +22,24 @@ class DashboardPetugasController extends Controller
 
         $wilayah_kerja = $user->wilayah_kerja;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Pengajuan yang BUTUH PENAGIHAN
-        |--------------------------------------------------------------------------
-        | Kriteria:
-        | - Sesuai wilayah kerja
-        | - Tidak ditolak (status null tetap aman)
-        | - Sudah diarsipkan
-        | - Belum punya penagihan
-        */
         $pengajuan = PengajuanPemeriksaanKapal::with([
             'user',
             'agendaSuratPengajuan',
         ])
             ->where('wilayah_kerja', $wilayah_kerja)
-
-            // Tidak ditolak (handle null)
             ->where(function ($query) {
                 $query->whereNull('status')
                     ->orWhere('status', '!=', 'Ditolak');
             })
-
-            // Sudah diarsipkan
             ->whereNotNull('agenda_surat_pengajuan_id')
-
-            // Belum punya penagihan
             ->doesntHave('penagihan')
-
             ->latest()
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Petugas sesuai wilayah kerja
-        |--------------------------------------------------------------------------
-        */
         $petugas = User::where('wilayah_kerja', $wilayah_kerja)
             ->whereNotIn('role', ['admin', 'user'])
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Data Penagihan (opsional, jika masih dibutuhkan)
-        |--------------------------------------------------------------------------
-        */
         $penagihanData = Penagihan::with('petugas')
             ->whereHas('petugas', function ($query) use ($wilayah_kerja) {
                 $query->where('wilayah_kerja', $wilayah_kerja);
@@ -124,23 +97,21 @@ class DashboardPetugasController extends Controller
     {
         $user = auth()->user();
 
-        if (! $user || ! $user->wilayah_kerja) {
-            abort(403, 'Wilayah kerja tidak ditemukan.');
-        }
-
         $pengajuan = PengajuanPemeriksaanKapal::with([
             'user',
             'penagihan.pembayaran',
             'agendaSuratPengajuan',
         ])
-            // Filter berdasarkan wilayah kerja
             ->where('wilayah_kerja', $user->wilayah_kerja)
 
-            // Hanya yang punya penagihan DAN pembayaran
-            ->whereHas('penagihan.pembayaran', function ($query) {
-                $query->where('status', 'Menunggu Verifikasi');
+            // hanya yang menunggu verifikasi
+            ->whereHas('penagihan')
+            ->where(function ($query) {
+                $query->whereDoesntHave('penagihan.pembayaran')
+                    ->orWhereHas('penagihan.pembayaran', function ($q) {
+                        $q->where('status', 'menunggu');
+                    });
             })
-
             ->latest()
             ->get();
 
@@ -417,36 +388,43 @@ class DashboardPetugasController extends Controller
 
     public function indexKeuangan()
     {
-        // Get the logged-in user
         $user = auth()->user();
 
-        // Get the logged-in user's wilayah_kerja
-        $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
+        if (! $user || ! $user->wilayah_kerja) {
+            abort(403, 'Wilayah kerja tidak ditemukan.');
+        }
 
-        // Fetch all PengajuanPemeriksaanKapal, regardless of whether they have an agenda or not
-        // and filter by the user's wilayah kerja, including the related agenda_surat_pengajuan
-        $pengajuan = PengajuanPemeriksaanKapal::with(['user', 'agendaSuratPengajuan']) // Eager load 'agendaSuratPengajuan' relation
-            ->where('wilayah_kerja', $wilayah_kerja) // Filter by user's wilayah kerja
+        $wilayah_kerja = $user->wilayah_kerja;
+
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $wilayah_kerja)
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', '!=', 'Ditolak');
+            })
+            ->whereNotNull('agenda_surat_pengajuan_id')
+            ->doesntHave('penagihan')
             ->latest()
             ->get();
 
-        // Fetch all petugas-kapal (users with role 'petugas-kapal') and filter by wilayah_kerja
         $petugas = User::where('wilayah_kerja', $wilayah_kerja)
             ->whereNotIn('role', ['admin', 'user'])
             ->get();
 
-        // Fetch penagihan records, filtering based on wilayah_kerja if necessary
-        $penagihanData = Penagihan::with('petugas') // Add relations as needed
+        $penagihanData = Penagihan::with('petugas')
             ->whereHas('petugas', function ($query) use ($wilayah_kerja) {
-                $query->where('wilayah_kerja', $wilayah_kerja); // Ensure petugas are from the same wilayah_kerja
+                $query->where('wilayah_kerja', $wilayah_kerja);
             })
+            ->latest()
             ->get();
 
-        // Pass the filtered data to the view
         return view('pages.petugas.dashboard', [
             'pengajuan' => $pengajuan,
             'petugas' => $petugas,
-            'penagihanData' => $penagihanData, // Make sure this is passed
+            'penagihanData' => $penagihanData,
         ]);
     }
 }
