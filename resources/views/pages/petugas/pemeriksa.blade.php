@@ -115,7 +115,7 @@
                         <th>Lokasi Pemeriksaan</th>
                         <th>Waktu Mulai</th>
                         <th>Waktu Selesai</th>
-                        <th>Transport</th>
+                        <th>Biaya</th>
 
                         <th>Aksi</th>
                     </tr>
@@ -142,14 +142,14 @@
                             <td>{{ $item->lokasi_kapal }}</td>
                             <td>
                                 @if (isset($item->penagihan->waktu_mulai))
-                                    {{ \Carbon\Carbon::parse($item->penagihan->waktu_mulai)->format('d-m-Y H:i') }}
+                                    {{ \Carbon\Carbon::parse($item->penagihan->waktu_mulai)->format('H:i') }}
                                 @else
                                     -
                                 @endif
                             </td>
                             <td>
                                 @if (isset($item->penagihan->waktu_selesai))
-                                    {{ \Carbon\Carbon::parse($item->penagihan->waktu_selesai)->format('d-m-Y H:i') }}
+                                    {{ \Carbon\Carbon::parse($item->penagihan->waktu_selesai)->format('H:i') }}
                                 @else
                                     -
                                 @endif
