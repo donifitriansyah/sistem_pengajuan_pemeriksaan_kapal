@@ -96,33 +96,31 @@
                         </td>
 
                         <td>
-                            <!-- Check if agenda_surat_pengajuan_id is null, show "Belum Diarsipkan" -->
-                            @if (is_null($item->agenda_surat_pengajuan_id))
+                            {{-- Jika status ditolak --}}
+                            @if ($item->status === 'Ditolak')
+                                <span class="badge bg-dark">Ditolak</span>
+
+                                {{-- Jika belum diarsipkan --}}
+                            @elseif (is_null($item->agenda_surat_pengajuan_id))
                                 <span class="badge bg-danger">Belum Diarsipkan</span>
                             @else
-                                <!-- Check if penagihan exists -->
                                 @php
                                     $penagihan = $item->penagihan;
                                 @endphp
 
                                 @if ($penagihan)
-                                    <!-- If penagihan exists, check the payment status -->
                                     @if ($penagihan->isLunas())
                                         <span class="badge bg-success">Lunas</span>
                                     @else
                                         <span class="badge bg-warning">Belum Bayar</span>
                                     @endif
                                 @else
-                                    <!-- If no penagihan exists, show the button to create penagihan -->
                                     <button class="btn btn-warning" data-bs-toggle="modal"
                                         data-bs-target="#modalPenagihan{{ $item->id }}">
                                         Buat Penagihan
                                     </button>
                                 @endif
                             @endif
-
-
-
                         </td>
 
                     </tr>
@@ -170,13 +168,15 @@
                                 {{-- WAKTU MULAI DAN SELESAI --}}
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Mulai</label>
-                                    <input type="text" name="waktu_mulai" id="waktu_mulai" class="form-control" required data-id="{{ $item->id }}" id="waktu_mulai">
+                                    <input type="text" name="waktu_mulai" id="waktu_mulai" class="form-control" required
+                                        data-id="{{ $item->id }}" id="waktu_mulai">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
 
-                                        <input type="text" name="waktu_selesai" id="waktu_selesai" class="form-control" required data-id="{{ $item->id }}" id="waktu_selesai">
+                                    <input type="text" name="waktu_selesai" id="waktu_selesai" class="form-control"
+                                        required data-id="{{ $item->id }}" id="waktu_selesai">
                                 </div>
 
 
