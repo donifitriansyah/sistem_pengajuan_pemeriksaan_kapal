@@ -218,8 +218,7 @@
                         <td>{{ $item->jenis_dokumen }}</td>
                         <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
                         <td>{{ $item->status }}</td>
-                        <td>
-                            {{-- Aksi sesuai status --}}
+                        {{-- <td>
                             @if (!$item->penagihan)
                                 <span class="badge bg-secondary">Belum Ada Tagihan</span>
                             @elseif($item->penagihan->status_bayar === 'belum_bayar')
@@ -255,11 +254,77 @@
                             @endif
 
                             @if ($item->status === 'Ditolak')
-                                <!-- Button to Edit "Ditolak" status -->
                                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#editPengajuanModal{{ $item->id }}">
                                     Edit Pengajuan
                                 </button>
+                            @endif
+                        </td> --}}
+                        <td>
+                            {{-- Jika belum diagendakan --}}
+                            @if (is_null($item->agenda_surat_pengajuan_id))
+                                <span class="badge bg-danger">Menunggu Verifikasi</span>
+
+                                <form action="{{ route('user.destroy', $item->id) }}" method="POST"
+                                    class="mt-1" onsubmit="return confirm('Yakin ingin menghapus pengajuan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Hapus Pengajuan
+                                    </button>
+                                </form>
+
+                                {{-- Jika sudah diagendakan, lanjut cek penagihan --}}
+                            @else
+                                {{-- Jika belum ada tagihan --}}
+                                @if (!$item->penagihan)
+                                    <span class="badge bg-secondary">Belum Ada Tagihan</span>
+                                @elseif($item->penagihan->status_bayar === 'belum_bayar')
+                                    <span class="badge bg-warning text-dark mb-2">Belum Bayar</span>
+                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success">
+                                        Lihat Invoice
+                                    </a>
+
+                                    <div class="mt-1">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                            data-bs-target="#modalBayar{{ $item->id }}">
+                                            Bayar Tagihan
+                                        </button>
+                                    </div>
+                                @elseif($item->penagihan->status_bayar === 'menunggu')
+                                    <span class="badge bg-info">Menunggu Verifikasi</span>
+                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success">
+                                        Lihat Invoice
+                                    </a>
+                                @elseif($item->penagihan->status_bayar === 'ditolak')
+                                    <span class="badge bg-danger">Pembayaran Ditolak</span>
+                                    <div class="mt-1">
+                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#modalBayar{{ $item->id }}">
+                                            Upload Ulang Bukti
+                                        </button>
+                                    </div>
+                                @elseif($item->penagihan->status_bayar === 'diterima')
+                                    <span class="badge bg-success">Lunas</span>
+                                    <div class="mt-1">
+                                        <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
+                                            class="btn btn-sm btn-success mb-2">
+                                            Lihat Kwitansi
+                                        </a>
+                                    </div>
+                                @endif
+                            @endif
+
+                            {{-- Jika status pengajuan ditolak --}}
+                            @if ($item->status === 'Ditolak')
+                                <div class="mt-1">
+                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#editPengajuanModal{{ $item->id }}">
+                                        Edit Pengajuan
+                                    </button>
+                                </div>
                             @endif
                         </td>
                     </tr>
@@ -423,8 +488,10 @@
 
                                     <div class="ps-3">
                                         <div class="fw-bold text-success">Bank:<strong> BNI</strong></div>
-                                        <div class="fw-bold text-success">Nama Rekening:<strong> RPL 042 PS BKK KLS I PONTIANAK PEMERINTAH</strong> </div>
-                                        <div class="fw-bold text-success">Nomor Rekening:<strong> 2021619829</strong> </div>
+                                        <div class="fw-bold text-success">Nama Rekening:<strong> RPL 042 PS BKK KLS I
+                                                PONTIANAK PEMERINTAH</strong> </div>
+                                        <div class="fw-bold text-success">Nomor Rekening:<strong> 2021619829</strong>
+                                        </div>
                                     </div>
                                 </div>
 

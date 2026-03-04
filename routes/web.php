@@ -45,7 +45,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::delete('/admin/dashboard/{id}', [AdminDashboardController::class, 'destroy'])
-    ->name('dashboard.destroy');
+        ->name('dashboard.destroy');
 
     Route::resource('approval', ApprovalUserController::class);
 
@@ -79,7 +79,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/user/{id}', [UserManagementController::class, 'destroy'])
         ->name('user.destroy');
 
-
 });
 
 Route::middleware(['auth', 'verified', 'user'])->group(function () {
@@ -88,6 +87,9 @@ Route::middleware(['auth', 'verified', 'user'])->group(function () {
 
     Route::post('/pembayaran/{penagihan}', [UserDashboardController::class, 'store'])
         ->name('user.pembayaran.store');
+
+    Route::delete('/user/delete/{id}', [UserDashboardController::class, 'destroy'])
+        ->name('user.destroy');
 
     Route::post('/pengajuan/store',
         [PengajuanController::class, 'store']
@@ -151,6 +153,9 @@ Route::middleware(['auth', 'petugas'])->group(function () {
 
     Route::get('/petugas/pembayaran', [DashboardPetugasController::class, 'indexPembayaranPetugas'])
         ->name('petugas.dashboard.petugas');
+
+    Route::delete('/petugas/dashboard/{id}', [DashboardPetugasController::class, 'destroy'])
+        ->name('petugas.dashboard.destroy');
 
     Route::get('/dashboard/petugas', [DashboardPetugasController::class, 'index'])
         ->name('petugas.dashboard');

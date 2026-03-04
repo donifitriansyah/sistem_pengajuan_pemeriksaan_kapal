@@ -99,10 +99,25 @@
                             {{-- Jika status ditolak --}}
                             @if ($item->status === 'Ditolak')
                                 <span class="badge bg-dark">Ditolak</span>
-
+                                <form action="{{ route('petugas.dashboard.destroy', $item->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')" class="mt-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Hapus
+                                    </button>
+                                </form>
                                 {{-- Jika belum diarsipkan --}}
                             @elseif (is_null($item->agenda_surat_pengajuan_id))
                                 <span class="badge bg-danger">Belum Diarsipkan</span>
+                                <form action="{{ route('petugas.dashboard.destroy', $item->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')" class="mt-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Hapus
+                                    </button>
+                                </form>
                             @else
                                 @php
                                     $penagihan = $item->penagihan;

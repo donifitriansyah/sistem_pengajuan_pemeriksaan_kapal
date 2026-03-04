@@ -47,6 +47,17 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+    public function destroy($id)
+    {
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        $pengajuan->delete();
+
+        return redirect()
+            ->route('petugas.dashboard')
+            ->with('success', 'Data pengajuan berhasil dihapus.');
+    }
+
     public function indexPengajuan()
     {
         $user = auth()->user();
@@ -291,7 +302,7 @@ class DashboardPetugasController extends Controller
         |--------------------------------------------------------------------------
         */
         $nomorSuratKeluar = $this->generateNomorSurat(
-            'SR.04.02',
+            'SR.02.04',
             $wilkerCode,
             $currentYear,
             $startNumber,

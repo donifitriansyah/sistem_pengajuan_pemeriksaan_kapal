@@ -60,6 +60,16 @@ class UserDashboardController extends Controller
     //         'verify_url' => $verifyUrl,
     //     ]);
     // }
+        public function destroy($id)
+    {
+        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+        $pengajuan->delete();
+
+        return redirect()
+            ->route('user.dashboard')
+            ->with('success', 'Data pengajuan berhasil dihapus.');
+    }
 
     public function cekInvoice($kodeBayar)
     {
