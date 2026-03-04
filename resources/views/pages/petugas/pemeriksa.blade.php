@@ -74,11 +74,7 @@
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Petugas Pemeriksa</h2>
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="searchPengajuan" placeholder="Cari kapal / perusahaan...">
-                </div>
-            </div>
+
         </div>
 
         <div class="filter-container">
