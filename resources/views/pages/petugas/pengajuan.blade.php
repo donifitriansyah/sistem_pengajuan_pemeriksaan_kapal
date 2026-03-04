@@ -60,6 +60,17 @@
                     <option value="COP">COP</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="filterStatus">
+                    <option value="">Semua Status</option>
+                    <option value="Belum Ada Tagihan">Belum Ada Tagihan</option>
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                    <option value="Ditolak">Ditolak</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
             <button class="btn btn-outline" id="resetFilter">Reset</button>
         </div>
 
@@ -145,72 +156,101 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 
         <script>
-            $(document).ready(function() {
-                var table = $('#pengajuanTable').DataTable({
-                    paging: true,
-                    searching: true,
-                    ordering: true,
-                    info: true,
-                    columnDefs: [{
-                            orderable: false,
-                            targets: 7
-                        } // Kolom Aksi tidak bisa di-sort
-                    ]
-                });
+$(document).ready(function() {
 
-                // Populasi filter Tahun, Bulan, Perusahaan
-                var years = new Set();
-                var months = new Set();
-                var perusahaanSet = new Set();
+    var table = $('#pengajuanTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        columnDefs: [
+            { orderable: false, targets: 9 } // kolom Aksi tidak bisa sort
+        ]
+    });
 
-                table.column(1).data().each(function(date) {
-                    var d = new Date(date);
-                    years.add(d.getFullYear());
-                    months.add(d.getMonth() + 1);
-                });
+    // ============================
+    // POPULASI FILTER
+    // ============================
+    var years = new Set();
+    var months = new Set();
+    var perusahaanSet = new Set();
 
-                table.column(3).data().each(function(perusahaan) {
-                    perusahaanSet.add(perusahaan);
-                });
+    table.rows().every(function() {
+        var data = this.data();
 
-                years = Array.from(years).sort();
-                months = Array.from(months).sort((a, b) => a - b);
-                perusahaanSet = Array.from(perusahaanSet).sort();
+        // tanggal format dd-mm-yyyy
+        var parts = data[1].split('-');
+        if(parts.length === 3){
+            years.add(parts[2]);
+            months.add(parts[1]);
+        }
 
-                years.forEach(y => $('#filterTahun').append(`<option value="${y}">${y}</option>`));
-                months.forEach(m => $('#filterBulan').append(`<option value="${m}">${m}</option>`));
-                perusahaanSet.forEach(p => $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`));
+        perusahaanSet.add(data[3]);
+    });
 
-                // Filter kustom
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    var tahun = $('#filterTahun').val();
-                    var bulan = $('#filterBulan').val();
-                    var perusahaan = $('#filterPerusahaan').val();
-                    var dokumen = $('#filterJenisDokumen').val();
+    Array.from(years).sort().forEach(y =>
+        $('#filterTahun').append(`<option value="${y}">${y}</option>`)
+    );
 
-                    var rowDate = new Date(data[1]);
-                    var rowTahun = rowDate.getFullYear();
-                    var rowBulan = rowDate.getMonth() + 1;
-                    var rowPerusahaan = data[3];
-                    var rowDokumen = data[5];
+    Array.from(months).sort().forEach(m =>
+        $('#filterBulan').append(`<option value="${m}">${m}</option>`)
+    );
 
-                    return (!tahun || rowTahun == tahun) &&
-                        (!bulan || rowBulan == bulan) &&
-                        (!perusahaan || rowPerusahaan == perusahaan) &&
-                        (!dokumen || rowDokumen == dokumen);
-                });
+    Array.from(perusahaanSet).sort().forEach(p =>
+        $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
+    );
 
-                $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen').on('change', function() {
-                    table.draw();
-                });
+    // ============================
+    // CUSTOM FILTER (SEMUA DIGABUNG)
+    // ============================
+    $.fn.dataTable.ext.search.push(function(settings, data) {
 
-                // Reset filter
-                $('#resetFilter').on('click', function() {
-                    $('#filterTahun, #filterBulan, #filterPerusahaan, #fi   lterJenisDokumen').val('');
-                    table.draw();
-                });
-            });
-        </script>
+        var tahun = $('#filterTahun').val();
+        var bulan = $('#filterBulan').val();
+        var perusahaan = $('#filterPerusahaan').val();
+        var dokumen = $('#filterJenisDokumen').val();
+        var status = $('#filterStatus').val();
+
+        var tanggal = data[1] || '';
+        var perusahaanRow = data[3] || '';
+        var dokumenRow = data[5] || '';
+        var statusRow = data[6] || '';
+
+        var parts = tanggal.split('-');
+        var rowTahun = parts[2];
+        var rowBulan = parts[1];
+
+        if (tahun && rowTahun !== tahun) return false;
+        if (bulan && rowBulan !== bulan) return false;
+        if (perusahaan && perusahaanRow !== perusahaan) return false;
+        if (dokumen && dokumenRow !== dokumen) return false;
+        if (status && statusRow !== status) return false;
+
+        return true;
+    });
+
+    // ============================
+    // TRIGGER FILTER
+    // ============================
+    $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
+        .on('change', function() {
+            table.draw();
+        });
+
+    // ============================
+    // RESET FILTER
+    // ============================
+    $('#resetFilter').on('click', function() {
+        $('#filterTahun').val('');
+        $('#filterBulan').val('');
+        $('#filterPerusahaan').val('');
+        $('#filterJenisDokumen').val('');
+        $('#filterStatus').val('');
+        table.search('').draw();
+    });
+
+});
+</script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
 
