@@ -62,7 +62,6 @@
                 <tr>
                     <th>No</th>
                     <th>Tanggal Estimasi Pemeriksaan</th>
-                    <th>Waktu Kedatangan Kapal</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
@@ -79,8 +78,6 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('d-m-Y') }}</td>
-
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>
@@ -178,7 +175,7 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
-                                    
+
                                         <input type="text" name="waktu_selesai" id="waktu_selesai" class="form-control" required data-id="{{ $item->id }}" id="waktu_selesai">
                                 </div>
 
