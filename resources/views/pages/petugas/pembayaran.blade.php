@@ -102,9 +102,10 @@
                         <td>
                             @if ($item->penagihan && $item->penagihan->pembayaran)
                                 <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
-                                    class="btn btn-sm btn-primary">
+                                    class="btn btn-sm btn-primary mb-2">
                                     Lihat Bukti
                                 </a>
+                                <span class="badge bg-primary">Rp. {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}</span>
                             @else
                                 <span class="badge bg-secondary">Belum Upload</span>
                             @endif

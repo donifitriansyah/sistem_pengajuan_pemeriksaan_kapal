@@ -157,8 +157,8 @@
 
                             <!-- Display Jenis Tarif from Penagihan -->
                             <td>
-    {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}
-</td>
+                                {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}
+                            </td>
 
                             <td>
                                 <button class="btn btn-info" data-bs-toggle="modal"
