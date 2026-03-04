@@ -229,14 +229,10 @@
             </tbody>
         </table>
 
-        <div id="emptyPengajuan" class="empty-state" style="display:none;">
-            <p>✅ Semua pengajuan sudah diagendakan!</p>
-        </div>
     </div>
 
     <script>
         $(document).ready(function() {
-
             const table = $('#tablePengajuan').DataTable({
                 paging: true,
                 searching: true,
@@ -244,13 +240,10 @@
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
-
                 // Kolom Aksi & No tidak bisa di-sort
                 columnDefs: [{
                     orderable: false
                 }],
-
-
 
                 language: {
                     search: "Cari:",
@@ -281,28 +274,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             const filterTahun = document.getElementById('filterTahun');
             const filterBulan = document.getElementById('filterBulan');
             const filterPerusahaan = document.getElementById('filterPerusahaan');
             const filterJenisDokumen = document.getElementById('filterJenisDokumen');
             const searchInput = document.getElementById('searchPengajuan');
             const filterStatusPembayaran = document.getElementById('filterStatusPembayaran');
-
             const rows = document.querySelectorAll('table tbody tr');
 
-            /* =====================
-               ISI DROPDOWN OTOMATIS
-            ===================== */
             const tahunSet = new Set();
             const bulanSet = new Set();
             const perusahaanSet = new Set();
             const jenisDokumenSet = new Set();
 
             rows.forEach(row => {
-                const tanggal = row.cells[1].innerText; // dd-mm-yyyy
+                const tanggal = row.cells[1].innerText;
                 const perusahaan = row.cells[4].innerText.trim();
-                const jenisDokumen = row.cells[6].innerText.trim(); // Get from the "Jenis Dokumen" column
+                const jenisDokumen = row.cells[6].innerText.trim();
 
                 const [day, month, year] = tanggal.split('-');
 
@@ -310,7 +298,7 @@
                 bulanSet.add(month);
                 if (perusahaan !== '-') perusahaanSet.add(perusahaan);
                 if (jenisDokumen !== '-') jenisDokumenSet.add(
-                jenisDokumen); // Add document types dynamically
+                jenisDokumen);
             });
 
             [...tahunSet].sort().forEach(tahun => {
@@ -327,12 +315,9 @@
 
             [...jenisDokumenSet].sort().forEach(dokumen => {
                 filterJenisDokumen.innerHTML +=
-                `<option value="${dokumen}">${dokumen}</option>`; // Dynamically populate Jenis Dokumen
+                `<option value="${dokumen}">${dokumen}</option>`;
             });
 
-            /* =====================
-               FILTER + SEARCH
-            ===================== */
             function applyFilter() {
                 const tahun = filterTahun.value;
                 const bulan = filterBulan.value;
@@ -348,7 +333,7 @@
                     const kapalText = row.cells[2].innerText.toLowerCase();
                     const perusahaanText = row.cells[4].innerText.toLowerCase();
                     const jenisText = row.cells[6].innerText.toLowerCase(); // Jenis Dokumen column
-                    const statusPembayaranText = row.cells[11].innerText
+                    const statusPembayaranText = row.cells[10].innerText
                 .toLowerCase(); // Status Pembayaran column
 
                     const [day, month, year] = tanggalText.split('-');
@@ -400,11 +385,4 @@
             document.getElementById('emptyPengajuan').style.display = 'none';
         }
     </script>
-
-
-
-
-
-
-
 @endsection
