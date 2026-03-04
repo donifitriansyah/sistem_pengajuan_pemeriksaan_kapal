@@ -73,7 +73,6 @@
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
-                    <th>Nomor Surat</th>
                     <th>Nomor Surat Tugas</th>
                     <th>Kode Bayar</th>
                     <th>Bukti Bayar</th>
@@ -93,7 +92,6 @@
                         <td>
                             <span class="badge bg-primary">{{ $item->jenis_dokumen }}</span>
                         </td>
-                        <td>{{ $item->agendaSuratPengajuan->nomor_surat_pengajuan ?? '-' }}</td>
                         <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
                         <td>{{ $item->kode_bayar }}</td>
                         <td>

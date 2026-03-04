@@ -167,6 +167,13 @@
 
                                 {{-- JUMLAH PETUGAS --}}
                                 <div class="mb-3">
+                                    <label class="form-label">Update Lokasi Kapal</label>
+                                    <input type="text" name="lokasi" class="form-control"
+                                        value="{{ $item->lokasi_kapal }}" required>
+                                </div>
+
+                                {{-- JUMLAH PETUGAS --}}
+                                <div class="mb-3">
                                     <label class="form-label">Jumlah Petugas</label>
                                     <select name="jumlah_petugas" class="form-select jumlah-petugas"
                                         data-id="{{ $item->id }}" required>
