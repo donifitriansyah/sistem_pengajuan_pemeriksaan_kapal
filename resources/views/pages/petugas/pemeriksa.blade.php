@@ -106,7 +106,6 @@
                         <th>No</th>
                         <th>Tanggal Pemeriksaan</th>
                         <th>Surat Tugas</th>
-                        <th>Wilker</th>
                         <th>Nama Kapal</th>
                         <th>Nama Perusahaan</th>
                         <th>Petugas 1</th>
@@ -127,7 +126,6 @@
                             <td>{{ $key + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                             <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
-                            <td>{{ $item->wilayah_kerja }}</td>
                             <td>{{ $item->nama_kapal }}</td>
                             <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                             <!-- Display Petugas -->
@@ -293,7 +291,6 @@
                 columnDefs: [{
                     orderable: false
                 }],
-                scrollX: true,
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
