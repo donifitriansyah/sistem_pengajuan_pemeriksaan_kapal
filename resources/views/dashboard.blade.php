@@ -193,7 +193,7 @@
             }
         </script>
 
-        <table id="pengajuanTable" class="nowrap w-100">
+        <table id="pengajuanTable">
             <thead>
                 <tr>
                     <th>No</th>
@@ -533,8 +533,6 @@
                     targets: [0, 8], // No & Aksi tidak sortable
                     orderable: false
                 }],
-
-                scrollX: true,
 
                 language: {
                     search: "Cari:",
