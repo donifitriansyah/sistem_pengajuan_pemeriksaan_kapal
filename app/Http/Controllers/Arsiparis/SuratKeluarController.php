@@ -5,23 +5,22 @@ namespace App\Http\Controllers\Arsiparis;
 use App\Http\Controllers\Controller;
 use App\Models\AgendaSuratPengajuan;
 use App\Models\PengajuanPemeriksaanKapal;
-use Illuminate\Http\Request;
 
 class SuratKeluarController extends Controller
 {
     public function index()
     {
-         $user = auth()->user();
+        $user = auth()->user();
         $wilayah_kerja = $user->wilayah_kerja; // Get the user's wilayah_kerja
         $suratKeluar = AgendaSuratPengajuan::with(['pengajuan.user'])
             ->whereHas('pengajuan', function ($query) use ($wilayah_kerja) {
                 $query->where('wilayah_kerja', $wilayah_kerja);
             })
             ->whereNotNull('nomor_surat_keluar')
-            ->orderBy('nomor_surat_keluar', 'desc')
+            ->latest() // otomatis orderBy created_at desc
             ->get();
 
-             // Total Pengajuan
+        // Total Pengajuan
         $totalPengajuan = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
             ->where('status', 'diterima')
             ->count();
@@ -61,6 +60,6 @@ class SuratKeluarController extends Controller
             'totalBelumBayar',
             'totalMenunggu',
             'totalLunas',
-            ));
+        ));
     }
 }
