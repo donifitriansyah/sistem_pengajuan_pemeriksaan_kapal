@@ -136,6 +136,7 @@
                                     data-bs-target="#arsipModal{{ $item->id }}">
                                     Arsipkan
                                 </button>
+                                
                             @endif
                         </td>
 

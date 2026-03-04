@@ -3,11 +3,7 @@
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Pengajuan Belum Diagendakan</h2>
-            <div class="header-actions">
-                <div class="search-box">
-                    <input type="text" id="searchPengajuan" placeholder="Cari kapal / perusahaan...">
-                </div>
-            </div>
+
         </div>
 
         <div class="filter-container">
@@ -41,9 +37,7 @@
                 <select id="filterStatusPembayaran">
                     <option value="">Semua Status Pembayaran</option>
                     <option value="Belum Bayar">Belum Bayar</option>
-                    <option value="Lunas">Lunas</option>
                     <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                    <option value="Ditolak">Ditolak</option>
                 </select>
             </div>
             <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
@@ -82,7 +76,18 @@
 
             <tbody>
                 @foreach ($pengajuan as $item)
-                    <tr>
+                    @php
+                        if (!$item->penagihan || !$item->penagihan->pembayaran) {
+                            $statusFilter = 'belum_bayar';
+                        } elseif ($item->penagihan->pembayaran->status === 'menunggu') {
+                            $statusFilter = 'menunggu';
+                        } elseif ($item->penagihan->pembayaran->status === 'diterima') {
+                            $statusFilter = 'lunas';
+                        } else {
+                            $statusFilter = 'lainnya';
+                        }
+                    @endphp
+                    <tr data-status="{{ $statusFilter }}">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                         <td>{{ $item->wilayah_kerja }}</td>
@@ -132,13 +137,8 @@
                             {{-- Menampilkan status tagihan --}}
                             @if ($item->penagihan)
                                 @if ($item->penagihan->status_bayar === 'belum_bayar' && !$item->penagihan->pembayaran)
-                                    {{-- <span class="badge bg-warning text-dark d-block mb-2">Belum Bayar</span> --}}
-                                    {{-- <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#modalBayar{{ $item->id }}">
-                                        Bayar Tagihan
-                                    </button> --}}
                                 @elseif($item->penagihan->status_bayar === 'menunggu')
-                                    {{-- <span class="badge bg-info d-block mb-2">Menunggu Verifikasi</span> --}}
+
                                 @elseif($item->penagihan->status_bayar === 'ditolak')
                                     {{-- <span class="badge bg-danger d-block mb-2">Pembayaran Ditolak</span>
                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
@@ -231,158 +231,148 @@
 
     </div>
 
-    <script>
-        $(document).ready(function() {
-            const table = $('#tablePengajuan').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                lengthChange: true,
-                pageLength: 10,
-                // Kolom Aksi & No tidak bisa di-sort
-                columnDefs: [{
-                    orderable: false
-                }],
+<script>
+$(document).ready(function() {
 
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    emptyTable: "Tidak ada data pengajuan"
-                },
-                drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
-                    var api = this.api();
-                    api.column(0, {
-                        page: 'current'
-                    }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
-                    });
-                }
+    const table = $('#tablePengajuan').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        lengthChange: true,
+        pageLength: 10,
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            paginate: {
+                first: "Awal",
+                last: "Akhir",
+                next: "›",
+                previous: "‹"
+            },
+            emptyTable: "Tidak ada data pengajuan"
+        },
+        drawCallback: function(settings) {
+            var api = this.api();
+            api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
+                cell.innerHTML = i + 1 + settings._iDisplayStart;
             });
+        }
+    });
 
-        });
-    </script>
+    // ===================================
+    // AUTO GENERATE FILTER OPTIONS
+    // ===================================
+    function generateFilterOptions() {
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterTahun = document.getElementById('filterTahun');
-            const filterBulan = document.getElementById('filterBulan');
-            const filterPerusahaan = document.getElementById('filterPerusahaan');
-            const filterJenisDokumen = document.getElementById('filterJenisDokumen');
-            const searchInput = document.getElementById('searchPengajuan');
-            const filterStatusPembayaran = document.getElementById('filterStatusPembayaran');
-            const rows = document.querySelectorAll('table tbody tr');
+        let tahunSet = new Set();
+        let bulanSet = new Set();
+        let perusahaanSet = new Set();
+        let jenisSet = new Set();
 
-            const tahunSet = new Set();
-            const bulanSet = new Set();
-            const perusahaanSet = new Set();
-            const jenisDokumenSet = new Set();
+        table.rows().every(function() {
 
-            rows.forEach(row => {
-                const tanggal = row.cells[1].innerText;
-                const perusahaan = row.cells[4].innerText.trim();
-                const jenisDokumen = row.cells[6].innerText.trim();
+            let data = this.data();
 
-                const [day, month, year] = tanggal.split('-');
+            let tanggal = data[1];
+            let perusahaan = data[4];
+            let jenisHtml = data[6];
 
-                tahunSet.add(year);
-                bulanSet.add(month);
-                if (perusahaan !== '-') perusahaanSet.add(perusahaan);
-                if (jenisDokumen !== '-') jenisDokumenSet.add(
-                jenisDokumen);
-            });
+            if (!tanggal || !tanggal.includes('-')) return;
 
-            [...tahunSet].sort().forEach(tahun => {
-                filterTahun.innerHTML += `<option value="${tahun}">${tahun}</option>`;
-            });
+            let [day, month, year] = tanggal.split('-');
 
-            [...bulanSet].sort().forEach(bulan => {
-                filterBulan.innerHTML += `<option value="${bulan}">${bulan}</option>`;
-            });
+            tahunSet.add(year);
+            bulanSet.add(month);
 
-            [...perusahaanSet].sort().forEach(p => {
-                filterPerusahaan.innerHTML += `<option value="${p}">${p}</option>`;
-            });
-
-            [...jenisDokumenSet].sort().forEach(dokumen => {
-                filterJenisDokumen.innerHTML +=
-                `<option value="${dokumen}">${dokumen}</option>`;
-            });
-
-            function applyFilter() {
-                const tahun = filterTahun.value;
-                const bulan = filterBulan.value;
-                const perusahaan = filterPerusahaan.value.toLowerCase();
-                const jenis = filterJenisDokumen.value.toLowerCase();
-                const search = searchInput.value.toLowerCase();
-                const statusPembayaran = filterStatusPembayaran.value.toLowerCase();
-
-                let visibleCount = 0;
-
-                rows.forEach(row => {
-                    const tanggalText = row.cells[1].innerText;
-                    const kapalText = row.cells[2].innerText.toLowerCase();
-                    const perusahaanText = row.cells[4].innerText.toLowerCase();
-                    const jenisText = row.cells[6].innerText.toLowerCase(); // Jenis Dokumen column
-                    const statusPembayaranText = row.cells[10].innerText
-                .toLowerCase(); // Status Pembayaran column
-
-                    const [day, month, year] = tanggalText.split('-');
-
-                    let show = true;
-
-                    if (tahun && year !== tahun) show = false;
-                    if (bulan && month !== bulan) show = false;
-                    if (perusahaan && !perusahaanText.includes(perusahaan)) show = false;
-                    if (jenis && !jenisText.includes(jenis)) show = false;
-                    if (statusPembayaran && !statusPembayaranText.includes(statusPembayaran)) show = false;
-                    if (search &&
-                        !kapalText.includes(search) &&
-                        !perusahaanText.includes(search)
-                    ) show = false;
-
-                    row.style.display = show ? '' : 'none';
-                    if (show) visibleCount++;
-                });
-
-                document.getElementById('emptyPengajuan').style.display =
-                    visibleCount === 0 ? 'block' : 'none';
+            if (perusahaan && perusahaan !== '-') {
+                perusahaanSet.add(perusahaan.trim());
             }
 
-            // Add event listeners for filter changes
-            filterTahun.addEventListener('change', applyFilter);
-            filterBulan.addEventListener('change', applyFilter);
-            filterPerusahaan.addEventListener('change', applyFilter);
-            filterJenisDokumen.addEventListener('change', applyFilter);
-            filterStatusPembayaran.addEventListener('change', applyFilter);
-            searchInput.addEventListener('keyup', applyFilter);
+            if (jenisHtml) {
+                let jenisText = $('<div>').html(jenisHtml).text().trim();
+                if (jenisText !== '-') {
+                    jenisSet.add(jenisText);
+                }
+            }
 
         });
 
-        /* =====================
-           RESET FILTER
-        ===================== */
-        function resetFilter() {
-            document.getElementById('filterTahun').value = '';
-            document.getElementById('filterBulan').value = '';
-            document.getElementById('filterPerusahaan').value = '';
-            document.getElementById('filterJenisDokumen').value = '';
-            document.getElementById('searchPengajuan').value = '';
+        tahunSet.forEach(t => {
+            $('#filterTahun').append(`<option value="${t}">${t}</option>`);
+        });
 
-            document.querySelectorAll('table tbody tr').forEach(row => {
-                row.style.display = '';
-            });
+        bulanSet.forEach(b => {
+            $('#filterBulan').append(`<option value="${b}">${b}</option>`);
+        });
 
-            document.getElementById('emptyPengajuan').style.display = 'none';
+        perusahaanSet.forEach(p => {
+            $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`);
+        });
+
+        jenisSet.forEach(j => {
+            $('#filterJenisDokumen').append(`<option value="${j}">${j}</option>`);
+        });
+    }
+
+    generateFilterOptions();
+
+    // ===================================
+    // CUSTOM FILTER DATATABLES
+    // ===================================
+    $.fn.dataTable.ext.search.push(function(settings, data) {
+
+        let tahun = $('#filterTahun').val();
+        let bulan = $('#filterBulan').val();
+        let perusahaan = $('#filterPerusahaan').val().toLowerCase();
+        let jenis = $('#filterJenisDokumen').val().toLowerCase();
+        let statusPembayaran = $('#filterStatusPembayaran').val().toLowerCase();
+
+        let tanggal = data[1] || '';
+        let perusahaanText = (data[4] || '').toLowerCase();
+
+        // 🔥 Bersihkan HTML badge
+        let jenisText = $('<div>').html(data[6] || '').text().toLowerCase();
+        let statusText = $('<div>').html(data[10] || '').text().toLowerCase();
+
+        if (tanggal.includes('-')) {
+            let [day, month, year] = tanggal.split('-');
+
+            if (tahun && year !== tahun) return false;
+            if (bulan && month !== bulan) return false;
         }
-    </script>
+
+        if (perusahaan && !perusahaanText.includes(perusahaan)) return false;
+        if (jenis && !jenisText.includes(jenis)) return false;
+        if (statusPembayaran && !statusText.includes(statusPembayaran)) return false;
+
+        return true;
+    });
+
+    // ===================================
+    // TRIGGER FILTER
+    // ===================================
+    $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatusPembayaran')
+        .on('change', function() {
+            table.draw();
+        });
+
+});
+
+
+// ===================================
+// RESET FILTER
+// ===================================
+function resetFilter() {
+
+    $('#filterTahun').val('');
+    $('#filterBulan').val('');
+    $('#filterPerusahaan').val('');
+    $('#filterJenisDokumen').val('');
+    $('#filterStatusPembayaran').val('');
+
+    $('#tablePengajuan').DataTable().search('').draw();
+}
+</script>
 @endsection

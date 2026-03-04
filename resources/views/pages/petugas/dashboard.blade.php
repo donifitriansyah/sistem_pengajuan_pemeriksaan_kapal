@@ -99,6 +99,7 @@
                             {{-- Jika status ditolak --}}
                             @if ($item->status === 'Ditolak')
                                 <span class="badge bg-dark">Ditolak</span>
+
                                 <form action="{{ route('petugas.dashboard.destroy', $item->id) }}" method="POST"
                                     onsubmit="return confirm('Yakin ingin menghapus data ini?')" class="mt-1">
                                     @csrf
@@ -432,7 +433,7 @@
     </script>
 
 
-    <script>
+    {{-- <script>
         $(document).ready(function() {
 
             const table = $('#pengajuanTable').DataTable({
@@ -550,6 +551,125 @@
             $('#filterBulan').val('');
             $('#filterPerusahaan').val('');
             $('#filterJenisDokumen').val('');
+            $('#pengajuanTable').DataTable().draw();
+        }
+    </script> --}}
+    <script>
+        $(document).ready(function() {
+
+            const table = $('#pengajuanTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+                pageLength: 10,
+                columnDefs: [{
+                    orderable: false,
+                    targets: 0
+                }],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1 + settings._iDisplayStart;
+                    });
+                }
+            });
+
+
+            /* ======================
+               ISI FILTER DINAMIS
+            ====================== */
+
+            const tahunSet = new Set();
+            const bulanSet = new Set();
+            const perusahaanSet = new Set();
+
+            table.rows().every(function() {
+                const data = this.data();
+
+                const dateParts = data[1].split('-');
+                tahunSet.add(dateParts[2]);
+                bulanSet.add(dateParts[1]);
+
+                if (data[3] && data[3] !== '-') {
+                    perusahaanSet.add(data[3]);
+                }
+            });
+
+            [...tahunSet].sort().forEach(t =>
+                $('#filterTahun').append(`<option value="${t}">${t}</option>`)
+            );
+
+            [...bulanSet].sort().forEach(b =>
+                $('#filterBulan').append(`<option value="${b}">${b}</option>`)
+            );
+
+            [...perusahaanSet].sort().forEach(p =>
+                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
+            );
+
+
+            /* ======================
+               FILTER CUSTOM
+            ====================== */
+
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+                const filterTahun = $('#filterTahun').val();
+                const filterBulan = $('#filterBulan').val();
+                const filterPerusahaan = $('#filterPerusahaan').val();
+                const filterDokumen = $('#filterJenisDokumen').val();
+                const filterStatus = $('#filterStatus').val();
+
+                const date = data[1].split('-');
+                const bulan = date[1];
+                const tahun = date[2];
+
+                const perusahaan = data[3];
+                const dokumen = data[5];
+
+                const rowNode = table.row(dataIndex).node();
+                const status = rowNode.getAttribute('data-status');
+
+                if (filterTahun && tahun !== filterTahun) return false;
+                if (filterBulan && bulan !== filterBulan) return false;
+                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
+                if (filterDokumen && dokumen !== filterDokumen) return false;
+                if (filterStatus && status !== filterStatus) return false;
+
+                return true;
+            });
+
+
+            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
+                .on('change', function() {
+                    table.draw();
+                });
+
+        });
+
+
+        function resetFilter() {
+            $('#filterTahun').val('');
+            $('#filterBulan').val('');
+            $('#filterPerusahaan').val('');
+            $('#filterJenisDokumen').val('');
+            $('#filterStatus').val('');
             $('#pengajuanTable').DataTable().draw();
         }
     </script>

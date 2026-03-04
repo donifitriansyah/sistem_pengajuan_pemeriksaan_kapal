@@ -95,52 +95,54 @@ class PenugasanController extends Controller
     //     return redirect()->back()->with('success', 'Penagihan berhasil dibuat');
     // }
     public function store(Request $request, $pengajuanId)
-{
-    $request->validate([
-        'lokasi' => 'required|string|max:255',
-        'jumlah_petugas' => 'required|integer|min:1',
-        'petugas' => 'required|array',
-        'petugas.*' => 'exists:users,id',
-        'jenis_tarif' => 'required',
-        'total_tarif' => 'required|numeric',
-        'waktu_mulai' => 'required|date',
-        'waktu_selesai' => 'required|date|after:waktu_mulai',
-    ]);
-
-    DB::transaction(function () use ($request, $pengajuanId) {
-
-        // Ambil data pengajuan terlebih dahulu
-        $pengajuan = PengajuanPemeriksaanKapal::findOrFail($pengajuanId);
-
-        // Ambil lokasi dari input (jika diubah)
-        $lokasiBaru = $request->lokasi;
-
-        // Parsing waktu
-        $waktuMulai = \Carbon\Carbon::parse($request->waktu_mulai);
-        $waktuSelesai = \Carbon\Carbon::parse($request->waktu_selesai);
-
-        // Buat data penagihan
-        $penagihan = Penagihan::create([
-            'pengajuan_id' => $pengajuan->id,
-            'jenis_tarif' => $request->jenis_tarif,
-            'jumlah_petugas' => $request->jumlah_petugas,
-            'waktu_mulai' => $waktuMulai,
-            'waktu_selesai' => $waktuSelesai,
-            'total_tarif' => $request->total_tarif,
+    {
+        $request->validate([
+            'lokasi' => 'required|string|max:255',
+            'jumlah_petugas' => 'required|integer|min:1',
+            'petugas' => 'required|array',
+            'petugas.*' => 'exists:users,id',
+            'jenis_tarif' => 'required',
+            'total_tarif' => 'required|numeric',
+            'waktu_mulai' => 'required|date',
+            'waktu_selesai' => 'required|date|after:waktu_mulai',
         ]);
 
-        // Simpan relasi petugas (many to many)
-        $penagihan->petugas()->sync($request->petugas);
+        DB::transaction(function () use ($request, $pengajuanId) {
 
-        // Update pengajuan: lokasi bisa berubah
-        $pengajuan->update([
-            'penagihan_id' => $penagihan->id,
-            'lokasi_kapal' => $lokasiBaru,
-        ]);
-    });
+            $pengajuan = PengajuanPemeriksaanKapal::findOrFail($pengajuanId);
 
-    return redirect()->back()->with('success', 'Penagihan berhasil dibuat dan lokasi diperbarui');
-}
+            $lokasiBaru = $request->lokasi;
+
+            $waktuMulai = \Carbon\Carbon::parse($request->waktu_mulai);
+            $waktuSelesai = \Carbon\Carbon::parse($request->waktu_selesai);
+
+            // ===============================
+            // BUAT PENAGIHAN
+            // ===============================
+            $penagihan = Penagihan::create([
+                'pengajuan_id' => $pengajuan->id,
+                'jenis_tarif' => $request->jenis_tarif,
+                'jumlah_petugas' => $request->jumlah_petugas,
+                'waktu_mulai' => $waktuMulai,
+                'waktu_selesai' => $waktuSelesai,
+                'total_tarif' => $request->total_tarif,
+            ]);
+
+            $penagihan->petugas()->sync($request->petugas);
+
+            // ===============================
+            // UPDATE PENGAJUAN
+            // ===============================
+            $pengajuan->update([
+                'penagihan_id' => $penagihan->id,
+                'lokasi_kapal' => $lokasiBaru,
+                'tgl_estimasi_pemeriksaan' => $waktuMulai,
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Penagihan berhasil dibuat dan tanggal estimasi diperbarui.');
+    }
+
     public function storeKeuangan(Request $request, $pengajuanId)
     {
         // Validate the required fields

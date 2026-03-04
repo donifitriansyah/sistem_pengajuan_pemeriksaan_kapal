@@ -152,6 +152,14 @@
                                     data-bs-target="#statusModal{{ $item->id }}">
                                     Verifikasi / Tolak
                                 </button>
+                                <form action="{{ route('arsiparis.dashboard.destroy', $item->id) }}" method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')" class="mt-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Hapus
+                                    </button>
+                                </form>
                             @endif
 
 

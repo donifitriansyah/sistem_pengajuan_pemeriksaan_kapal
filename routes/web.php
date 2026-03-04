@@ -137,6 +137,9 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
 
     Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
+        Route::delete('/petugas/dashboard/{id}', [DashboardPetugasController::class, 'destroy'])
+        ->name('arsiparis.dashboard.destroy');
+
 });
 
 Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(function () {
@@ -153,9 +156,6 @@ Route::middleware(['auth', 'petugas'])->group(function () {
 
     Route::get('/petugas/pembayaran', [DashboardPetugasController::class, 'indexPembayaranPetugas'])
         ->name('petugas.dashboard.petugas');
-
-    Route::delete('/petugas/dashboard/{id}', [DashboardPetugasController::class, 'destroy'])
-        ->name('petugas.dashboard.destroy');
 
     Route::get('/dashboard/petugas', [DashboardPetugasController::class, 'index'])
         ->name('petugas.dashboard');

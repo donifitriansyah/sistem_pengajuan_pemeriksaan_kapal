@@ -83,7 +83,7 @@
                 @foreach ($pengajuan as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>
@@ -105,7 +105,18 @@
                         </td>
                         <td>{{ $item->wilayah_kerja }}</td>
 
-                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
+                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
+                            @if ($item->penagihan?->pembayaran?->file)
+                                <br>
+                                <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
+                                    class="btn btn-sm btn-success mt-1">
+                                    Lihat Bukti Bayar
+                                </a>
+                            @else
+                                <br>
+                                <span class="text-muted">Belum Upload Bukti</span>
+                            @endif
+                        </td>
 
                         <td>
                             {{-- tombol aksi sesuai status --}}
