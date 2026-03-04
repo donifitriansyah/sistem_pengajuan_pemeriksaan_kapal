@@ -377,9 +377,21 @@ class DashboardPetugasController extends Controller
             ->first();
 
         if ($last) {
-            $lastNumber = (int) explode('/', $last->$field)[2];
-            $nextNumber = $lastNumber + 1;
+
+            $parts = explode('/', $last->$field);
+
+            // Ambil nomor urut (posisi ke-2)
+            $lastNumber = isset($parts[2]) ? (int) $parts[2] : 0;
+
+            // Jika nomor terakhir masih di bawah startNumber
+            if ($lastNumber < $startNumber) {
+                $nextNumber = $startNumber;
+            } else {
+                $nextNumber = $lastNumber + 1;
+            }
+
         } else {
+            // Jika belum ada data sama sekali
             $nextNumber = $startNumber;
         }
 
