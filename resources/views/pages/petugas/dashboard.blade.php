@@ -485,8 +485,8 @@
                 bulanSet.add(dateParts[1]);
 
                 // Perusahaan (kolom 3)
-                if (data[4] && data[4] !== '-') {
-                    perusahaanSet.add(data[4]);
+                if (data[3] && data[3] !== '-') {
+                    perusahaanSet.add(data[3]);
                 }
             });
 
@@ -517,8 +517,8 @@
                 const bulan = date[1];
                 const tahun = date[2];
 
-                const perusahaan = data[4];
-                const dokumen = data[6];
+                const perusahaan = data[3];
+                const dokumen = data[5];
 
                 if (filterTahun && tahun !== filterTahun) return false;
                 if (filterBulan && bulan !== filterBulan) return false;
