@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title')
-Semua Data Pengajuan
+    Semua Data Pengajuan
 @endsection
 @section('header-title')
     Dashboard Petugas
@@ -95,7 +95,7 @@ Semua Data Pengajuan
             <tbody>
                 @foreach ($pengajuan as $item)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td></td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
@@ -176,6 +176,18 @@ Semua Data Pengajuan
                     ]
                 });
 
+                // Auto numbering kolom pertama
+                table.on('order.dt search.dt draw.dt', function() {
+                    table.column(0, {
+                            search: 'applied',
+                            order: 'applied'
+                        })
+                        .nodes()
+                        .each(function(cell, i) {
+                            cell.innerHTML = i + 1;
+                        });
+                }).draw();
+
                 // ============================
                 // POPULASI FILTER
                 // ============================
@@ -222,7 +234,7 @@ Semua Data Pengajuan
                     var tanggal = data[1] || '';
                     var perusahaanRow = data[3] || '';
                     var dokumenRow = data[5] || '';
-                    var statusRow = data[7] || ''; // ✅ kolom aksi (status ada di sini)
+                    var statusRow = data[8] || ''; // ✅ kolom Aksi
 
                     var parts = tanggal.split('-');
                     var rowTahun = parts[2];
@@ -233,7 +245,7 @@ Semua Data Pengajuan
                     if (perusahaan && perusahaanRow !== perusahaan) return false;
                     if (dokumen && dokumenRow !== dokumen) return false;
 
-                    // Filter Status (pakai includes karena ada button + text lain)
+                    // Filter status (karena di kolom aksi ada tombol juga)
                     if (status && !statusRow.includes(status)) return false;
 
                     return true;
@@ -268,28 +280,30 @@ Semua Data Pengajuan
                 let belumTagihan = 0;
                 let belumBayar = 0;
                 let menunggu = 0;
+                let ditolak = 0;
                 let lunas = 0;
 
-                // LOOP SEMUA ROW ASLI (BUKAN HASIL FILTER)
                 document.querySelectorAll('#pengajuanTable tbody tr').forEach(row => {
 
                     total++;
 
-                    const statusCell = row.children[6]; // kolom STATUS
-                    const status = statusCell.innerText.trim();
+                    const statusCell = row.children[8]; // kolom Aksi
+                    const text = statusCell.innerText;
 
-                    if (status === 'Belum Ada Tagihan') {
+                    if (text.includes('Belum Ada Tagihan')) {
                         belumTagihan++;
-                    } else if (status === 'Belum Bayar') {
+                    } else if (text.includes('Belum Bayar')) {
                         belumBayar++;
-                    } else if (status === 'Menunggu Verifikasi') {
+                    } else if (text.includes('Menunggu Verifikasi')) {
                         menunggu++;
-                    } else if (status === 'Lunas') {
+                    } else if (text.includes('Ditolak')) {
+                        ditolak++;
+                    } else if (text.includes('Lunas')) {
                         lunas++;
                     }
+
                 });
 
-                // SET KE SCORECARD
                 document.getElementById('totalPengajuan').innerText = total;
                 document.getElementById('totalBelumTagihan').innerText = belumTagihan;
                 document.getElementById('totalBelumBayar').innerText = belumBayar;
@@ -298,9 +312,6 @@ Semua Data Pengajuan
 
             });
         </script>
-
-
-
 
     </div>
 @endsection
