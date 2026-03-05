@@ -65,7 +65,6 @@ Verifikasi Pembayaran
                 <tr>
                     <th>No</th>
                     <th>Tanggal</th>
-                    <th>Wilker</th>
                     <th>Nama Kapal</th>
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
@@ -93,7 +92,6 @@ Verifikasi Pembayaran
                     <tr data-status="{{ $statusFilter }}">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                        <td>{{ $item->wilayah_kerja }}</td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>

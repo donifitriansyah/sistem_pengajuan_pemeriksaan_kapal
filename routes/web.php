@@ -66,8 +66,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/users/{id}/reject', [UserManagementController::class, 'reject'])
         ->name('user.reject');
 
-    Route::put('/users/{id}/reset-password',
-        [UserManagementController::class, 'resetPassword']
+    Route::put('/users/{id}/reset-password', [UserManagementController::class, 'resetPassword']
     )->name('user.reset');
 
     Route::get('/user/{id}/edit', [UserManagementController::class, 'edit'])
@@ -111,7 +110,6 @@ Route::get('/invoice/{penagihan}/download', [UserDashboardController::class, 'do
 Route::get('/invoice/verify/{penagihan}', [UserDashboardController::class, 'verify'])
     ->name('invoice.verify');
 
-// Cek status invoice berdasarkan kode bayar
 Route::get('/cek-invoice/{kodeBayar}', [UserDashboardController::class, 'cekInvoice']);
 
 Route::middleware(['auth', 'arsiparis'])->group(function () {
@@ -137,7 +135,7 @@ Route::middleware(['auth', 'arsiparis'])->group(function () {
 
     Route::post('/pengajuan/status/{id}', [DashboardPetugasController::class, 'updateStatus'])->name('pengajuan.updateStatus');
 
-        Route::delete('/petugas/dashboard/{id}', [DashboardPetugasController::class, 'destroy'])
+    Route::delete('/petugas/dashboard/{id}', [DashboardPetugasController::class, 'destroy'])
         ->name('arsiparis.dashboard.destroy');
 
 });
@@ -150,7 +148,7 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
-        Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
+    Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
 });
 
@@ -199,10 +197,7 @@ Route::middleware(['auth', 'petugas'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'petugas'])->group(function () {
-
-
-});
+Route::middleware(['auth', 'petugas'])->group(function () {});
 
 Route::middleware(['auth', 'keuangan'])->group(function () {
 
