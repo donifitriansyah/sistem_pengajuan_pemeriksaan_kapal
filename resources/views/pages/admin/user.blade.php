@@ -27,11 +27,12 @@
         <div class="content-header">
             <h2>Management User</h2>
         </div>
-        <table id="tableApproval">
+        <table id="tableApproval" class="table table-bordered table-striped w-100">
             <thead>
                 <tr>
                     <th>No</th>
                     <th>Email</th>
+                    <th>Username</th>
                     <th>Nama Perusahaan</th>
                     <th>Nama Petugas</th>
                     <th>No HP</th>
@@ -45,9 +46,9 @@
             <tbody>
                 @forelse($users as $user)
                     <tr>
-
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $user->email }}</td>
+                        <td>{{ $user->username }}</td>
                         <td>{{ $user->nama_perusahaan }}</td>
                         <td>{{ $user->nama_petugas }}</td>
                         <td>{{ $user->no_hp }}</td>
@@ -286,6 +287,7 @@
                 "searching": true, // Enable search functionality
                 "ordering": true, // Enable column sorting
                 "info": true, // Display information about the table
+                "responsive": true, // Display information about the table
                 "language": {
                     "search": "Cari:", // Custom search box text
                     "lengthMenu": "Tampilkan _MENU_ baris", // Customize length menu

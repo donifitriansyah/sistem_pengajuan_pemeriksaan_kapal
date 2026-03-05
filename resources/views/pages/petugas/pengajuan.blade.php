@@ -84,8 +84,6 @@
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
-                    <th>Status</th>
-                    <th>Wilker</th>
                     <th>Kode Bayar</th>
                     <th>Aksi</th>
                 </tr>
@@ -99,50 +97,48 @@
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>
                         <td>{{ $item->jenis_dokumen }}</td>
-                        <td>
-                            @if (!$item->penagihan)
-                                Belum Ada Tagihan
-                            @else
-                                @if ($item->penagihan->status_bayar === 'belum_bayar')
-                                    Belum Bayar
-                                @elseif ($item->penagihan->status_bayar === 'menunggu')
-                                    Menunggu Verifikasi
-                                @elseif ($item->penagihan->status_bayar === 'ditolak')
-                                    Ditolak
-                                @elseif ($item->penagihan->status_bayar === 'diterima')
-                                    Lunas
-                                @endif
-                            @endif
-                        </td>
-                        <td>{{ $item->wilayah_kerja }}</td>
-
                         <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
+                        </td>
+
+                        <td>
+
+                            @if (!$item->penagihan)
+                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
+                                <br>
+                            @else
+                                {{-- STATUS --}}
+                                @if ($item->penagihan->status_bayar === 'belum_bayar')
+                                    <span class="badge bg-danger">Belum Bayar</span>
+                                @elseif ($item->penagihan->status_bayar === 'menunggu')
+                                    <span class="badge bg-primary">Menunggu Verifikasi</span>
+                                @elseif ($item->penagihan->status_bayar === 'ditolak')
+                                    <span class="badge bg-dark">Ditolak</span>
+                                @elseif ($item->penagihan->status_bayar === 'diterima')
+                                    <span class="badge bg-success">Lunas</span>
+                                @endif
+
+                                {{-- AKSI --}}
+                                <div class="">
+                                    @if ($item->penagihan->status_bayar === 'belum_bayar')
+                                        {{-- <span class="badge bg-danger">Menunggu Pembayaran</span> --}}
+                                    @elseif($item->penagihan->status_bayar === 'diterima')
+                                        <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
+                                            class="btn btn-sm btn-success">
+                                            Lihat Kwitansi
+                                        </a>
+                                    @endif
+
+                                </div>
+                            @endif
                             @if ($item->penagihan?->pembayaran?->file)
                                 <br>
                                 <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
-                                    class="btn btn-sm btn-success mt-1">
+                                    class="btn btn-sm btn-success">
                                     Lihat Bukti Bayar
                                 </a>
                             @else
                                 <br>
                                 <span class="text-muted">Belum Upload Bukti</span>
-                            @endif
-                        </td>
-
-                        <td>
-                            {{-- tombol aksi sesuai status --}}
-                            @if (!$item->penagihan)
-                                <span class="badge bg-warning">Belum Buat Tagihan</span>
-                            @else
-                                @if ($item->penagihan->status_bayar === 'belum_bayar')
-                                    <span class="badge bg-danger">Belum Bayar</span>
-                                @elseif($item->penagihan->status_bayar === 'ditolak')
-                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#modalBayar{{ $item->id }}">Upload Ulang</button>
-                                @elseif($item->penagihan->status_bayar === 'diterima')
-                                    <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">Lihat Invoice</a>
-                                @endif
                             @endif
                         </td>
                     </tr>
@@ -156,101 +152,105 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 
         <script>
-$(document).ready(function() {
+            $(document).ready(function() {
 
-    var table = $('#pengajuanTable').DataTable({
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        columnDefs: [
-            { orderable: false, targets: 9 } // kolom Aksi tidak bisa sort
-        ]
-    });
+                var table = $('#pengajuanTable').DataTable({
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    columnDefs: [{
+                            orderable: false,
+                            targets: 7
+                        } // kolom Aksi tidak bisa sort
+                    ]
+                });
 
-    // ============================
-    // POPULASI FILTER
-    // ============================
-    var years = new Set();
-    var months = new Set();
-    var perusahaanSet = new Set();
+                // ============================
+                // POPULASI FILTER
+                // ============================
+                var years = new Set();
+                var months = new Set();
+                var perusahaanSet = new Set();
 
-    table.rows().every(function() {
-        var data = this.data();
+                table.rows().every(function() {
+                    var data = this.data();
 
-        // tanggal format dd-mm-yyyy
-        var parts = data[1].split('-');
-        if(parts.length === 3){
-            years.add(parts[2]);
-            months.add(parts[1]);
-        }
+                    // tanggal format dd-mm-yyyy
+                    var parts = data[1].split('-');
+                    if (parts.length === 3) {
+                        years.add(parts[2]);
+                        months.add(parts[1]);
+                    }
 
-        perusahaanSet.add(data[3]);
-    });
+                    perusahaanSet.add(data[3]);
+                });
 
-    Array.from(years).sort().forEach(y =>
-        $('#filterTahun').append(`<option value="${y}">${y}</option>`)
-    );
+                Array.from(years).sort().forEach(y =>
+                    $('#filterTahun').append(`<option value="${y}">${y}</option>`)
+                );
 
-    Array.from(months).sort().forEach(m =>
-        $('#filterBulan').append(`<option value="${m}">${m}</option>`)
-    );
+                Array.from(months).sort().forEach(m =>
+                    $('#filterBulan').append(`<option value="${m}">${m}</option>`)
+                );
 
-    Array.from(perusahaanSet).sort().forEach(p =>
-        $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
-    );
+                Array.from(perusahaanSet).sort().forEach(p =>
+                    $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
+                );
 
-    // ============================
-    // CUSTOM FILTER (SEMUA DIGABUNG)
-    // ============================
-    $.fn.dataTable.ext.search.push(function(settings, data) {
+                // ============================
+                // CUSTOM FILTER (SEMUA DIGABUNG)
+                // ============================
+                $.fn.dataTable.ext.search.push(function(settings, data) {
 
-        var tahun = $('#filterTahun').val();
-        var bulan = $('#filterBulan').val();
-        var perusahaan = $('#filterPerusahaan').val();
-        var dokumen = $('#filterJenisDokumen').val();
-        var status = $('#filterStatus').val();
+                    var tahun = $('#filterTahun').val();
+                    var bulan = $('#filterBulan').val();
+                    var perusahaan = $('#filterPerusahaan').val();
+                    var dokumen = $('#filterJenisDokumen').val();
+                    var status = $('#filterStatus').val();
 
-        var tanggal = data[1] || '';
-        var perusahaanRow = data[3] || '';
-        var dokumenRow = data[5] || '';
-        var statusRow = data[6] || '';
+                    var tanggal = data[1] || '';
+                    var perusahaanRow = data[3] || '';
+                    var dokumenRow = data[5] || '';
+                    var statusRow = data[7] || ''; // ✅ kolom aksi (status ada di sini)
 
-        var parts = tanggal.split('-');
-        var rowTahun = parts[2];
-        var rowBulan = parts[1];
+                    var parts = tanggal.split('-');
+                    var rowTahun = parts[2];
+                    var rowBulan = parts[1];
 
-        if (tahun && rowTahun !== tahun) return false;
-        if (bulan && rowBulan !== bulan) return false;
-        if (perusahaan && perusahaanRow !== perusahaan) return false;
-        if (dokumen && dokumenRow !== dokumen) return false;
-        if (status && statusRow !== status) return false;
+                    if (tahun && rowTahun !== tahun) return false;
+                    if (bulan && rowBulan !== bulan) return false;
+                    if (perusahaan && perusahaanRow !== perusahaan) return false;
+                    if (dokumen && dokumenRow !== dokumen) return false;
 
-        return true;
-    });
+                    // Filter Status (pakai includes karena ada button + text lain)
+                    if (status && !statusRow.includes(status)) return false;
 
-    // ============================
-    // TRIGGER FILTER
-    // ============================
-    $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
-        .on('change', function() {
-            table.draw();
-        });
+                    return true;
+                });
 
-    // ============================
-    // RESET FILTER
-    // ============================
-    $('#resetFilter').on('click', function() {
-        $('#filterTahun').val('');
-        $('#filterBulan').val('');
-        $('#filterPerusahaan').val('');
-        $('#filterJenisDokumen').val('');
-        $('#filterStatus').val('');
-        table.search('').draw();
-    });
+                // ============================
+                // TRIGGER FILTER
+                // ============================
+                $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
+                    .on('change', function() {
+                        table.draw();
+                    });
 
-});
-</script>
+                // ============================
+                // RESET FILTER
+                // ============================
+                $('#resetFilter').on('click', function() {
+                    $('#filterTahun').val('');
+                    $('#filterBulan').val('');
+                    $('#filterPerusahaan').val('');
+                    $('#filterJenisDokumen').val('');
+                    $('#filterStatus').val('');
+                    table.search('').draw();
+                });
+
+            });
+        </script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
 

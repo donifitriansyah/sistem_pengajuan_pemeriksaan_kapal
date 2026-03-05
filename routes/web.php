@@ -150,6 +150,8 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
+        Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
+        ->name('petugas.pemeriksa');
 });
 
 Route::middleware(['auth', 'petugas'])->group(function () {
@@ -163,8 +165,7 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pengajuan/petugas', [DashboardPetugasController::class, 'indexPengajuan'])
         ->name('pengajuan.petugas');
 
-    Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
-        ->name('petugas.pemeriksa');
+
 
     Route::get('/petugas/approval', [ApprovalUserController::class, 'indexPetugas'])
         ->name('petugas.approval.index');
@@ -204,6 +205,9 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
 
     Route::get('/dashboard/keuangan', [DashboardPetugasController::class, 'indexPembayaran'])
         ->name('petugas.pembayaran');
+
+    Route::get('/dashboard/keuangan/lunas', [DashboardPetugasController::class, 'indexPembayaranLunas'])
+        ->name('keuangan.pembayaran.lunas');
 
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
         ->name('petugas.keuangan');

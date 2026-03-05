@@ -84,9 +84,19 @@
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate">
 
+            <label for="filterTarif">Jenis Tarif:</label>
+            <select id="filterTarif">
+                <option value="">Semua</option>
+                <option value="170000">Dalam Kota < 8 Jam</option>
+                <option value="320000">Dalam Kota > 8 Jam</option>
+                <option value="380000">Luar Kota</option>
+            </select>
+
             <button onclick="filterTable()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
+
+
         </div>
 
         @if ($errors->any())
@@ -115,6 +125,7 @@
                         <th>Lokasi Pemeriksaan</th>
                         <th>Waktu Mulai</th>
                         <th>Waktu Selesai</th>
+                        <th>Jenis Tarif</th>
                         <th>Biaya</th>
 
                         <th>Aksi</th>
@@ -152,6 +163,20 @@
                                     {{ \Carbon\Carbon::parse($item->penagihan->waktu_selesai)->format('H:i') }}
                                 @else
                                     -
+                                @endif
+                            </td>
+
+                            <td>
+                                @php
+                                    $tarif = $item->penagihan->jenis_tarif ?? 0;
+                                @endphp
+
+                                @if ($tarif == 170000)
+                                Dalam Kota < 8 Jam @elseif($tarif == 320000) Dalam Kota> 8 Jam
+                                    @elseif($tarif == 380000)
+                                        Luar Kota
+                                    @else
+                                        -
                                 @endif
                             </td>
 
@@ -316,6 +341,39 @@
                 table.draw(); // Trigger the row number recalculation after filtering
             });
         });
+        $('#filterTarif').on('change', function () {
+    filterByTarif();
+});
+
+function filterByTarif() {
+    const selectedTarif = document.getElementById('filterTarif').value;
+    const rows = document.querySelectorAll("#pengajuanTable tbody tr");
+
+    rows.forEach(row => {
+
+        // Sesuaikan index kolom jika kamu menambahkan kolom Jenis Tarif
+        const tarifCell = row.cells[12].innerText.trim();
+        // Pastikan index sesuai posisi kolom Jenis Tarif
+
+        let showRow = true;
+
+        if (selectedTarif) {
+            if (selectedTarif === "170000" && !tarifCell.includes("Dalam Kota < 8 Jam")) {
+                showRow = false;
+            }
+            if (selectedTarif === "320000" && !tarifCell.includes("Dalam Kota > 8 Jam")) {
+                showRow = false;
+            }
+            if (selectedTarif === "380000" && !tarifCell.includes("Luar Kota")) {
+                showRow = false;
+            }
+        }
+
+        row.style.display = showRow ? '' : 'none';
+    });
+
+    resetRowNumbers();
+}
     </script>
     <script>
         function filterTable() {

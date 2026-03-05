@@ -120,6 +120,30 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+    public function indexPembayaranLunas()
+    {
+        $user = auth()->user();
+
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $user->wilayah_kerja)
+
+            // wajib punya pembayaran
+            ->whereHas('penagihan.pembayaran', function ($query) {
+                $query->where('status', 'diterima');
+            })
+
+            ->latest()
+            ->get();
+
+        return view('pages.keuangan.pembayaran', [
+            'pengajuan' => $pengajuan,
+        ]);
+    }
+
     public function indexPembayaranPetugas()
     {
         $user = auth()->user();

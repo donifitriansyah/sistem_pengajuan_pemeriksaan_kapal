@@ -76,6 +76,14 @@
             class="tab {{ request()->routeIs('petugas.pembayaran') ? 'active' : '' }}">
             Data Pembayaran
         </a>
+        <a href="{{ route('keuangan.pembayaran.lunas') }}"
+            class="tab {{ request()->routeIs('keuangan.pembayaran.lunas') ? 'active' : '' }}">
+            Data Pembayaran Lunas
+        </a>
+        <a href="{{ route('petugas.pemeriksa') }}"
+            class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
+            Data Petugas Pemeriksa
+        </a>
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
