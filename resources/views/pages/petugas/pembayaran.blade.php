@@ -278,8 +278,8 @@ $(document).ready(function() {
             let data = this.data();
 
             let tanggal = data[1];
-            let perusahaan = data[4];
-            let jenisHtml = data[6];
+            let perusahaan = data[3];
+            let jenisHtml = data[5];
 
             if (!tanggal || !tanggal.includes('-')) return;
 
@@ -335,8 +335,8 @@ $(document).ready(function() {
         let perusahaanText = (data[4] || '').toLowerCase();
 
         // 🔥 Bersihkan HTML badge
-        let jenisText = $('<div>').html(data[6] || '').text().toLowerCase();
-        let statusText = $('<div>').html(data[10] || '').text().toLowerCase();
+        let jenisText = $('<div>').html(data[5] || '').text().toLowerCase();
+        let statusText = $('<div>').html(data[9] || '').text().toLowerCase();
 
         if (tanggal.includes('-')) {
             let [day, month, year] = tanggal.split('-');
