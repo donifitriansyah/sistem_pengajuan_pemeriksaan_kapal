@@ -60,6 +60,13 @@
 
                         <td>
 
+                            {{-- BUTTON DELETE --}}
+                            @if (auth()->id() !== $user->id)
+                                <button onclick="confirmDelete({{ $user->id }})" class="btn btn-danger btn-sm">
+                                    Hapus
+                                </button>
+                            @endif
+
                             {{-- FORM APPROVE --}}
                             <form id="approve-form-{{ $user->id }}" action="{{ route('admin.user.approve', $user->id) }}"
                                 method="POST" style="display:none;">
@@ -74,15 +81,16 @@
                                 @method('PUT')
                             </form>
 
-                            
+
 
 
                             {{-- BUTTON DELETE --}}
-                            @if (auth()->id() !== $user->id)
-                                <button onclick="confirmDelete({{ $user->id }})" class="btn btn-danger btn-sm">
-                                    Hapus
-                                </button>
-                            @endif
+                            {{-- FORM DELETE --}}
+                            <form id="delete-form-{{ $user->id }}"
+                                action="{{ route('admin.user.destroy', $user->id) }}" method="POST" style="display:none;">
+                                @csrf
+                                @method('DELETE')
+                            </form>
 
                             {{-- JIKA STATUS NONAKTIF → TAMPIL SETUJUI --}}
                             @if ($user->status == 'nonaktif')
@@ -149,6 +157,23 @@
                     document.getElementById('reject-form-' + id).submit();
                 }
 
+            });
+        }
+
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Hapus User?',
+                text: "User yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + id).submit();
+                }
             });
         }
 
