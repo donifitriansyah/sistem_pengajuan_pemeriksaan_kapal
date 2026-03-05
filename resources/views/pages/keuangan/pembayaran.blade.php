@@ -33,14 +33,24 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label>Status Pembayaran</label>
-                <select id="filterStatusPembayaran">
-                    <option value="">Semua Status Pembayaran</option>
-                    <option value="Belum Bayar">Belum Bayar</option>
-                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                </select>
+            </div>
+            <div class="filter-group">
+            </div>
+            <div class="filter-group">
+                <label>Tanggal Mulai</label>
+                <input type="date" id="filterMulai" class="form-control">
+            </div>
+
+            <div class="filter-group">
+                <label>Tanggal Selesai</label>
+                <input type="date" id="filterSelesai" class="form-control">
             </div>
             <button class="btn btn-outline" onclick="resetFilter()">Reset</button>
+            <div class="filter-group">
+                <button class="btn btn-success" onclick="exportExcel()">
+                    Export Excel
+                </button>
+            </div>
 
 
 
@@ -105,7 +115,8 @@
                                     class="btn btn-sm btn-primary mb-2">
                                     Lihat Bukti
                                 </a>
-                                <span class="badge bg-primary">Rp. {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}</span>
+                                <span class="badge bg-primary">Rp.
+                                    {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}</span>
                             @else
                                 <span class="badge bg-secondary">Belum Upload</span>
                             @endif
@@ -232,148 +243,199 @@
 
     </div>
 
-<script>
-$(document).ready(function() {
+    <script>
+        $(document).ready(function() {
 
-    const table = $('#tablePengajuan').DataTable({
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        lengthChange: true,
-        pageLength: 10,
-        language: {
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            paginate: {
-                first: "Awal",
-                last: "Akhir",
-                next: "›",
-                previous: "‹"
-            },
-            emptyTable: "Tidak ada data pengajuan"
-        },
-        drawCallback: function(settings) {
-            var api = this.api();
-            api.column(0, { page: 'current' }).nodes().each(function(cell, i) {
-                cell.innerHTML = i + 1 + settings._iDisplayStart;
-            });
-        }
-    });
-
-    // ===================================
-    // AUTO GENERATE FILTER OPTIONS
-    // ===================================
-    function generateFilterOptions() {
-
-        let tahunSet = new Set();
-        let bulanSet = new Set();
-        let perusahaanSet = new Set();
-        let jenisSet = new Set();
-
-        table.rows().every(function() {
-
-            let data = this.data();
-
-            let tanggal = data[1];
-            let perusahaan = data[4];
-            let jenisHtml = data[6];
-
-            if (!tanggal || !tanggal.includes('-')) return;
-
-            let [day, month, year] = tanggal.split('-');
-
-            tahunSet.add(year);
-            bulanSet.add(month);
-
-            if (perusahaan && perusahaan !== '-') {
-                perusahaanSet.add(perusahaan.trim());
-            }
-
-            if (jenisHtml) {
-                let jenisText = $('<div>').html(jenisHtml).text().trim();
-                if (jenisText !== '-') {
-                    jenisSet.add(jenisText);
+            const table = $('#tablePengajuan').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                lengthChange: true,
+                pageLength: 10,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    },
+                    emptyTable: "Tidak ada data pengajuan"
+                },
+                drawCallback: function(settings) {
+                    var api = this.api();
+                    api.column(0, {
+                        page: 'current'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1 + settings._iDisplayStart;
+                    });
                 }
+            });
+
+            // ===================================
+            // AUTO GENERATE FILTER OPTIONS
+            // ===================================
+            function generateFilterOptions() {
+
+                let tahunSet = new Set();
+                let bulanSet = new Set();
+                let perusahaanSet = new Set();
+                let jenisSet = new Set();
+
+                table.rows().every(function() {
+
+                    let data = this.data();
+
+                    let tanggal = data[1];
+                    let perusahaan = data[4];
+                    let jenisHtml = data[6];
+
+                    if (!tanggal || !tanggal.includes('-')) return;
+
+                    let [day, month, year] = tanggal.split('-');
+
+                    tahunSet.add(year);
+                    bulanSet.add(month);
+
+                    if (perusahaan && perusahaan !== '-') {
+                        perusahaanSet.add(perusahaan.trim());
+                    }
+
+                    if (jenisHtml) {
+                        let jenisText = $('<div>').html(jenisHtml).text().trim();
+                        if (jenisText !== '-') {
+                            jenisSet.add(jenisText);
+                        }
+                    }
+
+                });
+
+                tahunSet.forEach(t => {
+                    $('#filterTahun').append(`<option value="${t}">${t}</option>`);
+                });
+
+                bulanSet.forEach(b => {
+                    $('#filterBulan').append(`<option value="${b}">${b}</option>`);
+                });
+
+                perusahaanSet.forEach(p => {
+                    $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`);
+                });
+
+                jenisSet.forEach(j => {
+                    $('#filterJenisDokumen').append(`<option value="${j}">${j}</option>`);
+                });
             }
 
+            generateFilterOptions();
+
+            // ===================================
+            // CUSTOM FILTER DATATABLES
+            // ===================================
+            $.fn.dataTable.ext.search.push(function(settings, data) {
+
+                let tahun = $('#filterTahun').val();
+                let bulan = $('#filterBulan').val();
+                let perusahaan = $('#filterPerusahaan').val().toLowerCase();
+                let jenis = $('#filterJenisDokumen').val().toLowerCase();
+
+                let mulai = $('#filterMulai').val();
+                let selesai = $('#filterSelesai').val();
+
+                let tanggal = data[1] || '';
+                let perusahaanText = (data[4] || '').toLowerCase();
+                let jenisText = $('<div>').html(data[6] || '').text().toLowerCase();
+
+                // ==============================
+                // FILTER TANGGAL RANGE
+                // ==============================
+                if (tanggal.includes('-')) {
+
+                    let [day, month, year] = tanggal.split('-');
+
+                    // Ubah semua ke format angka YYYYMMDD agar aman
+                    let rowValue = parseInt(year + month + day);
+
+                    if (mulai) {
+                        let [y1, m1, d1] = mulai.split('-');
+                        let startValue = parseInt(y1 + m1 + d1);
+
+                        if (rowValue < startValue) return false;
+                    }
+
+                    if (selesai) {
+                        let [y2, m2, d2] = selesai.split('-');
+                        let endValue = parseInt(y2 + m2 + d2);
+
+                        if (rowValue > endValue) return false;
+                    }
+
+                    if (tahun && year !== tahun) return false;
+                    if (bulan && month !== bulan) return false;
+                }
+
+                if (perusahaan && !perusahaanText.includes(perusahaan)) return false;
+                if (jenis && !jenisText.includes(jenis)) return false;
+
+                return true;
+            });
+
+            $('#filterMulai, #filterSelesai').on('change', function() {
+                table.draw();
+            });
+
+            // ===================================
+            // TRIGGER FILTER
+            // ===================================
+            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatusPembayaran')
+                .on('change', function() {
+                    table.draw();
+                });
+
         });
 
-        tahunSet.forEach(t => {
-            $('#filterTahun').append(`<option value="${t}">${t}</option>`);
-        });
 
-        bulanSet.forEach(b => {
-            $('#filterBulan').append(`<option value="${b}">${b}</option>`);
-        });
+        // ===================================
+        // RESET FILTER
+        // ===================================
+        function resetFilter() {
 
-        perusahaanSet.forEach(p => {
-            $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`);
-        });
+            // Reset semua input filter
+            $('#filterTahun').val('');
+            $('#filterBulan').val('');
+            $('#filterPerusahaan').val('');
+            $('#filterJenisDokumen').val('');
+            $('#filterStatusPembayaran').val('');
+            $('#filterMulai').val('');
+            $('#filterSelesai').val('');
 
-        jenisSet.forEach(j => {
-            $('#filterJenisDokumen').append(`<option value="${j}">${j}</option>`);
-        });
-    }
+            let table = $('#tablePengajuan').DataTable();
 
-    generateFilterOptions();
+            // Reset search
+            table.search('');
 
-    // ===================================
-    // CUSTOM FILTER DATATABLES
-    // ===================================
-    $.fn.dataTable.ext.search.push(function(settings, data) {
+            // Reset ke halaman pertama
+            table.page('first');
 
-        let tahun = $('#filterTahun').val();
-        let bulan = $('#filterBulan').val();
-        let perusahaan = $('#filterPerusahaan').val().toLowerCase();
-        let jenis = $('#filterJenisDokumen').val().toLowerCase();
-        let statusPembayaran = $('#filterStatusPembayaran').val().toLowerCase();
-
-        let tanggal = data[1] || '';
-        let perusahaanText = (data[4] || '').toLowerCase();
-
-        // 🔥 Bersihkan HTML badge
-        let jenisText = $('<div>').html(data[6] || '').text().toLowerCase();
-        let statusText = $('<div>').html(data[10] || '').text().toLowerCase();
-
-        if (tanggal.includes('-')) {
-            let [day, month, year] = tanggal.split('-');
-
-            if (tahun && year !== tahun) return false;
-            if (bulan && month !== bulan) return false;
+            // Redraw ulang tabel
+            table.draw();
         }
 
-        if (perusahaan && !perusahaanText.includes(perusahaan)) return false;
-        if (jenis && !jenisText.includes(jenis)) return false;
-        if (statusPembayaran && !statusText.includes(statusPembayaran)) return false;
+        function exportExcel() {
 
-        return true;
-    });
+            let mulai = $('#filterMulai').val();
+            let selesai = $('#filterSelesai').val();
+            let status = $('#filterStatusPembayaran').val();
 
-    // ===================================
-    // TRIGGER FILTER
-    // ===================================
-    $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatusPembayaran')
-        .on('change', function() {
-            table.draw();
-        });
+            let url = "{{ route('export.verifikasi-lunas') }}" +
+                "?mulai=" + mulai +
+                "&selesai=" + selesai +
+                "&status=" + status;
 
-});
-
-
-// ===================================
-// RESET FILTER
-// ===================================
-function resetFilter() {
-
-    $('#filterTahun').val('');
-    $('#filterBulan').val('');
-    $('#filterPerusahaan').val('');
-    $('#filterJenisDokumen').val('');
-    $('#filterStatusPembayaran').val('');
-
-    $('#tablePengajuan').DataTable().search('').draw();
-}
-</script>
+            window.location.href = url;
+        }
+    </script>
 @endsection

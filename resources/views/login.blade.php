@@ -154,7 +154,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Nama Petugas</label>
+                    <label>Nama Petugas Agen</label>
                     <input type="text" name="nama_petugas" required>
                 </div>
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Exports\VerifikasiPembayaranExport;
+use App\Exports\VerifikasiPembayaranLunasExport;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ApprovalUserController;
 use App\Http\Controllers\Admin\PengajuanController;
@@ -12,7 +14,9 @@ use App\Http\Controllers\Petugas\DashboardPetugasController;
 use App\Http\Controllers\Petugas\PenugasanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserDashboardController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
     // Jika sudah login
@@ -209,6 +213,35 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
 
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
         ->name('petugas.keuangan');
+
+    Route::get('/admin/export-verifikasi', function (Request $request) {
+
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+        $status = $request->status;
+
+        $namaFile = 'verifikasi_pembayaran_'.now()->format('d-m-Y').'.xlsx';
+
+        return Excel::download(
+            new VerifikasiPembayaranExport($mulai, $selesai, $status),
+            $namaFile
+        );
+
+    })->name('export.verifikasi');
+
+    Route::get('/admin/export-verifikasi-lunas', function (Request $request) {
+
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+
+        $namaFile = 'verifikasi_pembayaran_lunas_'.now()->format('d-m-Y').'.xlsx';
+
+        return Excel::download(
+            new VerifikasiPembayaranLunasExport($mulai, $selesai),
+            $namaFile
+        );
+
+    })->name('export.verifikasi-lunas');
 
 });
 
