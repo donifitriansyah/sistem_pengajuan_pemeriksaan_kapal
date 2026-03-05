@@ -1,5 +1,7 @@
 @extends('layouts.app')
-
+@section('title')
+Petugas Pemeriksa
+@endsection
 @section('content')
     <style>
         .content-card {

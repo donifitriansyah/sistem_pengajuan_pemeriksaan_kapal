@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@section('title')
+Semua Data Pengajuan
+@endsection
 @section('header-title')
     Dashboard Petugas
 @endsection
@@ -84,6 +87,7 @@
                     <th>Perusahaan</th>
                     <th>Lokasi</th>
                     <th>Jenis Dokumen</th>
+                    <th>Surat Permohonan</th>
                     <th>Kode Bayar</th>
                     <th>Aksi</th>
                 </tr>
@@ -97,6 +101,12 @@
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>
                         <td>{{ $item->jenis_dokumen }}</td>
+                        <td>
+                            <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}" target="_blank"
+                                class="btn btn-sm btn-info">
+                                Lihat File
+                            </a>
+                        </td>
                         <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span>
                         </td>
 

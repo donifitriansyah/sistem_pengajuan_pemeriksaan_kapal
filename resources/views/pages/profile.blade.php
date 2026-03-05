@@ -8,11 +8,11 @@
     <div class="content-card">
         <header>
             <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Update Password') }}
+                {{ __('Ganti Password') }}
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                {{ __('Ensure your account is using a long, random password to stay secure.') }}
+                {{ __('Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman.') }}
             </p>
         </header>
 
@@ -21,21 +21,21 @@
             @method('put')
 
             <div>
-                <x-input-label for="update_password_current_password" class="form-label" :value="__('Current Password')" />
+                <x-input-label for="update_password_current_password" class="form-label" :value="__('Password Lama')" />
                 <x-text-input id="update_password_current_password" name="current_password" type="password"
                     class="form-control" autocomplete="current-password" />
                 <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
             </div>
 
             <div>
-                <x-input-label for="update_password_password" class="form-label mt-2" :value="__('New Password')" />
+                <x-input-label for="update_password_password" class="form-label mt-2" :value="__('Password Baru')" />
                 <x-text-input id="update_password_password" name="password" type="password" class="form-control"
                     autocomplete="new-password" />
                 <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
             </div>
 
             <div>
-                <x-input-label for="update_password_password_confirmation" class="form-label mt-2" :value="__('Confirm Password')" />
+                <x-input-label for="update_password_password_confirmation" class="form-label mt-2" :value="__('Konfirmasi Password Baru')" />
                 <x-text-input id="update_password_password_confirmation" class="form-control" name="password_confirmation" type="password"
                     class="form-control" autocomplete="new-password" />
                 <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />

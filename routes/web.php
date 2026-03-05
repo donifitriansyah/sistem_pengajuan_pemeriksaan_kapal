@@ -165,8 +165,6 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/pengajuan/petugas', [DashboardPetugasController::class, 'indexPengajuan'])
         ->name('pengajuan.petugas');
 
-
-
     Route::get('/petugas/approval', [ApprovalUserController::class, 'indexPetugas'])
         ->name('petugas.approval.index');
 
@@ -198,6 +196,11 @@ Route::middleware(['auth', 'petugas'])->group(function () {
         ->name('user.destroy');
 
     Route::put('/petugas/pengajuan/{id}', [DashboardPetugasController::class, 'update'])->name('pengajuan.update');
+
+});
+
+Route::middleware(['auth', 'petugas'])->group(function () {
+
 
 });
 

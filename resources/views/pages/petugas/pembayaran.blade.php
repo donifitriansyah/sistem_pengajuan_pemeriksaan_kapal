@@ -1,8 +1,11 @@
 @extends('layouts.app')
+@section('title')
+Verifikasi Pembayaran
+@endsection
 @section('content')
     <div class="content-card">
         <div class="content-header">
-            <h2>Daftar Pengajuan Belum Diagendakan</h2>
+            <h2>Daftar Pengajuan Belum Diverifikasi</h2>
 
         </div>
 
