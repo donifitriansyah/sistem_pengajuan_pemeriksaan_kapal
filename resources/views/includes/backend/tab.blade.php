@@ -47,6 +47,10 @@
             class="tab {{ request()->routeIs('petugas.dashboard') ? 'active' : '' }}">
             Data Penagihan
         </a>
+        <a href="{{ route('petugas.pengajuan') }}"
+            class="tab {{ request()->routeIs('petugas.pengajuan') ? 'active' : '' }}">
+            Data Pengajuan Belum Diagendakan
+        </a>
         <a href="{{ route('petugas.dashboard.petugas') }}"
             class="tab {{ request()->routeIs('petugas.dashboard.petugas') ? 'active' : '' }}">
             Data Pembayaran

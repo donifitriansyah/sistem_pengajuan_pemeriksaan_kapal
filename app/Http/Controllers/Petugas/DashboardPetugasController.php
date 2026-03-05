@@ -171,6 +171,38 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+    public function indexBelumDiagendakan()
+{
+    $user = auth()->user();
+    $wilayah_kerja = $user->wilayah_kerja;
+
+    $baseQuery = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
+        ->whereNull('agenda_surat_pengajuan_id');
+
+    $totalPengajuan = (clone $baseQuery)->count();
+
+    $totalBelumTagihan = (clone $baseQuery)
+        ->whereDoesntHave('penagihan')
+        ->count();
+
+    // ⬇ INI YANG DISAMAKAN NAMANYA
+    $totalBelumBayar = (clone $baseQuery)
+        ->where('status', 'Menunggu Verifikasi')
+        ->count();
+
+    $pengajuan = (clone $baseQuery)
+        ->with(['user', 'penagihan'])
+        ->latest()
+        ->get();
+
+    return view('pages.petugas.belum-diagendakan', compact(
+        'totalPengajuan',
+        'totalBelumTagihan',
+        'totalBelumBayar',
+        'pengajuan'
+    ));
+}
+
     public function indexPemeriksa()
     {
         $user = auth()->user();

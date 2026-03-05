@@ -164,6 +164,9 @@ Route::middleware(['auth', 'petugas'])->group(function () {
     Route::get('/dashboard/petugas', [DashboardPetugasController::class, 'index'])
         ->name('petugas.dashboard');
 
+    Route::get('/pengajuan/belum-diagendakan', [DashboardPetugasController::class, 'indexBelumDiagendakan'])
+        ->name('petugas.pengajuan');
+
     Route::get('/pengajuan/petugas', [DashboardPetugasController::class, 'indexPengajuan'])
         ->name('pengajuan.petugas');
 
