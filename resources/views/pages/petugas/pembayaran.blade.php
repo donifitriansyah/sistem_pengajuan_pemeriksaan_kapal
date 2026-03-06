@@ -381,7 +381,7 @@
                 let statusPembayaran = $('#filterStatusPembayaran').val().toLowerCase();
 
                 let tanggal = data[1] || '';
-                let perusahaanText = (data[4] || '').toLowerCase();
+                let perusahaanText = (data[3] || '').toLowerCase();
 
                 // 🔥 Bersihkan HTML badge
                 let jenisText = $('<div>').html(data[5] || '').text().toLowerCase();
