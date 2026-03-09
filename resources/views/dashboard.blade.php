@@ -119,6 +119,7 @@
                                     {{-- Upload --}}
                                     <div class="mb-3">
                                         <label class="form-label">Surat Permohonan</label>
+                                        <small class="text-danger">* File format pdf dengan maksimal 2mb</small>
                                         <input type="file" name="surat_permohonan" class="form-control"
                                             accept="application/pdf" required>
                                     </div>
@@ -430,10 +431,17 @@
                                         <div class="mb-3">
                                             <label class="form-label">Upload Surat Permohonan</label>
                                             <input type="file" name="surat_permohonan" class="form-control">
+
+                                            <small class="text-danger">* File format pdf dengan maksimal 2mb</small>
+
                                             @if ($item->surat_permohonan_dan_dokumen)
-                                                <p>Current File: <a
-                                                        href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
-                                                        target="_blank">View Current File</a></p>
+                                                <p class="mt-1">
+                                                    Current File:
+                                                    <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
+                                                        target="_blank">
+                                                        View Current File
+                                                    </a>
+                                                </p>
                                             @endif
                                         </div>
 
