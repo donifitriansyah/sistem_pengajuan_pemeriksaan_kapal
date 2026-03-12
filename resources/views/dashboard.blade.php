@@ -110,7 +110,7 @@
                 @endif
                 @if ($blokirPengajuan)
                     <button class="btn btn-danger mb-3" disabled>
-                        Pengajuan Baru Dikunci
+                        Pengajuan Baru Dikunci (Segera Bayar Tagihan)
                     </button>
                 @else
                     <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalPengajuan">
