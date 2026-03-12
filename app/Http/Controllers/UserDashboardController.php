@@ -60,7 +60,7 @@ class UserDashboardController extends Controller
     //         'verify_url' => $verifyUrl,
     //     ]);
     // }
-        public function destroy($id)
+    public function destroy($id)
     {
         $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
 
@@ -122,14 +122,43 @@ class UserDashboardController extends Controller
         return redirect()->back()->with('success', 'Password berhasil direset menjadi 123456');
     }
 
+    // public function index()
+    // {
+    //     // Ambil pengajuan milik user login
+    //     $pengajuan = PengajuanPemeriksaanKapal::where('user_id', Auth::id())
+    //         ->latest()
+    //         ->get();
+
+    //     return view('dashboard', compact('pengajuan'));
+    // }
+
     public function index()
     {
-        // Ambil pengajuan milik user login
-        $pengajuan = PengajuanPemeriksaanKapal::where('user_id', Auth::id())
+        $pengajuan = PengajuanPemeriksaanKapal::with(['penagihan.pembayaran'])
+            ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        return view('dashboard', compact('pengajuan'));
+        $pengajuanTerlambat = collect();
+
+        foreach ($pengajuan as $item) {
+
+            if ($item->penagihan && $item->penagihan->status_bayar === 'belum_bayar') {
+
+                $batasBayar = Carbon::parse($item->tgl_estimasi_pemeriksaan)->addDays(5);
+
+                if ($batasBayar->isPast()) {
+                    $pengajuanTerlambat->push($item);
+                }
+            }
+        }
+
+        $blokirPengajuan = $pengajuanTerlambat->count() > 0;
+
+        return view(
+            'dashboard',
+            compact('pengajuan', 'blokirPengajuan', 'pengajuanTerlambat')
+        );
     }
 
     public function update(Request $request, $id)

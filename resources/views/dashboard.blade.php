@@ -36,9 +36,87 @@
             <div class="header-actions">
 
                 {{-- BUTTON --}}
-                <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalPengajuan">
-                    + Tambah Pengajuan
-                </button>
+                @if ($blokirPengajuan)
+                    <div class="modal fade" id="modalPeringatanBayar" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">Tagihan Belum Dibayar</h5>
+                                </div>
+
+                                <div class="modal-body">
+
+                                    <p>
+                                        Anda memiliki tagihan yang belum dibayar lebih dari <b>5 hari</b>.
+                                        Silakan segera melakukan pembayaran.
+                                    </p>
+
+                                    <hr>
+
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Nama Kapal</th>
+                                                <th>Tanggal Pemeriksaan</th>
+                                                <th>Wilayah</th>
+                                                <th>Kode Bayar</th>
+                                                <th>Tagihan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @foreach ($pengajuanTerlambat as $item)
+                                                <tr>
+                                                    <td>{{ $item->nama_kapal }}</td>
+
+                                                    <td>
+                                                        {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
+                                                    </td>
+
+                                                    <td>{{ $item->wilayah_kerja }}</td>
+
+                                                    <td>
+                                                        <span class="badge bg-secondary">
+                                                            {{ $item->kode_bayar }}
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        Rp
+                                                        {{ number_format(optional($item->penagihan)->total_tarif ?? 0, 0, ',', '.') }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+
+                                        </tbody>
+                                    </table>
+
+                                    <small class="text-danger">
+                                        Anda tidak dapat membuat pengajuan baru sebelum tagihan ini dibayar.
+                                    </small>
+
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        Mengerti
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                @if ($blokirPengajuan)
+                    <button class="btn btn-danger mb-3" disabled>
+                        Pengajuan Baru Dikunci
+                    </button>
+                @else
+                    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalPengajuan">
+                        + Tambah Pengajuan
+                    </button>
+                @endif
 
                 @if ($errors->any())
                     <div class="alert alert-danger">
@@ -780,6 +858,16 @@
             `,
                     confirmButtonText: 'OK'
                 });
+            });
+        </script>
+    @endif
+    @if ($blokirPengajuan)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var modal = new bootstrap.Modal(
+                    document.getElementById('modalPeringatanBayar')
+                );
+                modal.show();
             });
         </script>
     @endif
