@@ -191,15 +191,15 @@
                                 {{-- WAKTU MULAI DAN SELESAI --}}
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Mulai</label>
-                                    <input type="text" name="waktu_mulai" id="waktu_mulai" class="form-control" required
-                                        data-id="{{ $item->id }}" id="waktu_mulai">
+                                    <input type="text" name="waktu_mulai" class="form-control waktu-mulai" required
+                                        data-id="{{ $item->id }}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
 
-                                    <input type="text" name="waktu_selesai" id="waktu_selesai" class="form-control"
-                                        required data-id="{{ $item->id }}" id="waktu_selesai">
+                                    <input type="text" name="waktu_selesai" class="form-control waktu-selesai" required
+                                        data-id="{{ $item->id }}">
                                 </div>
 
 
@@ -250,19 +250,18 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            flatpickr("#waktu_mulai", {
+            flatpickr(".waktu-mulai", {
                 enableTime: true,
-                dateFormat: "d-m-Y H:i",
+                dateFormat: "Y-m-d H:i",
                 time_24hr: true,
-                allowInput: false, // ❌ tidak bisa mengetik
-                minuteIncrement: 1
+                allowInput: false
             });
-            flatpickr("#waktu_selesai", {
+
+            flatpickr(".waktu-selesai", {
                 enableTime: true,
-                dateFormat: "d-m-Y H:i",
+                dateFormat: "Y-m-d H:i",
                 time_24hr: true,
-                allowInput: false, // ❌ tidak bisa mengetik
-                minuteIncrement: 1
+                allowInput: false
             });
         });
     </script>
@@ -293,6 +292,60 @@
         });
     </script>
     <script>
+        function hitungTotal(id) {
+
+            const tarif = parseInt(document.querySelector(`.tarif[data-id="${id}"]`).value) || 0;
+            const jumlah = parseInt(document.querySelector(`.jumlah-petugas[data-id="${id}"]`).value) || 0;
+
+            const waktuMulai = document.querySelector(`.waktu-mulai[data-id="${id}"]`).value;
+            const waktuSelesai = document.querySelector(`.waktu-selesai[data-id="${id}"]`).value;
+
+            if (!tarif || !jumlah || !waktuMulai || !waktuSelesai) return;
+
+            const start = new Date(waktuMulai);
+            const end = new Date(waktuSelesai);
+
+            const diff = end - start;
+
+            if (diff <= 0) return;
+
+            const days = Math.ceil(diff / (1000 * 3600 * 24));
+
+            const total = tarif * jumlah * days;
+
+            document.getElementById(`totalDisplay${id}`).value =
+                new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR'
+                }).format(total);
+
+            document.getElementById(`totalValue${id}`).value = total;
+        }
+
+        document.querySelectorAll('.tarif').forEach(el => {
+            el.addEventListener('change', function() {
+                hitungTotal(this.dataset.id);
+            });
+        });
+
+        document.querySelectorAll('.jumlah-petugas').forEach(el => {
+            el.addEventListener('change', function() {
+                hitungTotal(this.dataset.id);
+            });
+        });
+
+        document.querySelectorAll('.waktu-mulai').forEach(el => {
+            el.addEventListener('change', function() {
+                hitungTotal(this.dataset.id);
+            });
+        });
+
+        document.querySelectorAll('.waktu-selesai').forEach(el => {
+            el.addEventListener('change', function() {
+                hitungTotal(this.dataset.id);
+            });
+        });
+
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
 
@@ -431,129 +484,6 @@
             });
         });
     </script>
-
-
-    {{-- <script>
-        $(document).ready(function() {
-
-            const table = $('#pengajuanTable').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                lengthChange: true,
-                pageLength: 10,
-
-                // Kolom Aksi & No tidak bisa di-sort
-                columnDefs: [{
-                    orderable: false
-                }],
-
-
-
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    emptyTable: "Tidak ada data pengajuan"
-                },
-                drawCallback: function(settings) {
-                    // Menambahkan nomor urut yang sesuai dengan data yang ditampilkan
-                    var api = this.api();
-                    api.column(0, {
-                        page: 'current'
-                    }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1 + settings
-                            ._iDisplayStart; // Menampilkan nomor urut sesuai halaman dan filter
-                    });
-                }
-            });
-
-
-            /* ==============================
-                ISI FILTER DINAMIS
-            ============================== */
-
-            const tahunSet = new Set();
-            const bulanSet = new Set();
-            const perusahaanSet = new Set();
-
-            table.rows().every(function() {
-                const data = this.data();
-
-                // Tanggal (kolom 1)
-                const dateParts = data[1].split('-'); // d-m-Y
-                tahunSet.add(dateParts[2]);
-                bulanSet.add(dateParts[1]);
-
-                // Perusahaan (kolom 3)
-                if (data[3] && data[3] !== '-') {
-                    perusahaanSet.add(data[3]);
-                }
-            });
-
-            [...tahunSet].sort().forEach(t =>
-                $('#filterTahun').append(`<option value="${t}">${t}</option>`)
-            );
-
-            [...bulanSet].sort().forEach(b =>
-                $('#filterBulan').append(`<option value="${b}">${b}</option>`)
-            );
-
-            [...perusahaanSet].sort().forEach(p =>
-                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
-            );
-
-            /* ==============================
-                FILTER CUSTOM
-            ============================== */
-
-            $.fn.dataTable.ext.search.push(function(settings, data) {
-
-                const filterTahun = $('#filterTahun').val();
-                const filterBulan = $('#filterBulan').val();
-                const filterPerusahaan = $('#filterPerusahaan').val();
-                const filterDokumen = $('#filterJenisDokumen').val();
-
-                const date = data[1].split('-'); // d-m-Y
-                const bulan = date[1];
-                const tahun = date[2];
-
-                const perusahaan = data[3];
-                const dokumen = data[5];
-
-                if (filterTahun && tahun !== filterTahun) return false;
-                if (filterBulan && bulan !== filterBulan) return false;
-                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
-                if (filterDokumen && dokumen !== filterDokumen) return false;
-
-                return true;
-            });
-
-            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen')
-                .on('change', function() {
-                    table.draw();
-                });
-
-        });
-
-        /* ==============================
-            RESET FILTER
-        ============================== */
-        function resetFilter() {
-            $('#filterTahun').val('');
-            $('#filterBulan').val('');
-            $('#filterPerusahaan').val('');
-            $('#filterJenisDokumen').val('');
-            $('#pengajuanTable').DataTable().draw();
-        }
-    </script> --}}
     <script>
         $(document).ready(function() {
 

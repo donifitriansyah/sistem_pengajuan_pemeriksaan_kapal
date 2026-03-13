@@ -499,9 +499,7 @@
             table.search('').columns().search('').draw();
         }
     </script>
-@endsection
-@push('script')
-    <script>
+        <script>
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
 
@@ -690,6 +688,9 @@
             });
         });
     </script>
+@endsection
+@push('script')
+
     {{-- <script>
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
