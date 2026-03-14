@@ -211,6 +211,8 @@
                                                     target="_blank" class="btn btn-sm btn-primary">
                                                     Lihat Bukti
                                                 </a> <br>
+                                               <strong>Tanggal Bukti Bayar Diupload:</strong> {{ \Carbon\Carbon::parse($item->penagihan->pembayaran->created_at)->format('d-m-Y H:i') }} <br>  
+
                                             </p>
 
                                             <div class="mb-3">
