@@ -352,7 +352,7 @@ class DashboardPetugasController extends Controller
         $wilkerMapping = [
             'dwikora' => [
                 'kode' => 'C.X.1.11',
-                'start' => 300,
+                'start' => 379,
             ],
             'kendawangan' => [
                 'kode' => 'C.X.1.9',
