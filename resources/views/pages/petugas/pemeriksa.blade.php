@@ -446,47 +446,50 @@ function filterByTarif() {
             resetRowNumbers();
         }
 
-        function downloadTableAsExcel() {
-            const table = document.getElementById('pengajuanTable');
-            const rows = table.querySelectorAll('tr');
-            const data = [];
+function downloadTableAsExcel() {
 
-            // Iterasi baris dan kolom untuk mengambil data
-            rows.forEach((row, rowIndex) => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td, th');
+    const table = $('#pengajuanTable').DataTable();
 
-                // Lewati kolom aksi (kolom terakhir)
-                cells.forEach((cell, cellIndex) => {
-                    // Jika kolom aksi (kolom terakhir), lewati
-                    if (cellIndex !== cells.length - 1) {
-                        rowData.push(cell.innerText.trim());
-                    }
-                });
+    // Ambil SEMUA data (bukan hanya page aktif)
+    const allData = table.rows({ search: 'applied' }).data();
 
-                // Hanya tambahkan baris data yang bukan baris pertama (thead)
-                if (rowIndex > 0) {
-                    data.push(rowData);
-                } else {
-                    // Tambahkan header tabel tanpa kolom aksi
-                    const headers = [];
-                    cells.forEach((headerCell, headerIndex) => {
-                        // Lewati kolom aksi
-                        if (headerIndex !== cells.length - 1) {
-                            headers.push(headerCell.innerText.trim());
-                        }
-                    });
-                    data.unshift(headers);
-                }
-            });
+    let data = [];
 
-            // Gunakan library xlsx.js untuk mengekspor data
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
-
-            // Unduh file Excel
-            XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
+    // Ambil header (kecuali kolom terakhir)
+    let headers = [];
+    $('#pengajuanTable thead th').each(function(index) {
+        if (index !== $('#pengajuanTable thead th').length - 1) {
+            headers.push($(this).text().trim());
         }
+    });
+
+    data.push(headers);
+
+    // Ambil semua row
+    allData.each(function(row) {
+
+        let rowData = [];
+
+        row.forEach(function(cell, index) {
+            // skip kolom terakhir (aksi)
+            if (index !== row.length - 1) {
+
+                // bersihkan HTML kalau ada badge/button
+                let text = $('<div>').html(cell).text().trim();
+
+                rowData.push(text);
+            }
+        });
+
+        data.push(rowData);
+    });
+
+    // Export ke Excel
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
+
+    XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
+}
     </script>
 @endsection
