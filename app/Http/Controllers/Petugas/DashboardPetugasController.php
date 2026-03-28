@@ -8,6 +8,7 @@ use App\Models\Pembayaran;
 use App\Models\Penagihan;
 use App\Models\PengajuanPemeriksaanKapal;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardPetugasController extends Controller
@@ -172,36 +173,36 @@ class DashboardPetugasController extends Controller
     }
 
     public function indexBelumDiagendakan()
-{
-    $user = auth()->user();
-    $wilayah_kerja = $user->wilayah_kerja;
+    {
+        $user = auth()->user();
+        $wilayah_kerja = $user->wilayah_kerja;
 
-    $baseQuery = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
-        ->whereNull('agenda_surat_pengajuan_id');
+        $baseQuery = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
+            ->whereNull('agenda_surat_pengajuan_id');
 
-    $totalPengajuan = (clone $baseQuery)->count();
+        $totalPengajuan = (clone $baseQuery)->count();
 
-    $totalBelumTagihan = (clone $baseQuery)
-        ->whereDoesntHave('penagihan')
-        ->count();
+        $totalBelumTagihan = (clone $baseQuery)
+            ->whereDoesntHave('penagihan')
+            ->count();
 
-    // ⬇ INI YANG DISAMAKAN NAMANYA
-    $totalBelumBayar = (clone $baseQuery)
-        ->where('status', 'Menunggu Verifikasi')
-        ->count();
+        // ⬇ INI YANG DISAMAKAN NAMANYA
+        $totalBelumBayar = (clone $baseQuery)
+            ->where('status', 'Menunggu Verifikasi')
+            ->count();
 
-    $pengajuan = (clone $baseQuery)
-        ->with(['user', 'penagihan'])
-        ->latest()
-        ->get();
+        $pengajuan = (clone $baseQuery)
+            ->with(['user', 'penagihan'])
+            ->latest()
+            ->get();
 
-    return view('pages.petugas.belum-diagendakan', compact(
-        'totalPengajuan',
-        'totalBelumTagihan',
-        'totalBelumBayar',
-        'pengajuan'
-    ));
-}
+        return view('pages.petugas.belum-diagendakan', compact(
+            'totalPengajuan',
+            'totalBelumTagihan',
+            'totalBelumBayar',
+            'pengajuan'
+        ));
+    }
 
     public function indexPemeriksa()
     {
@@ -412,6 +413,9 @@ class DashboardPetugasController extends Controller
             'nomor_surat_masuk' => $nomorSuratMasuk,
             'nomor_surat_keluar' => $nomorSuratKeluar,
             'tanggal_surat' => $request->input('tanggal_surat'),
+            'created_at' => $request->filled('created_at')
+                ? Carbon::parse($request->created_at)
+                : now(),
         ]);
 
         /*

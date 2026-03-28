@@ -15,6 +15,7 @@ class AgendaSuratPengajuan extends Model
         'nomor_surat_keluar',
         'nomor_surat_masuk',
         'tanggal_surat',
+        'created_at',
 
     ];
 

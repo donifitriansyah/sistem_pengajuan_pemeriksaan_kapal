@@ -199,9 +199,16 @@
                                                 <!-- Tanggal Surat Field (Visible if "Diterima" is selected) -->
                                                 <div class="mb-3" id="tanggal_surat_field_{{ $item->id }}"
                                                     style="display:none;">
-                                                    <label class="form-label">Tanggal Surat</label>
+                                                    <label class="form-label">Tanggal Pada Surat</label>
                                                     <input type="date" name="tanggal_surat" class="form-control"
                                                         required>
+                                                </div>
+
+                                                <div class="mb-3" id="created_at_field_{{ $item->id }}"
+                                                    style="display:none;">
+                                                    <label class="form-label">Tanggal Di Agendakan</label>
+                                                    <input type="date" name="created_at" class="form-control"
+                                                        value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                                                 </div>
 
                                                 <!-- Keterangan Field (Only visible if "Ditolak" is selected) -->
@@ -227,39 +234,47 @@
                                     var nomorSurat = document.querySelector('#nomor_surat_field_' + id + ' input');
                                     var tanggalSurat = document.querySelector('#tanggal_surat_field_' + id + ' input');
                                     var keterangan = document.querySelector('#keterangan_field_' + id + ' textarea');
+                                    var createdAt = document.querySelector('#created_at_field_' + id + ' input');
 
                                     var nomorSuratDiv = document.getElementById('nomor_surat_field_' + id);
                                     var tanggalSuratDiv = document.getElementById('tanggal_surat_field_' + id);
                                     var keteranganDiv = document.getElementById('keterangan_field_' + id);
+                                    var createdAtDiv = document.getElementById('created_at_field_' + id);
 
                                     if (selectElement.value === 'Diterima') {
 
                                         nomorSuratDiv.style.display = 'block';
                                         tanggalSuratDiv.style.display = 'block';
+                                        createdAtDiv.style.display = 'block';
                                         keteranganDiv.style.display = 'none';
 
                                         nomorSurat.required = true;
                                         tanggalSurat.required = true;
+                                        createdAt.required = true;
                                         keterangan.required = false;
 
                                     } else if (selectElement.value === 'Ditolak') {
 
                                         nomorSuratDiv.style.display = 'none';
                                         tanggalSuratDiv.style.display = 'none';
+                                        createdAtDiv.style.display = 'none';
                                         keteranganDiv.style.display = 'block';
 
                                         nomorSurat.required = false;
                                         tanggalSurat.required = false;
+                                        createdAt.required = false;
                                         keterangan.required = true;
 
                                     } else {
 
                                         nomorSuratDiv.style.display = 'none';
                                         tanggalSuratDiv.style.display = 'none';
+                                        createdAtDiv.style.display = 'none';
                                         keteranganDiv.style.display = 'none';
 
                                         nomorSurat.required = false;
                                         tanggalSurat.required = false;
+                                        createdAt.required = false;
                                         keterangan.required = false;
                                     }
                                 }
@@ -499,7 +514,7 @@
             table.search('').columns().search('').draw();
         }
     </script>
-        <script>
+    <script>
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
 
@@ -690,7 +705,6 @@
     </script>
 @endsection
 @push('script')
-
     {{-- <script>
         document.querySelectorAll('.jumlah-petugas').forEach(select => {
             select.addEventListener('change', function() {
