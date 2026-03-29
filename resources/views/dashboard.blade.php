@@ -643,6 +643,11 @@
                                     </div>
                                 @endif
 
+                                <div class="mb-3 mt-3">
+                                    <label class="form-label fw-semibold">Tanggal & Waktu Bayar</label>
+                                    <input type="datetime-local" name="tanggal_bayar" class="form-control" required>
+                                </div>
+
                                 {{-- UPLOAD BUKTI --}}
                                 <div class="mb-3 mt-3">
                                     <label class="form-label fw-semibold">Upload Bukti Pembayaran</label>

@@ -234,6 +234,7 @@ class UserDashboardController extends Controller
     {
         $request->validate([
             'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'tanggal_bayar' => 'required|date',
         ]);
 
         $path = $request->file('bukti_bayar')
@@ -243,7 +244,9 @@ class UserDashboardController extends Controller
             ['penagihan_id' => $penagihanId],
             [
                 'file' => $path,
-                'tanggal_bayar' => Carbon::now(),
+                'tanggal_bayar' => $request->tanggal_bayar
+    ? \Carbon\Carbon::parse($request->tanggal_bayar)
+    : now(),
                 'status' => 'menunggu',
                 'keterangan' => null,
             ]

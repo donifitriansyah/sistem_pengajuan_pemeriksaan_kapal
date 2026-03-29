@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title')
-Petugas Pemeriksa
+    Petugas Pemeriksa
 @endsection
 @section('content')
     <style>
@@ -10,14 +10,20 @@ Petugas Pemeriksa
         }
 
         #pengajuanTable {
-            width: 100%;
+            width: 100% !important;
             table-layout: fixed;
-            /* Agar lebar kolom tetap konsisten */
+        }
+
+        #pengajuanTable th,
+        #pengajuanTable td {
+            white-space: normal !important;
+            word-break: break-word;
+            font-size: 12px;
+            /* opsional biar muat */
         }
 
         .table {
             overflow-x: auto;
-            white-space: nowrap;
             /* Agar teks tidak meluap */
         }
 
@@ -135,7 +141,9 @@ Petugas Pemeriksa
                 </thead>
                 <tbody>
                     @foreach ($pengajuan as $key => $item)
-                        <tr>
+                        <tr data-kode-bayar="{{ $item->kode_bayar }}"
+                            data-tanggal-bayar="{{ optional($item->penagihan->pembayaran)->tanggal_bayar }}">
+
                             <td>{{ $key + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                             <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
@@ -186,6 +194,7 @@ Petugas Pemeriksa
                             <td>
                                 {{ number_format($item->penagihan->total_tarif ?? 0, 0, ',', '.') }}
                             </td>
+
 
                             <td>
                                 <button class="btn btn-info" data-bs-toggle="modal"
@@ -307,6 +316,9 @@ Petugas Pemeriksa
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
+        $('#startDate, #endDate, #filterTarif').on('change', function() {
+            $('#pengajuanTable').DataTable().draw();
+        });
         $(document).ready(function() {
             const table = $('#pengajuanTable').DataTable({
                 paging: true,
@@ -315,9 +327,17 @@ Petugas Pemeriksa
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
+                responsive: true,
+                autoWidth: false,
                 columnDefs: [{
-                    orderable: false
-                }],
+                       
+                        searchable: false
+                    },
+                    {
+                        orderable: false,
+                        targets: 0
+                    }
+                ],
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
@@ -339,45 +359,84 @@ Petugas Pemeriksa
 
             // Redraw table and reset row numbers when applying filters
             $('#startDate, #endDate').on('change', function() {
-                filterTable();
+
                 table.draw(); // Trigger the row number recalculation after filtering
             });
         });
-        $('#filterTarif').on('change', function () {
-    filterByTarif();
-});
+        $('#filterTarif').on('change', function() {
 
-function filterByTarif() {
-    const selectedTarif = document.getElementById('filterTarif').value;
-    const rows = document.querySelectorAll("#pengajuanTable tbody tr");
+        });
 
-    rows.forEach(row => {
+        function filterByTarif() {
+            const selectedTarif = document.getElementById('filterTarif').value;
+            const rows = document.querySelectorAll("#pengajuanTable tbody tr");
 
-        // Sesuaikan index kolom jika kamu menambahkan kolom Jenis Tarif
-        const tarifCell = row.cells[12].innerText.trim();
-        // Pastikan index sesuai posisi kolom Jenis Tarif
+            rows.forEach(row => {
 
-        let showRow = true;
+                // Sesuaikan index kolom jika kamu menambahkan kolom Jenis Tarif
+                const tarifCell = row.cells[12].innerText.trim();
+                // Pastikan index sesuai posisi kolom Jenis Tarif
 
-        if (selectedTarif) {
-            if (selectedTarif === "170000" && !tarifCell.includes("Dalam Kota < 8 Jam")) {
-                showRow = false;
-            }
-            if (selectedTarif === "320000" && !tarifCell.includes("Dalam Kota > 8 Jam")) {
-                showRow = false;
-            }
-            if (selectedTarif === "380000" && !tarifCell.includes("Luar Kota")) {
-                showRow = false;
-            }
+                let showRow = true;
+
+                if (selectedTarif) {
+                    if (selectedTarif === "170000" && !tarifCell.includes("Dalam Kota < 8 Jam")) {
+                        showRow = false;
+                    }
+                    if (selectedTarif === "320000" && !tarifCell.includes("Dalam Kota > 8 Jam")) {
+                        showRow = false;
+                    }
+                    if (selectedTarif === "380000" && !tarifCell.includes("Luar Kota")) {
+                        showRow = false;
+                    }
+                }
+
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+                    const startDate = $('#startDate').val();
+                    const endDate = $('#endDate').val();
+                    const tarif = $('#filterTarif').val();
+
+                    const tanggal = data[1]; // kolom tanggal
+                    const tarifText = data[12]; // kolom jenis tarif
+
+                    // convert tanggal
+                    const parts = tanggal.split('-');
+                    const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+
+                    let valid = true;
+
+                    // FILTER TANGGAL
+                    if (startDate) {
+                        if (rowDate < new Date(startDate)) valid = false;
+                    }
+
+                    if (endDate) {
+                        if (rowDate > new Date(endDate)) valid = false;
+                    }
+
+                    // FILTER TARIF
+                    if (tarif) {
+                        if (tarif == "170000" && !tarifText.includes("Dalam Kota < 8 Jam")) valid = false;
+                        if (tarif == "320000" && !tarifText.includes("Dalam Kota > 8 Jam")) valid = false;
+                        if (tarif == "380000" && !tarifText.includes("Luar Kota")) valid = false;
+                    }
+
+                    return valid;
+                });
+            });
+
+            resetRowNumbers();
         }
-
-        row.style.display = showRow ? '' : 'none';
-    });
-
-    resetRowNumbers();
-}
     </script>
     <script>
+        $('#pengajuanTable thead th').each(function(index) {
+
+            if (index !== 15) { // skip kolom aksi saja
+                headers.push($(this).text().trim());
+            }
+        });
+
         function filterTable() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -402,7 +461,39 @@ function filterByTarif() {
                     showRow = false;
                 }
 
-                row.style.display = showRow ? '' : 'none';
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+                    const startDate = $('#startDate').val();
+                    const endDate = $('#endDate').val();
+                    const tarif = $('#filterTarif').val();
+
+                    const tanggal = data[1]; // kolom tanggal
+                    const tarifText = data[12]; // kolom jenis tarif
+
+                    // convert tanggal
+                    const parts = tanggal.split('-');
+                    const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+
+                    let valid = true;
+
+                    // FILTER TANGGAL
+                    if (startDate) {
+                        if (rowDate < new Date(startDate)) valid = false;
+                    }
+
+                    if (endDate) {
+                        if (rowDate > new Date(endDate)) valid = false;
+                    }
+
+                    // FILTER TARIF
+                    if (tarif) {
+                        if (tarif == "170000" && !tarifText.includes("Dalam Kota < 8 Jam")) valid = false;
+                        if (tarif == "320000" && !tarifText.includes("Dalam Kota > 8 Jam")) valid = false;
+                        if (tarif == "380000" && !tarifText.includes("Luar Kota")) valid = false;
+                    }
+
+                    return valid;
+                });
             });
 
             // Manually reset row numbers after the filter is applied
@@ -415,10 +506,7 @@ function filterByTarif() {
             let rowNumber = 1;
 
             rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    row.cells[0].innerText = rowNumber; // Update the row number in the first column
-                    rowNumber++;
-                }
+
             });
         }
 
@@ -439,57 +527,79 @@ function filterByTarif() {
             // Menampilkan kembali semua baris setelah reset
             const rows = document.querySelectorAll("#pengajuanTable tbody tr");
             rows.forEach(row => {
-                row.style.display = ''; // Menampilkan semua baris
+                // Menampilkan semua baris
             });
 
             // Manually reset row numbers after the filter reset
             resetRowNumbers();
         }
 
-function downloadTableAsExcel() {
+        function downloadTableAsExcel() {
 
-    const table = $('#pengajuanTable').DataTable();
+            const table = $('#pengajuanTable').DataTable();
 
-    // Ambil SEMUA data (bukan hanya page aktif)
-    const allData = table.rows({ search: 'applied' }).data();
+            const allRows = table.rows({
+                search: 'applied'
+            }).nodes();
 
-    let data = [];
+            let data = [];
 
-    // Ambil header (kecuali kolom terakhir)
-    let headers = [];
-    $('#pengajuanTable thead th').each(function(index) {
-        if (index !== $('#pengajuanTable thead th').length - 1) {
-            headers.push($(this).text().trim());
+            // HEADER
+            let headers = [
+                "No",
+                "Tanggal Pemeriksaan",
+                "Surat Tugas",
+                "Nama Kapal",
+                "Nama Perusahaan",
+                "Petugas 1",
+                "Petugas 2",
+                "Petugas 3",
+                "Jenis Dokumen",
+                "Lokasi Pemeriksaan",
+                "Waktu Mulai",
+                "Waktu Selesai",
+                "Jenis Tarif",
+                "Biaya",
+                "Kode Bayar",
+                "Tanggal Bayar"
+            ];
+
+            data.push(headers);
+
+            // LOOP ROW
+            $(allRows).each(function(index, row) {
+
+                let rowData = [];
+
+                // ambil semua td kecuali kolom aksi
+                $(row).find('td').each(function(i) {
+                    if (i !== 14) { // kolom aksi
+                        rowData.push($(this).text().trim());
+                    }
+                });
+
+                // 🔥 ambil dari attribute
+                let kodeBayar = $(row).data('kode-bayar') || '-';
+                let tanggalBayar = $(row).data('tanggal-bayar');
+
+                if (tanggalBayar) {
+                    let d = new Date(tanggalBayar);
+                    tanggalBayar = d.toLocaleString('id-ID');
+                } else {
+                    tanggalBayar = '-';
+                }
+
+                rowData.push(kodeBayar);
+                rowData.push(tanggalBayar);
+
+                data.push(rowData);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
+
+            XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
         }
-    });
-
-    data.push(headers);
-
-    // Ambil semua row
-    allData.each(function(row) {
-
-        let rowData = [];
-
-        row.forEach(function(cell, index) {
-            // skip kolom terakhir (aksi)
-            if (index !== row.length - 1) {
-
-                // bersihkan HTML kalau ada badge/button
-                let text = $('<div>').html(cell).text().trim();
-
-                rowData.push(text);
-            }
-        });
-
-        data.push(rowData);
-    });
-
-    // Export ke Excel
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
-
-    XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
-}
     </script>
 @endsection

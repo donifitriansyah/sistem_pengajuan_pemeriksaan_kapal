@@ -21,10 +21,4 @@ class Pembayaran extends Model
         return $this->belongsTo(Penagihan::class);
     }
 
-    protected static function booted()
-    {
-        static::creating(function ($pembayaran) {
-            $pembayaran->tanggal_bayar = now();
-        });
-    }
 }
