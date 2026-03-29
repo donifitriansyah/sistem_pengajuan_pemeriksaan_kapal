@@ -100,7 +100,7 @@
                 <option value="380000">Luar Kota</option>
             </select>
 
-            <button onclick="filterTable()">Filter</button>
+            <button onclick="$('#pengajuanTable').DataTable().draw()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
 
@@ -319,6 +319,35 @@
         $('#startDate, #endDate, #filterTarif').on('change', function() {
             $('#pengajuanTable').DataTable().draw();
         });
+         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const tarif = $('#filterTarif').val();
+
+            const tanggal = data[1]; // kolom tanggal
+            const tarifText = data[12]; // kolom jenis tarif
+
+            // convert tanggal dd-mm-yyyy
+            let valid = true;
+
+            if (tanggal) {
+                const parts = tanggal.split('-');
+                const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+
+                if (startDate && rowDate < new Date(startDate)) valid = false;
+                if (endDate && rowDate > new Date(endDate)) valid = false;
+            }
+
+            // FILTER TARIF (INI YANG DIPERBAIKI)
+            if (tarif) {
+                if (tarif == "170000" && tarifText !== "Dalam Kota < 8 Jam") valid = false;
+                if (tarif == "320000" && tarifText !== "Dalam Kota > 8 Jam") valid = false;
+                if (tarif == "380000" && tarifText !== "Luar Kota") valid = false;
+            }
+
+            return valid;
+        });
         $(document).ready(function() {
             const table = $('#pengajuanTable').DataTable({
                 paging: true,
@@ -330,7 +359,7 @@
                 responsive: true,
                 autoWidth: false,
                 columnDefs: [{
-                       
+
                         searchable: false
                     },
                     {
@@ -366,68 +395,6 @@
         $('#filterTarif').on('change', function() {
 
         });
-
-        function filterByTarif() {
-            const selectedTarif = document.getElementById('filterTarif').value;
-            const rows = document.querySelectorAll("#pengajuanTable tbody tr");
-
-            rows.forEach(row => {
-
-                // Sesuaikan index kolom jika kamu menambahkan kolom Jenis Tarif
-                const tarifCell = row.cells[12].innerText.trim();
-                // Pastikan index sesuai posisi kolom Jenis Tarif
-
-                let showRow = true;
-
-                if (selectedTarif) {
-                    if (selectedTarif === "170000" && !tarifCell.includes("Dalam Kota < 8 Jam")) {
-                        showRow = false;
-                    }
-                    if (selectedTarif === "320000" && !tarifCell.includes("Dalam Kota > 8 Jam")) {
-                        showRow = false;
-                    }
-                    if (selectedTarif === "380000" && !tarifCell.includes("Luar Kota")) {
-                        showRow = false;
-                    }
-                }
-
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-
-                    const startDate = $('#startDate').val();
-                    const endDate = $('#endDate').val();
-                    const tarif = $('#filterTarif').val();
-
-                    const tanggal = data[1]; // kolom tanggal
-                    const tarifText = data[12]; // kolom jenis tarif
-
-                    // convert tanggal
-                    const parts = tanggal.split('-');
-                    const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
-
-                    let valid = true;
-
-                    // FILTER TANGGAL
-                    if (startDate) {
-                        if (rowDate < new Date(startDate)) valid = false;
-                    }
-
-                    if (endDate) {
-                        if (rowDate > new Date(endDate)) valid = false;
-                    }
-
-                    // FILTER TARIF
-                    if (tarif) {
-                        if (tarif == "170000" && !tarifText.includes("Dalam Kota < 8 Jam")) valid = false;
-                        if (tarif == "320000" && !tarifText.includes("Dalam Kota > 8 Jam")) valid = false;
-                        if (tarif == "380000" && !tarifText.includes("Luar Kota")) valid = false;
-                    }
-
-                    return valid;
-                });
-            });
-
-            resetRowNumbers();
-        }
     </script>
     <script>
         $('#pengajuanTable thead th').each(function(index) {
@@ -437,68 +404,7 @@
             }
         });
 
-        function filterTable() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const rows = document.querySelectorAll("#pengajuanTable tbody tr");
 
-            rows.forEach(row => {
-                const dateCell = row.cells[1].innerText.trim(); // Get the 'Tanggal Surat' cell content
-                const rowDate = new Date(dateCell.split('-').reverse().join(
-                    '-')); // Convert to Date object (dd-mm-yyyy to yyyy-mm-dd)
-
-                const filterStartDate = startDate ? new Date(startDate) : null;
-                const filterEndDate = endDate ? new Date(endDate) : null;
-
-                let showRow = true;
-
-                // Show or hide the row based on date range
-                if (filterStartDate && rowDate < filterStartDate) {
-                    showRow = false;
-                }
-
-                if (filterEndDate && rowDate > filterEndDate) {
-                    showRow = false;
-                }
-
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-
-                    const startDate = $('#startDate').val();
-                    const endDate = $('#endDate').val();
-                    const tarif = $('#filterTarif').val();
-
-                    const tanggal = data[1]; // kolom tanggal
-                    const tarifText = data[12]; // kolom jenis tarif
-
-                    // convert tanggal
-                    const parts = tanggal.split('-');
-                    const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
-
-                    let valid = true;
-
-                    // FILTER TANGGAL
-                    if (startDate) {
-                        if (rowDate < new Date(startDate)) valid = false;
-                    }
-
-                    if (endDate) {
-                        if (rowDate > new Date(endDate)) valid = false;
-                    }
-
-                    // FILTER TARIF
-                    if (tarif) {
-                        if (tarif == "170000" && !tarifText.includes("Dalam Kota < 8 Jam")) valid = false;
-                        if (tarif == "320000" && !tarifText.includes("Dalam Kota > 8 Jam")) valid = false;
-                        if (tarif == "380000" && !tarifText.includes("Luar Kota")) valid = false;
-                    }
-
-                    return valid;
-                });
-            });
-
-            // Manually reset row numbers after the filter is applied
-            resetRowNumbers();
-        }
 
         // Function to manually reset row numbers
         function resetRowNumbers() {
@@ -601,5 +507,6 @@
 
             XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
         }
+
     </script>
 @endsection
