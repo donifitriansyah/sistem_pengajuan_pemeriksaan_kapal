@@ -18,7 +18,7 @@
         #pengajuanTable td {
             white-space: normal !important;
             word-break: break-word;
-            font-size: 12px;
+            font-size: 11px;
             /* opsional biar muat */
         }
 
@@ -100,6 +100,15 @@
                 <option value="380000">Luar Kota</option>
             </select>
 
+            <label for="filterDokumen">Jenis Dokumen:</label>
+            <select id="filterDokumen">
+                <option value="">Semua</option>
+                <option value="PHQC">PHQC</option>
+                <option value="SSCEC">SSCEC</option>
+                <option value="COP">COP</option>
+                <option value="P3K">P3K</option>
+            </select>
+
             <button onclick="$('#pengajuanTable').DataTable().draw()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
@@ -144,7 +153,7 @@
                         <tr data-kode-bayar="{{ $item->kode_bayar }}"
                             data-tanggal-bayar="{{ optional($item->penagihan->pembayaran)->tanggal_bayar }}">
 
-                            <td>{{ $key + 1 }}</td>
+                            <td></td>
                             <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
                             <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
                             <td>{{ $item->nama_kapal }}</td>
@@ -316,21 +325,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
-        $('#startDate, #endDate, #filterTarif').on('change', function() {
+        $('#startDate, #endDate, #filterTarif, #filterDokumen').on('change', function() {
             $('#pengajuanTable').DataTable().draw();
         });
-         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
 
             const startDate = $('#startDate').val();
             const endDate = $('#endDate').val();
             const tarif = $('#filterTarif').val();
+            const dokumen = $('#filterDokumen').val();
 
             const tanggal = data[1]; // kolom tanggal
             const tarifText = data[12]; // kolom jenis tarif
+            const dokumenText = data[8]; // 🔥 kolom jenis dokumen
 
-            // convert tanggal dd-mm-yyyy
             let valid = true;
 
+            // =====================
+            // FILTER TANGGAL
+            // =====================
             if (tanggal) {
                 const parts = tanggal.split('-');
                 const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
@@ -339,15 +353,25 @@
                 if (endDate && rowDate > new Date(endDate)) valid = false;
             }
 
-            // FILTER TARIF (INI YANG DIPERBAIKI)
+            // =====================
+            // FILTER TARIF
+            // =====================
             if (tarif) {
                 if (tarif == "170000" && tarifText !== "Dalam Kota < 8 Jam") valid = false;
                 if (tarif == "320000" && tarifText !== "Dalam Kota > 8 Jam") valid = false;
                 if (tarif == "380000" && tarifText !== "Luar Kota") valid = false;
             }
 
+            // =====================
+            // FILTER JENIS DOKUMEN 🔥
+            // =====================
+            if (dokumen) {
+                if (dokumenText !== dokumen) valid = false;
+            }
+
             return valid;
         });
+
         $(document).ready(function() {
             const table = $('#pengajuanTable').DataTable({
                 paging: true,
@@ -391,6 +415,17 @@
 
                 table.draw(); // Trigger the row number recalculation after filtering
             });
+            // 🔥 AUTO NUMBERING (INI KUNCINYA)
+            table.on('order.dt search.dt draw.dt', function() {
+                let i = 1;
+
+                table.rows({
+                    search: 'applied'
+                }).every(function(rowIdx) {
+                    let node = this.node();
+                    $('td:eq(0)', node).html(i++);
+                });
+            }).draw();
         });
         $('#filterTarif').on('change', function() {
 
@@ -417,33 +452,27 @@
         }
 
         function resetFilter() {
-            // Menggunakan API DataTable untuk mereset pencarian dan pengurutan
-            var table = $('#pengajuanTable').DataTable();
 
-            // Menghapus pencarian yang diterapkan
-            table.search('').draw();
+    const table = $('#pengajuanTable').DataTable();
 
-            // Reset halaman ke halaman pertama
-            table.page('first').draw('page');
+    // reset semua input
+    $('#startDate').val('');
+    $('#endDate').val('');
+    $('#filterTarif').val('');
+    $('#filterDokumen').val('');
 
-            // Reset filter tanggal
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
+    // redraw ulang (filter otomatis kosong)
+    table.draw();
 
-            // Menampilkan kembali semua baris setelah reset
-            const rows = document.querySelectorAll("#pengajuanTable tbody tr");
-            rows.forEach(row => {
-                // Menampilkan semua baris
-            });
-
-            // Manually reset row numbers after the filter reset
-            resetRowNumbers();
-        }
+    // kembali ke halaman pertama
+    table.page('first').draw('page');
+}
 
         function downloadTableAsExcel() {
 
             const table = $('#pengajuanTable').DataTable();
 
+            // ambil hanya data yang sudah kena filter
             const allRows = table.rows({
                 search: 'applied'
             }).nodes();
@@ -472,25 +501,36 @@
 
             data.push(headers);
 
-            // LOOP ROW
+            let tempData = [];
+
+            // =========================
+            // AMBIL DATA DARI TABLE
+            // =========================
             $(allRows).each(function(index, row) {
 
                 let rowData = [];
 
-                // ambil semua td kecuali kolom aksi
                 $(row).find('td').each(function(i) {
-                    if (i !== 14) { // kolom aksi
+                    if (i !== 14) { // skip kolom aksi
                         rowData.push($(this).text().trim());
                     }
                 });
 
-                // 🔥 ambil dari attribute
+                // ambil attribute tambahan
                 let kodeBayar = $(row).data('kode-bayar') || '-';
                 let tanggalBayar = $(row).data('tanggal-bayar');
 
                 if (tanggalBayar) {
                     let d = new Date(tanggalBayar);
-                    tanggalBayar = d.toLocaleString('id-ID');
+
+                    let tanggal = d.toLocaleDateString('id-ID'); // tanggal
+                    let jam = d.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }); // jam tanpa detik
+
+                    tanggalBayar = tanggal + ' ' + jam;
                 } else {
                     tanggalBayar = '-';
                 }
@@ -498,15 +538,40 @@
                 rowData.push(kodeBayar);
                 rowData.push(tanggalBayar);
 
-                data.push(rowData);
+                tempData.push(rowData);
             });
 
+            // =========================
+            // SORT DESC (TERBARU DI ATAS)
+            // =========================
+            tempData.sort(function(a, b) {
+
+                // format dd-mm-yyyy
+                let dateA = a[1].split('-');
+                let dateB = b[1].split('-');
+
+                let newA = new Date(dateA[2], dateA[1] - 1, dateA[0]);
+                let newB = new Date(dateB[2], dateB[1] - 1, dateB[0]);
+
+                return newA - newB; // 🔥 DESC (terbaru dulu)
+            });
+
+            // =========================
+            // RESET NOMOR
+            // =========================
+            tempData.forEach(function(row, index) {
+                row[0] = index + 1;
+                data.push(row);
+            });
+
+            // =========================
+            // EXPORT KE EXCEL
+            // =========================
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
 
             XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
         }
-
     </script>
 @endsection
