@@ -493,7 +493,7 @@
                 paging: true,
                 searching: true,
                 ordering: true,
-                order: [[1, 'desc']],
+                // order: [[1, 'desc']],
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
