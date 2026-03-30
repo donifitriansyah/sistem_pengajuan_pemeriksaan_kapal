@@ -77,7 +77,9 @@
                 @foreach ($pengajuan as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                        <td data-order="{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}">
+                            {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
+                        </td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>
@@ -491,6 +493,7 @@
                 paging: true,
                 searching: true,
                 ordering: true,
+                order: [[1, 'desc']],
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
