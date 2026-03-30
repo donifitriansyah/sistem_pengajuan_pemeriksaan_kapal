@@ -109,7 +109,6 @@
                 <option value="P3K">P3K</option>
             </select>
 
-            <button onclick="$('#pengajuanTable').DataTable().draw()">Filter</button>
             <button onclick="resetFilter()">Reset Filter</button>
             <button onclick="downloadTableAsExcel()">Download Excel</button>
 
