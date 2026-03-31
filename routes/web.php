@@ -157,6 +157,13 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
 Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilker'])->group(function () {
     Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
+
+    Route::get('/bendahara/belum-diagendakan', [DashboardPetugasController::class, 'indexBelumDiagendakanBendahara'])
+        ->name('bendahara.pengajuan-belum-diagendakan');
+
+    Route::get('/bendahara/petugas', [DashboardPetugasController::class, 'indexPengajuanBendahara'])
+        ->name('bendahara.petugas');
+
 });
 
 Route::middleware(['auth', 'petugas'])->group(function () {

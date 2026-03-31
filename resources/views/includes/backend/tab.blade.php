@@ -55,7 +55,7 @@
             class="tab {{ request()->routeIs('petugas.dashboard.petugas') ? 'active' : '' }}">
             Data Pembayaran
         </a>
-                <a href="{{ route('petugas.pengajuan') }}"
+        <a href="{{ route('petugas.pengajuan') }}"
             class="tab {{ request()->routeIs('petugas.pengajuan') ? 'active' : '' }}">
             Data Pengajuan Belum Diagendakan
         </a>
@@ -91,6 +91,14 @@
         <a href="{{ route('petugas.pemeriksa') }}"
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa
+        </a>
+        <a href="{{ route('bendahara.pengajuan-belum-diagendakan') }}"
+            class="tab {{ request()->routeIs('bendahara.pengajuan-belum-diagendakan') ? 'active' : '' }}">
+            Data Pengajuan Belum Diagendakan
+        </a>
+        <a href="{{ route('bendahara.petugas') }}"
+            class="tab {{ request()->routeIs('bendahara.petugas') ? 'active' : '' }}">
+            Semua Data Pengajuan
         </a>
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password

@@ -94,6 +94,34 @@ class DashboardPetugasController extends Controller
         return view('pages.petugas.pengajuan', compact('pengajuan', 'petugas'));
     }
 
+    public function indexPengajuanBendahara()
+    {
+        $user = auth()->user();
+
+        // Guard tambahan
+        if (! $user || ! $user->wilayah_kerja) {
+            abort(403, 'Wilayah kerja tidak ditemukan.');
+        }
+
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $user->wilayah_kerja)
+
+            // 🔥 tampilkan semua tanpa filter tambahan
+            ->orderByDesc('created_at')
+
+            ->get();
+
+        $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
+            ->whereNotIn('role', ['admin', 'user'])
+            ->get();
+
+        return view('pages.petugas.pengajuan', compact('pengajuan', 'petugas'));
+    }
+
     public function indexPembayaran()
     {
         $user = auth()->user();
@@ -173,6 +201,38 @@ class DashboardPetugasController extends Controller
     }
 
     public function indexBelumDiagendakan()
+    {
+        $user = auth()->user();
+        $wilayah_kerja = $user->wilayah_kerja;
+
+        $baseQuery = PengajuanPemeriksaanKapal::where('wilayah_kerja', $wilayah_kerja)
+            ->whereNull('agenda_surat_pengajuan_id');
+
+        $totalPengajuan = (clone $baseQuery)->count();
+
+        $totalBelumTagihan = (clone $baseQuery)
+            ->whereDoesntHave('penagihan')
+            ->count();
+
+        // ⬇ INI YANG DISAMAKAN NAMANYA
+        $totalBelumBayar = (clone $baseQuery)
+            ->where('status', 'Menunggu Verifikasi')
+            ->count();
+
+        $pengajuan = (clone $baseQuery)
+            ->with(['user', 'penagihan'])
+            ->latest()
+            ->get();
+
+        return view('pages.petugas.belum-diagendakan', compact(
+            'totalPengajuan',
+            'totalBelumTagihan',
+            'totalBelumBayar',
+            'pengajuan'
+        ));
+    }
+
+    public function indexBelumDiagendakanBendahara()
     {
         $user = auth()->user();
         $wilayah_kerja = $user->wilayah_kerja;
