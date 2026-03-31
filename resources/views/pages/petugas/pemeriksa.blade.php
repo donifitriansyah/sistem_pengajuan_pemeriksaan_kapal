@@ -522,15 +522,7 @@
 
                 if (tanggalBayar) {
                     let d = new Date(tanggalBayar);
-
-                    let tanggal = d.toLocaleDateString('id-ID'); // tanggal
-                    let jam = d.toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    }); // jam tanpa detik
-
-                    tanggalBayar = tanggal + ' ' + jam;
+                    tanggalBayar = d.toLocaleDateString('id-ID'); // hanya tanggal
                 } else {
                     tanggalBayar = '-';
                 }
