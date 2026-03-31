@@ -143,7 +143,6 @@
                         <th>Waktu Selesai</th>
                         <th>Jenis Tarif</th>
                         <th>Biaya</th>
-
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -153,7 +152,9 @@
                             data-tanggal-bayar="{{ optional($item->penagihan->pembayaran)->tanggal_bayar }}">
 
                             <td></td>
-                            <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                            <td data-order="{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}">
+                                {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
+                            </td>
                             <td>{{ $item->agendaSuratPengajuan->nomor_surat_keluar ?? '-' }}</td>
                             <td>{{ $item->nama_kapal }}</td>
                             <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
@@ -452,20 +453,20 @@
 
         function resetFilter() {
 
-    const table = $('#pengajuanTable').DataTable();
+            const table = $('#pengajuanTable').DataTable();
 
-    // reset semua input
-    $('#startDate').val('');
-    $('#endDate').val('');
-    $('#filterTarif').val('');
-    $('#filterDokumen').val('');
+            // reset semua input
+            $('#startDate').val('');
+            $('#endDate').val('');
+            $('#filterTarif').val('');
+            $('#filterDokumen').val('');
 
-    // redraw ulang (filter otomatis kosong)
-    table.draw();
+            // redraw ulang (filter otomatis kosong)
+            table.draw();
 
-    // kembali ke halaman pertama
-    table.page('first').draw('page');
-}
+            // kembali ke halaman pertama
+            table.page('first').draw('page');
+        }
 
         function downloadTableAsExcel() {
 

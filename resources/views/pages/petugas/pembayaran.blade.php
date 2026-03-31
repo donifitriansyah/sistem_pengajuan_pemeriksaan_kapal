@@ -3,6 +3,15 @@
     Verifikasi Pembayaran
 @endsection
 @section('content')
+<style>
+    #pengajuanable th,
+        #pengajuanTable td {
+            white-space: normal !important;
+            word-break: break-word;
+            font-size: 11px;
+            /* opsional biar muat */
+        }
+</style>
     <div class="content-card">
         <div class="content-header">
             <h2>Daftar Pengajuan Belum Diverifikasi</h2>
@@ -107,7 +116,9 @@
                     @endphp
                     <tr data-status="{{ $statusFilter }}">
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+                        <td data-order="{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}">
+                            {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
+                        </td>
                         <td>{{ $item->nama_kapal }}</td>
                         <td>{{ $item->user->nama_perusahaan ?? '-' }}</td>
                         <td>{{ $item->lokasi_kapal }}</td>

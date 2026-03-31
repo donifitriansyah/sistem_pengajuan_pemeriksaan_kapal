@@ -271,14 +271,6 @@
 
 @push('script')
     <script>
-        // Mencegah input manual pada datetime-local input
-        // document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        //     input.addEventListener('keydown', function(event) {
-        //         event.preventDefault(); // Mencegah input manual
-        //     });
-        // });
-    </script>
-    <script>
         // Menangani input dengan format 24 jam pada saat pemilihan waktu
         document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
             input.addEventListener('input', function(event) {
@@ -493,7 +485,9 @@
                 paging: true,
                 searching: true,
                 ordering: true,
-                order: [[1, 'desc']],
+                order: [
+                    [1, 'desc']
+                ],
                 info: true,
                 lengthChange: true,
                 pageLength: 10,
@@ -533,63 +527,79 @@
             const perusahaanSet = new Set();
 
             table.rows().every(function() {
-                const data = this.data();
 
-                const dateParts = data[1].split('-');
-                tahunSet.add(dateParts[2]);
-                bulanSet.add(dateParts[1]);
+                const row = $(this.node());
 
-                if (data[3] && data[3] !== '-') {
-                    perusahaanSet.add(data[3]);
+                const tanggal = row.find('td:eq(1)').text().trim();
+                const perusahaan = row.find('td:eq(3)').text().trim();
+
+                if (tanggal && tanggal.includes('-')) {
+                    const [day, month, year] = tanggal.split('-');
+
+                    tahunSet.add(year);
+                    bulanSet.add(month);
+                }
+
+                if (perusahaan && perusahaan !== '-') {
+                    perusahaanSet.add(perusahaan);
                 }
             });
 
-            [...tahunSet].sort().forEach(t =>
-                $('#filterTahun').append(`<option value="${t}">${t}</option>`)
-            );
+            // kosongkan dulu biar tidak dobel
+            $('#filterTahun').empty().append('<option value="">Semua Tahun</option>');
+            $('#filterBulan').empty().append('<option value="">Semua Bulan</option>');
+            $('#filterPerusahaan').empty().append('<option value="">Semua Perusahaan</option>');
 
-            [...bulanSet].sort().forEach(b =>
-                $('#filterBulan').append(`<option value="${b}">${b}</option>`)
-            );
+            // isi ulang
+            [...tahunSet].sort().forEach(t => {
+                $('#filterTahun').append(`<option value="${t}">${t}</option>`);
+            });
 
-            [...perusahaanSet].sort().forEach(p =>
-                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`)
-            );
+            [...bulanSet].sort().forEach(b => {
+                $('#filterBulan').append(`<option value="${b}">${b}</option>`);
+            });
 
+            [...perusahaanSet].sort().forEach(p => {
+                $('#filterPerusahaan').append(`<option value="${p}">${p}</option>`);
+            });
 
             /* ======================
                FILTER CUSTOM
             ====================== */
 
+
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
 
-                const filterTahun = $('#filterTahun').val();
-                const filterBulan = $('#filterBulan').val();
-                const filterPerusahaan = $('#filterPerusahaan').val();
-                const filterDokumen = $('#filterJenisDokumen').val();
-                const filterStatus = $('#filterStatus').val();
+                const tahun = $('#filterTahun').val();
+                const bulan = $('#filterBulan').val();
+                const perusahaan = $('#filterPerusahaan').val();
+                const dokumen = $('#filterJenisDokumen').val();
 
-                const date = data[1].split('-');
-                const bulan = date[1];
-                const tahun = date[2];
+                const tanggal = data[1] || '';
 
-                const perusahaan = data[3];
-                const dokumen = data[5];
+                if (!tanggal.includes('-')) return true;
 
-                const rowNode = table.row(dataIndex).node();
-                const status = rowNode.getAttribute('data-status');
+                const parts = tanggal.split('-');
+                if (parts.length !== 3) return true;
 
-                if (filterTahun && tahun !== filterTahun) return false;
-                if (filterBulan && bulan !== filterBulan) return false;
-                if (filterPerusahaan && perusahaan !== filterPerusahaan) return false;
-                if (filterDokumen && dokumen !== filterDokumen) return false;
-                if (filterStatus && status !== filterStatus) return false;
+                const thn = parts[2];
+                const bln = parts[1];
+
+                const perusahaanRow = (data[3] || '').trim();
+
+                // 🔥 FIX WAJIB (ambil text dari HTML)
+                const dokumenRow = $('<div>').html(data[5]).text().trim();
+
+                if (tahun && thn !== tahun) return false;
+                if (bulan && bln !== bulan) return false;
+                if (perusahaan && perusahaanRow !== perusahaan) return false;
+                if (dokumen && dokumenRow !== dokumen) return false;
 
                 return true;
             });
 
 
-            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen, #filterStatus')
+            $('#filterTahun, #filterBulan, #filterPerusahaan, #filterJenisDokumen')
                 .on('change', function() {
                     table.draw();
                 });
