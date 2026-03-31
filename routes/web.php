@@ -152,6 +152,9 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
+});
+
+Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilker'])->group(function () {
     Route::get('/pemeriksa/petugas', [DashboardPetugasController::class, 'indexPemeriksa'])
         ->name('petugas.pemeriksa');
 });

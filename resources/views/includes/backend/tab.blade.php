@@ -39,6 +39,10 @@
             class="tab {{ request()->routeIs('arsiparis.surat-keluar') ? 'active' : '' }}">
             Data Surat Keluar
         </a>
+        <a href="{{ route('petugas.pemeriksa') }}"
+            class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
+            Data Petugas Pemeriksa
+        </a>
         <a href="{{ route('profile.edit') }}" class="tab {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             Ganti Password
         </a>
