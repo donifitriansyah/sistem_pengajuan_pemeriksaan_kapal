@@ -152,6 +152,34 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
+    Route::get('/admin/export-verifikasi', function (Request $request) {
+
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+        $status = $request->status;
+
+        $namaFile = 'verifikasi_pembayaran_'.now()->format('d-m-Y').'.xlsx';
+
+        return Excel::download(
+            new VerifikasiPembayaranExport($mulai, $selesai, $status),
+            $namaFile
+        );
+
+    })->name('export.verifikasi');
+
+    Route::get('/admin/export-verifikasi-lunas', function (Request $request) {
+
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+
+        $namaFile = 'verifikasi_pembayaran_lunas_'.now()->format('d-m-Y').'.xlsx';
+
+        return Excel::download(
+            new VerifikasiPembayaranLunasExport($mulai, $selesai),
+            $namaFile
+        );
+
+    })->name('export.verifikasi-lunas');
 });
 
 Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilker'])->group(function () {
@@ -163,6 +191,8 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilke
 
     Route::get('/bendahara/petugas', [DashboardPetugasController::class, 'indexPengajuanBendahara'])
         ->name('bendahara.petugas');
+
+
 
 });
 
@@ -227,34 +257,7 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
         ->name('petugas.keuangan');
 
-    Route::get('/admin/export-verifikasi', function (Request $request) {
 
-        $mulai = $request->mulai;
-        $selesai = $request->selesai;
-        $status = $request->status;
-
-        $namaFile = 'verifikasi_pembayaran_'.now()->format('d-m-Y').'.xlsx';
-
-        return Excel::download(
-            new VerifikasiPembayaranExport($mulai, $selesai, $status),
-            $namaFile
-        );
-
-    })->name('export.verifikasi');
-
-    Route::get('/admin/export-verifikasi-lunas', function (Request $request) {
-
-        $mulai = $request->mulai;
-        $selesai = $request->selesai;
-
-        $namaFile = 'verifikasi_pembayaran_lunas_'.now()->format('d-m-Y').'.xlsx';
-
-        return Excel::download(
-            new VerifikasiPembayaranLunasExport($mulai, $selesai),
-            $namaFile
-        );
-
-    })->name('export.verifikasi-lunas');
 
 });
 
