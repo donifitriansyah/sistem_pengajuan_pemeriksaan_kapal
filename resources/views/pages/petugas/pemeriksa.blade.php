@@ -49,35 +49,39 @@
         }
 
         .filter-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-        }
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap; /* 🔥 penting agar tidak keluar */
+    gap: 10px; /* jarak antar filter */
+    align-items: center;
+}
 
-        .filter-container label {
-            margin-right: 10px;
-        }
+.filter-container label {
+    margin-right: 5px;
+    font-size: 12px;
+}
 
-        .filter-container input {
-            padding: 5px;
-            margin-right: 10px;
-        }
+.filter-container input,
+.filter-container select {
+    padding: 5px;
+    font-size: 12px;
+    min-width: 140px; /* biar tidak terlalu kecil */
+}
 
-        .filter-container button {
-            padding: 6px 12px;
-            margin-left: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
+.filter-container button {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    white-space: nowrap; /* 🔥 biar tombol tidak pecah */
+}
 
-        .filter-container button:hover {
-            background-color: #0056b3;
-        }
+.filter-container button:hover {
+    background-color: #0056b3;
+}
     </style>
     <div class="content-card">
         <div class="content-header">
@@ -107,6 +111,16 @@
                 <option value="SSCEC">SSCEC</option>
                 <option value="COP">COP</option>
                 <option value="P3K">P3K</option>
+            </select>
+
+            <label for="filterPetugas">Petugas:</label>
+            <select id="filterPetugas">
+                <option value="">Semua Petugas</option>
+                @foreach ($petugas as $p)
+                    <option value="{{ strtolower($p->nama_petugas) }}">
+                        {{ $p->nama_petugas }}
+                    </option>
+                @endforeach
             </select>
 
             <button onclick="resetFilter()">Reset Filter</button>
@@ -325,9 +339,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
-        $('#startDate, #endDate, #filterTarif, #filterDokumen').on('change', function() {
-            $('#pengajuanTable').DataTable().draw();
-        });
+        $('#startDate, #endDate, #filterTarif, #filterDokumen, #filterPetugas')
+            .on('change', function() {
+                $('#pengajuanTable').DataTable().draw();
+            });
 
         $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
 
@@ -335,12 +350,15 @@
             const endDate = $('#endDate').val();
             const tarif = $('#filterTarif').val();
             const dokumen = $('#filterDokumen').val();
+            const petugasFilter = ($('#filterPetugas').val() || '').toLowerCase().trim();
 
-            const tanggal = data[1]; // kolom tanggal
-            const tarifText = data[12]; // kolom jenis tarif
-            const dokumenText = data[8]; // 🔥 kolom jenis dokumen
+            const tanggal = data[1];
+            const tarifText = data[12];
+            const dokumenText = data[8];
 
-            let valid = true;
+            const petugas1 = (data[5] || '').toLowerCase();
+            const petugas2 = (data[6] || '').toLowerCase();
+            const petugas3 = (data[7] || '').toLowerCase();
 
             // =====================
             // FILTER TANGGAL
@@ -349,29 +367,39 @@
                 const parts = tanggal.split('-');
                 const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
 
-                if (startDate && rowDate < new Date(startDate)) valid = false;
-                if (endDate && rowDate > new Date(endDate)) valid = false;
+                if (startDate && rowDate < new Date(startDate)) return false;
+                if (endDate && rowDate > new Date(endDate)) return false;
             }
 
             // =====================
             // FILTER TARIF
             // =====================
             if (tarif) {
-                if (tarif == "170000" && tarifText !== "Dalam Kota < 8 Jam") valid = false;
-                if (tarif == "320000" && tarifText !== "Dalam Kota > 8 Jam") valid = false;
-                if (tarif == "380000" && tarifText !== "Luar Kota") valid = false;
+                if (tarif == "170000" && tarifText !== "Dalam Kota < 8 Jam") return false;
+                if (tarif == "320000" && tarifText !== "Dalam Kota > 8 Jam") return false;
+                if (tarif == "380000" && tarifText !== "Luar Kota") return false;
             }
 
             // =====================
-            // FILTER JENIS DOKUMEN 🔥
+            // FILTER DOKUMEN
             // =====================
-            if (dokumen) {
-                if (dokumenText !== dokumen) valid = false;
+            if (dokumen && dokumenText !== dokumen) return false;
+
+            // =====================
+            // 🔥 FILTER PETUGAS
+            // =====================
+            if (petugasFilter) {
+                if (
+                    !petugas1.includes(petugasFilter) &&
+                    !petugas2.includes(petugasFilter) &&
+                    !petugas3.includes(petugasFilter)
+                ) {
+                    return false;
+                }
             }
 
-            return valid;
+            return true;
         });
-
         $(document).ready(function() {
             const table = $('#pengajuanTable').DataTable({
                 paging: true,
@@ -455,16 +483,13 @@
 
             const table = $('#pengajuanTable').DataTable();
 
-            // reset semua input
             $('#startDate').val('');
             $('#endDate').val('');
             $('#filterTarif').val('');
             $('#filterDokumen').val('');
+            $('#filterPetugas').val('');
 
-            // redraw ulang (filter otomatis kosong)
             table.draw();
-
-            // kembali ke halaman pertama
             table.page('first').draw('page');
         }
 
@@ -472,15 +497,15 @@
 
             const table = $('#pengajuanTable').DataTable();
 
-            // ambil hanya data yang sudah kena filter
-            const allRows = table.rows({
+            // 🔥 ambil data yang SUDAH TERFILTER
+            const rows = table.rows({
                 search: 'applied'
-            }).nodes();
+            }).data();
 
             let data = [];
 
             // HEADER
-            let headers = [
+            data.push([
                 "No",
                 "Tanggal Pemeriksaan",
                 "Surat Tugas",
@@ -497,67 +522,50 @@
                 "Biaya",
                 "Kode Bayar",
                 "Tanggal Bayar"
-            ];
+            ]);
 
-            data.push(headers);
+            let no = 1;
 
-            let tempData = [];
+            rows.each(function(row, index) {
 
-            // =========================
-            // AMBIL DATA DARI TABLE
-            // =========================
-            $(allRows).each(function(index, row) {
+                // 🔥 ambil node untuk ambil data attribute
+                const node = table.row(index).node();
 
-                let rowData = [];
-
-                $(row).find('td').each(function(i) {
-                    if (i !== 14) { // skip kolom aksi
-                        rowData.push($(this).text().trim());
-                    }
-                });
-
-                // ambil attribute tambahan
-                let kodeBayar = $(row).data('kode-bayar') || '-';
-                let tanggalBayar = $(row).data('tanggal-bayar');
+                let kodeBayar = $(node).data('kode-bayar') || '-';
+                let tanggalBayar = $(node).data('tanggal-bayar');
 
                 if (tanggalBayar) {
                     let d = new Date(tanggalBayar);
-                    tanggalBayar = d.toLocaleDateString('id-ID'); // hanya tanggal
+                    tanggalBayar = d.toLocaleDateString('id-ID');
                 } else {
                     tanggalBayar = '-';
                 }
 
-                rowData.push(kodeBayar);
-                rowData.push(tanggalBayar);
+                // 🔥 bersihin HTML kalau ada
+                const clean = (val) => $('<div>').html(val).text().trim();
 
-                tempData.push(rowData);
+                data.push([
+                    no++,
+                    clean(row[1]),
+                    clean(row[2]),
+                    clean(row[3]),
+                    clean(row[4]),
+                    clean(row[5]),
+                    clean(row[6]),
+                    clean(row[7]),
+                    clean(row[8]),
+                    clean(row[9]),
+                    clean(row[10]),
+                    clean(row[11]),
+                    clean(row[12]),
+                    clean(row[13]),
+                    kodeBayar,
+                    tanggalBayar
+                ]);
             });
 
             // =========================
-            // SORT DESC (TERBARU DI ATAS)
-            // =========================
-            tempData.sort(function(a, b) {
-
-                // format dd-mm-yyyy
-                let dateA = a[1].split('-');
-                let dateB = b[1].split('-');
-
-                let newA = new Date(dateA[2], dateA[1] - 1, dateA[0]);
-                let newB = new Date(dateB[2], dateB[1] - 1, dateB[0]);
-
-                return newA - newB; // 🔥 DESC (terbaru dulu)
-            });
-
-            // =========================
-            // RESET NOMOR
-            // =========================
-            tempData.forEach(function(row, index) {
-                row[0] = index + 1;
-                data.push(row);
-            });
-
-            // =========================
-            // EXPORT KE EXCEL
+            // EXPORT
             // =========================
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
