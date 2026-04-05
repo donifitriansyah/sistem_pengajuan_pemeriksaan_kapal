@@ -166,11 +166,10 @@
                 </thead>
                 <tbody>
                     @foreach ($pengajuan as $key => $item)
-                        <tr data-kode-bayar="{{ $item->kode_bayar }}"
-                            data-tanggal-bayar="{{ optional($item->penagihan->pembayaran)->tanggal_bayar }}"
-                            data-status-bayar="{{ optional($item->penagihan->pembayaran)->status }}"
-                            data-tanggal-verifikasi="{{ optional($item->penagihan->pembayaran)->updated_at }}">
-
+                        <tr data-tanggal-pemeriksaan="{{ $item->tgl_estimasi_pemeriksaan }}"
+                            data-kode-bayar="{{ $item->kode_bayar }}"
+                            data-tanggal-bayar="{{ optional($item->penagihan->pembayaran)->created_at }}"
+                            data-tanggal-verifikasi="{{ $item->penagihan && $item->penagihan->pembayaran && $item->penagihan->pembayaran->status == 'diterima' ? $item->penagihan->pembayaran->updated_at : '' }}">
                             <td></td>
                             <td data-order="{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('Y-m-d') }}">
                                 {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
@@ -498,99 +497,110 @@
             table.draw();
             table.page('first').draw('page');
         }
-
-
     </script>
     <script>
-function downloadTableAsExcel() {
+        function downloadTableAsExcel() {
 
-    const table = $('#pengajuanTable').DataTable();
+            const table = $('#pengajuanTable').DataTable();
 
-    const rows = table.rows({ search: 'applied' }).data();
+            const rows = table.rows({
+                search: 'applied'
+            }).indexes();
 
-    let data = [];
+            let data = [];
 
-    // HEADER (🔥 tambah kolom baru)
-    data.push([
-        "No",
-        "Tanggal Pemeriksaan",
-        "Surat Tugas",
-        "Nama Kapal",
-        "Nama Perusahaan",
-        "Petugas 1",
-        "Petugas 2",
-        "Petugas 3",
-        "Jenis Dokumen",
-        "Lokasi Pemeriksaan",
-        "Waktu Mulai",
-        "Waktu Selesai",
-        "Jenis Tarif",
-        "Biaya",
-        "Kode Bayar",
-        "Tanggal Bayar",
-        "Tanggal Verifikasi" // 🔥 BARU
-    ]);
+            // =========================
+            // HEADER (SUDAH BENAR)
+            // =========================
+            data.push([
+                "No",
+                "Tanggal Pemeriksaan",
+                "Surat Tugas",
+                "Nama Kapal",
+                "Nama Perusahaan",
+                "Petugas 1",
+                "Petugas 2",
+                "Petugas 3",
+                "Jenis Dokumen",
+                "Lokasi Pemeriksaan",
+                "Waktu Mulai",
+                "Waktu Selesai",
+                "Jenis Tarif",
+                "Biaya",
+                "Kode Bayar",
+                "Tanggal Bayar",
+                "Tanggal Verifikasi" // 🔥 tambahan baru
+            ]);
 
-    let no = 1;
+            let no = 1;
 
-    rows.each(function(row, index) {
+            rows.each(function(idx) {
 
-        const node = table.row(index).node();
+                const row = table.row(idx).data();
+                const node = table.row(idx).node();
 
-        let kodeBayar = $(node).data('kode-bayar') || '-';
-        let tanggalBayar = $(node).data('tanggal-bayar');
-        let statusBayar = ($(node).data('status-bayar') || '').toString().toLowerCase();
-        let tanggalVerifikasi = $(node).data('tanggal-verifikasi');
+                // ambil attribute
+                let kodeBayar = $(node).data('kode-bayar') || '-';
+                let tanggalBayar = $(node).data('tanggal-bayar');
+                let tanggalVerifikasi = $(node).data('tanggal-verifikasi');
 
-        // =========================
-        // FORMAT TANGGAL BAYAR
-        // =========================
-        if (tanggalBayar) {
-            let d = new Date(tanggalBayar);
-            tanggalBayar = d.toLocaleDateString('id-ID');
-        } else {
-            tanggalBayar = '-';
+                // format tanggal bayar
+                if (tanggalBayar) {
+                    let d = new Date(tanggalBayar);
+                    tanggalBayar = d.toLocaleDateString('id-ID');
+                } else {
+                    tanggalBayar = '-';
+                }
+
+                // format tanggal verifikasi (HANYA jika ada & diterima)
+                if (tanggalVerifikasi) {
+                    let d = new Date(tanggalVerifikasi);
+                    tanggalVerifikasi = d.toLocaleDateString('id-ID');
+                } else {
+                    tanggalVerifikasi = '-';
+                }
+
+                let tanggalPemeriksaan = $(node).data('tanggal-pemeriksaan');
+
+                if (tanggalPemeriksaan) {
+                    let d = new Date(tanggalPemeriksaan);
+                    tanggalPemeriksaan = d.toLocaleDateString('id-ID');
+                } else {
+                    tanggalPemeriksaan = '-';
+                }
+
+                // bersihin HTML
+                const clean = (val) => $('<div>').html(val).text().trim();
+
+                data.push([
+                    no++,
+                    tanggalPemeriksaan,  // ✅ Tanggal Pemeriksaan (AMAN)
+                    clean(row[2]),
+                    clean(row[3]),
+                    clean(row[4]),
+                    clean(row[5]),
+                    clean(row[6]),
+                    clean(row[7]),
+                    clean(row[8]),
+                    clean(row[9]),
+                    clean(row[10]),
+                    clean(row[11]),
+                    clean(row[12]),
+                    clean(row[13]),
+                    kodeBayar,
+                    tanggalBayar,
+                    tanggalVerifikasi // ✅ tambahan
+                ]);
+            });
+
+            // =========================
+            // EXPORT
+            // =========================
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
+
+            XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
         }
-
-        // =========================
-        // 🔥 FORMAT TANGGAL VERIFIKASI
-        // =========================
-        if (statusBayar === 'diterima' && tanggalVerifikasi) {
-            let d = new Date(tanggalVerifikasi);
-            tanggalVerifikasi = d.toLocaleDateString('id-ID');
-        } else {
-            tanggalVerifikasi = '-';
-        }
-
-        // bersihin HTML
-        const clean = (val) => $('<div>').html(val).text().trim();
-
-        data.push([
-            no++,
-            clean(row[1]),
-            clean(row[2]),
-            clean(row[3]),
-            clean(row[4]),
-            clean(row[5]),
-            clean(row[6]),
-            clean(row[7]),
-            clean(row[8]),
-            clean(row[9]),
-            clean(row[10]),
-            clean(row[11]),
-            clean(row[12]),
-            clean(row[13]),
-            kodeBayar,
-            tanggalBayar,
-            tanggalVerifikasi // 🔥 MASUK SINI
-        ]);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pengajuan');
-
-    XLSX.writeFile(wb, 'Pengajuan_Pemeriksaan.xlsx');
-}
-</script>
+    </script>
 @endsection
