@@ -368,12 +368,24 @@
             // =====================
             // FILTER TANGGAL
             // =====================
+            // =====================
+            // FILTER TANGGAL
+            // =====================
             if (tanggal) {
-                const parts = tanggal.split('-');
+                const parts = tanggal.split('-'); // format dd-mm-yyyy
                 const rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
 
-                if (startDate && rowDate < new Date(startDate)) return false;
-                if (endDate && rowDate > new Date(endDate)) return false;
+                if (startDate) {
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    if (rowDate < start) return false;
+                }
+
+                if (endDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999); // memastikan seluruh hari ter-cover
+                    if (rowDate > end) return false;
+                }
             }
 
             // =====================
@@ -574,7 +586,7 @@
 
                 data.push([
                     no++,
-                    tanggalPemeriksaan,  // ✅ Tanggal Pemeriksaan (AMAN)
+                    tanggalPemeriksaan, // ✅ Tanggal Pemeriksaan (AMAN)
                     clean(row[2]),
                     clean(row[3]),
                     clean(row[4]),
