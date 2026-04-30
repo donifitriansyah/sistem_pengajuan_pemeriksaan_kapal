@@ -297,37 +297,72 @@ class DashboardPetugasController extends Controller
         ));
     }
 
-    public function indexPemeriksa()
-    {
-        $user = auth()->user();
+    // public function indexPemeriksa()
+    // {
+    //     $user = auth()->user();
 
-        if (! $user || ! $user->wilayah_kerja) {
-            abort(403, 'Wilayah kerja tidak ditemukan.');
-        }
+    //     if (! $user || ! $user->wilayah_kerja) {
+    //         abort(403, 'Wilayah kerja tidak ditemukan.');
+    //     }
 
-        $pengajuan = PengajuanPemeriksaanKapal::with([
-            'user',
-            'penagihan.pembayaran',
-            'penagihan.petugas',
-            'agendaSuratPengajuan',
-        ])
-            ->where('wilayah_kerja', $user->wilayah_kerja)
+    //     $pengajuan = PengajuanPemeriksaanKapal::with([
+    //         'user',
+    //         'penagihan.pembayaran',
+    //         'penagihan.petugas',
+    //         'agendaSuratPengajuan',
+    //     ])
+    //         ->where('wilayah_kerja', $user->wilayah_kerja)
 
-            // 🔥 hanya yang SUDAH ADA penagihan
-            ->has('penagihan')
+    //         // 🔥 hanya yang SUDAH ADA penagihan
+    //         ->has('penagihan')
 
-            ->orderByDesc('created_at')
-            ->get();
+    //         ->orderByDesc('created_at')
+    //         ->get();
 
-        $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
-            ->whereNotIn('role', ['admin', 'user'])
-            ->get();
+    //     $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
+    //         ->whereNotIn('role', ['admin', 'user'])
+    //         ->get();
 
-        return view('pages.petugas.pemeriksa', [
-            'pengajuan' => $pengajuan,
-            'petugas' => $petugas,
-        ]);
+    //     return view('pages.petugas.pemeriksa', [
+    //         'pengajuan' => $pengajuan,
+    //         'petugas' => $petugas,
+    //     ]);
+    // }
+
+public function indexPemeriksa()
+{
+    $user = auth()->user();
+
+    if (! $user || ! $user->wilayah_kerja) {
+        abort(403, 'Wilayah kerja tidak ditemukan.');
     }
+
+    $pengajuan = PengajuanPemeriksaanKapal::with([
+        'user',
+        'penagihan.pembayaran',
+        'penagihan.petugas',
+        'agendaSuratPengajuan',
+    ])
+        ->where('wilayah_kerja', $user->wilayah_kerja)
+
+        // hanya yang tidak difasilitasi agen
+        ->where('difasilitasi_agen', 0)
+
+        // hanya yang sudah ada penagihan
+        ->has('penagihan')
+
+        ->orderByDesc('created_at')
+        ->get();
+
+    $petugas = User::where('wilayah_kerja', $user->wilayah_kerja)
+        ->whereNotIn('role', ['admin', 'user'])
+        ->get();
+
+    return view('pages.petugas.pemeriksa', [
+        'pengajuan' => $pengajuan,
+        'petugas' => $petugas,
+    ]);
+}
 
     public function verifikasi(Request $request, Pembayaran $pembayaran)
     {
