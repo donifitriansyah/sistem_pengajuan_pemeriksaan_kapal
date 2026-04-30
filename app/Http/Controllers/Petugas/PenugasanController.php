@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pembayaran;
 use App\Models\Penagihan;
 use App\Models\PengajuanPemeriksaanKapal;
 use Illuminate\Http\Request;
@@ -97,6 +98,7 @@ class PenugasanController extends Controller
     public function store(Request $request, $pengajuanId)
     {
         $request->validate([
+            'nama_kapal' => 'nullable|string|max:255',
             'lokasi' => 'required|string|max:255',
             'jumlah_petugas' => 'required|integer|min:1',
             'petugas' => 'required|array',
@@ -126,6 +128,7 @@ class PenugasanController extends Controller
                 'waktu_mulai' => $waktuMulai,
                 'waktu_selesai' => $waktuSelesai,
                 'total_tarif' => $request->total_tarif,
+                'at_cost' => $request->boolean('at_cost'),
             ]);
 
             $penagihan->petugas()->sync($request->petugas);
@@ -137,6 +140,7 @@ class PenugasanController extends Controller
                 'penagihan_id' => $penagihan->id,
                 'lokasi_kapal' => $lokasiBaru,
                 'tgl_estimasi_pemeriksaan' => $waktuMulai,
+                'nama_kapal' => $request->nama_kapal,
             ]);
         });
 
@@ -190,5 +194,46 @@ class PenugasanController extends Controller
 
         // Return success response
         return redirect()->back()->with('success', 'Penagihan berhasil dibuat');
+    }
+
+    public function storeAgen($id)
+    {
+        try {
+
+            DB::transaction(function () use ($id) {
+
+                $pengajuan = PengajuanPemeriksaanKapal::findOrFail($id);
+
+                $penagihan = Penagihan::create([
+                    'pengajuan_id' => $pengajuan->id,
+                    'jenis_tarif' => 170000,
+                    'jumlah_petugas' => 1,
+                    'total_tarif' => 0,
+                    'waktu_mulai' => now(),
+                    'waktu_selesai' => now(),
+                ]);
+
+                Pembayaran::create([
+                    'penagihan_id' => $penagihan->id,
+                    'file' => 'AGEN',
+                    'tanggal_bayar' => now(),
+                    'status' => 'diterima',
+                    'keterangan' => 'Difasilitasi agen',
+                ]);
+
+                $pengajuan->update([
+                    'penagihan_id' => $penagihan->id,
+                    'difasilitasi_agen' => true,
+                ]);
+            });
+
+           return redirect()->back()->with('success', 'Penagihan difasilitasi agen berhasil dibuat');
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

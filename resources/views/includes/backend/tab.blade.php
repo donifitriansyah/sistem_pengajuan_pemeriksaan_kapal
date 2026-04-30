@@ -88,6 +88,10 @@
             class="tab {{ request()->routeIs('keuangan.pembayaran.lunas') ? 'active' : '' }}">
             Data Pembayaran Lunas
         </a>
+        <a href="{{ route('keuangan.pembayaran.difasilitasi-agen') }}"
+            class="tab {{ request()->routeIs('keuangan.pembayaran.difasilitasi-agen') ? 'active' : '' }}">
+            Data Pembayaran Difasilitasi Agen
+        </a>
         <a href="{{ route('petugas.pemeriksa') }}"
             class="tab {{ request()->routeIs('petugas.pemeriksa') ? 'active' : '' }}">
             Data Petugas Pemeriksa

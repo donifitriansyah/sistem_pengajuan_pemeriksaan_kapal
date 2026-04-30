@@ -3,6 +3,60 @@
     Dashboard Petugas
 @endsection
 @section('content')
+    <style>
+        body {
+            font-size: 14px !important;
+        }
+
+        /* semua text */
+        body * {
+            font-size: inherit !important;
+        }
+
+        /* heading diperkecil */
+        h1 {
+            font-size: 18px !important;
+        }
+
+        h2 {
+            font-size: 16px !important;
+        }
+
+        h3 {
+            font-size: 14px !important;
+        }
+
+        h4,
+        h5,
+        h6 {
+            font-size: 13px !important;
+        }
+
+        /* table */
+        table th,
+        table td {
+            font-size: 13px !important;
+            padding: 11px !important;
+        }
+
+        /* button */
+        .btn {
+            font-size: 11px !important;
+            padding: 3px 6px !important;
+        }
+
+        /* badge */
+        .badge {
+            font-size: 10px !important;
+        }
+
+        /* input & select */
+        input,
+        select,
+        textarea {
+            font-size: 11px !important;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <div class="content-card">
         <div class="content-header">
@@ -56,6 +110,11 @@
             </div>
         @endif
 
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
 
         <table id="pengajuanTable" class="">
             <thead>
@@ -133,10 +192,22 @@
                                         <span class="badge bg-warning">Belum Bayar</span>
                                     @endif
                                 @else
-                                    <button class="btn btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#modalPenagihan{{ $item->id }}">
-                                        Buat Penagihan
-                                    </button>
+                                    <div class="d-flex gap-1">
+
+                                        <button class="btn btn-warning btn-sm py-1 px-2" data-bs-toggle="modal"
+                                            data-bs-target="#modalPenagihan{{ $item->id }}">
+                                            <small>Buat Penagihan</small>
+                                        </button>
+
+                                        <form action="/petugas/penagihan/agen/{{ $item->id }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-info btn-sm py-1 px-2"
+                                                onclick="return confirm('Gunakan skema difasilitasi agen?')">
+                                                <small>Difasilitasi Agen</small>
+                                            </button>
+                                        </form>
+
+                                    </div>
                                 @endif
                             @endif
                         </td>
@@ -145,6 +216,7 @@
                 @endforeach
             </tbody>
         </table>
+
         @foreach ($pengajuan as $item)
             {{-- ================= MODAL ================= --}}
             <div class="modal fade" id="modalPenagihan{{ $item->id }}" tabindex="-1">
@@ -168,7 +240,12 @@
                                     {{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}
                                 </div>
 
-                                {{-- JUMLAH PETUGAS --}}
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Kapal</label>
+                                    <input type="text" name="nama_kapal" class="form-control"
+                                        value="{{ $item->nama_kapal }}" required>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label">Update Lokasi Kapal</label>
                                     <input type="text" name="lokasi" class="form-control"
@@ -200,8 +277,8 @@
                                 <div class="mb-3">
                                     <label class="form-label">Waktu Selesai</label>
 
-                                    <input type="text" name="waktu_selesai" class="form-control waktu-selesai" required
-                                        data-id="{{ $item->id }}">
+                                    <input type="text" name="waktu_selesai" class="form-control waktu-selesai"
+                                        required data-id="{{ $item->id }}">
                                 </div>
 
 
@@ -217,6 +294,19 @@
                                         <option value="320000">Dalam Kota (&gt; 8 Jam)</option>
                                         <option value="380000">Luar Kota</option>
                                     </select>
+                                </div>
+                                <div class="form-check mb-2 at-cost-wrapper" id="atCostWrapper{{ $item->id }}"
+                                    style="display:none;">
+
+                                    <!-- wajib -->
+                                    <input type="hidden" name="at_cost" value="0">
+
+                                    <input class="form-check-input at-cost-toggle" type="checkbox" name="at_cost"
+                                        value="1" data-id="{{ $item->id }}">
+
+                                    <label class="form-check-label">
+                                        At Cost (Input manual)
+                                    </label>
                                 </div>
 
                                 {{-- TOTAL TARIF --}}
@@ -244,6 +334,75 @@
 
         <script>
             const petugasData = @json($petugas);
+
+            document.querySelectorAll('.at-cost-toggle').forEach(el => {
+                el.addEventListener('change', function() {
+
+                    const id = this.dataset.id;
+                    const display = document.getElementById(`totalDisplay${id}`);
+                    const hidden = document.getElementById(`totalValue${id}`);
+                    const atCostValue = document.getElementById(`atCostValue${id}`);
+
+                    if (this.checked) {
+                        display.removeAttribute('readonly');
+                        display.value = '';
+                        hidden.value = '';
+                        atCostValue.value = 1;
+                    } else {
+                        display.setAttribute('readonly', true);
+                        atCostValue.value = 0;
+                        hitungTotal(id);
+                    }
+                });
+            });
+
+            document.querySelectorAll('[id^="totalDisplay"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    const id = this.id.replace('totalDisplay', '');
+                    const raw = this.value.replace(/[^\d]/g, '');
+                    document.getElementById(`totalValue${id}`).value = raw;
+                });
+            });
+
+            document.querySelectorAll('.tarif').forEach(select => {
+                select.addEventListener('change', function() {
+
+                    const id = this.dataset.id;
+                    const value = this.value;
+
+                    const wrapper = document.getElementById(`atCostWrapper${id}`);
+                    const checkbox = wrapper.querySelector('.at-cost-toggle');
+
+                    if (value == '170000') {
+                        wrapper.style.display = 'block';
+                    } else {
+                        wrapper.style.display = 'none';
+
+                        // reset kalau pindah tarif
+                        checkbox.checked = false;
+
+                        // kembalikan ke mode normal
+                        const display = document.getElementById(`totalDisplay${id}`);
+                        display.setAttribute('readonly', true);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('show.bs.modal', function() {
+
+                    const id = this.id.replace('modalPenagihan', '');
+
+                    const wrapper = document.getElementById(`atCostWrapper${id}`);
+                    const checkbox = wrapper.querySelector('.at-cost-toggle');
+
+                    wrapper.style.display = 'none';
+                    checkbox.checked = false;
+
+                    const display = document.getElementById(`totalDisplay${id}`);
+                    display.setAttribute('readonly', true);
+                });
+            });
         </script>
         <div id="emptyPengajuan" class="empty-state" style="display:none;">
             <p>✅ Semua pengajuan sudah diagendakan!</p>
@@ -271,6 +430,36 @@
 
 @push('script')
     <script>
+        function buatPenagihanAgen(id) {
+
+            if (!confirm('Gunakan skema difasilitasi agen? (Gratis / tidak bayar)')) return;
+
+            fetch(`/petugas/penagihan/agen/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(async res => {
+                    let text = await res.text();
+
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error("Response bukan JSON:", text);
+                        throw new Error("Server tidak mengembalikan JSON");
+                    }
+                })
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                })
+                .catch(err => {
+                    alert('ERROR:\n' + err.message);
+                    console.error(err);
+                });
+        }
         // Menangani input dengan format 24 jam pada saat pemilihan waktu
         document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
             input.addEventListener('input', function(event) {

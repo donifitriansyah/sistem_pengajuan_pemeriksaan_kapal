@@ -12,18 +12,28 @@
             <div class="scorecard-label">Total Pengajuan</div>
             <div class="scorecard-value" id="totalPengajuan">0</div>
         </div>
+
         <div class="scorecard belum-tagihan">
             <div class="scorecard-label">Belum Ada Tagihan</div>
             <div class="scorecard-value" id="totalBelumTagihan">0</div>
         </div>
+
         <div class="scorecard belum-bayar">
             <div class="scorecard-label">Belum Bayar</div>
             <div class="scorecard-value" id="totalBelumBayar">0</div>
         </div>
+
         <div class="scorecard menunggu">
             <div class="scorecard-label">Menunggu Verifikasi</div>
             <div class="scorecard-value" id="totalMenunggu">0</div>
         </div>
+
+        {{-- TAMBAHAN --}}
+        <div class="scorecard difasilitasi">
+            <div class="scorecard-label">Difasilitasi Agen</div>
+            <div class="scorecard-value" id="totalDifasilitasi">0</div>
+        </div>
+
         <div class="scorecard lunas">
             <div class="scorecard-label">Lunas</div>
             <div class="scorecard-value" id="totalLunas">0</div>
@@ -72,6 +82,7 @@
                     <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                     <option value="Ditolak">Ditolak</option>
                     <option value="Lunas">Lunas</option>
+                    <option value="Difasilitasi Agen">Difasilitasi Agen</option>
                 </select>
             </div>
             <button class="btn btn-outline" id="resetFilter">Reset</button>
@@ -112,11 +123,14 @@
 
                         <td>
 
-                            @if (!$item->penagihan)
-                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
+                            @if ($item->difasilitasi_agen)
+                                <span class="badge bg-info">Difasilitasi Agen</span>
                                 <br>
+                                <span class="badge bg-success">Lunas (Agen)</span>
+                            @elseif (!$item->penagihan)
+                                <span class="badge bg-secondary">Belum Ada Tagihan</span>
                             @else
-                                {{-- STATUS --}}
+                                {{-- STATUS NORMAL --}}
                                 @if ($item->penagihan->status_bayar === 'belum_bayar')
                                     <span class="badge bg-danger">Belum Bayar</span>
                                 @elseif ($item->penagihan->status_bayar === 'menunggu')
@@ -128,19 +142,18 @@
                                 @endif
 
                                 {{-- AKSI --}}
-                                <div class="">
-                                    @if ($item->penagihan->status_bayar === 'belum_bayar')
-                                        {{-- <span class="badge bg-danger">Menunggu Pembayaran</span> --}}
-                                    @elseif($item->penagihan->status_bayar === 'diterima')
+                                <div class="mt-1">
+                                    @if ($item->penagihan->status_bayar === 'diterima')
                                         <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
                                             class="btn btn-sm btn-success">
                                             Lihat Kwitansi
                                         </a>
                                     @endif
-
                                 </div>
                             @endif
-                            @if ($item->penagihan?->pembayaran?->file)
+
+                            {{-- BUKTI BAYAR --}}
+                            @if (!$item->difasilitasi_agen && $item->penagihan?->pembayaran?->file)
                                 <br>
                                 <a href="{{ asset('storage/' . $item->penagihan->pembayaran->file) }}" target="_blank"
                                     class="btn btn-sm btn-success">
@@ -148,7 +161,9 @@
                                 </a>
                             @else
                                 <br>
-                                <span class="text-muted">Belum Upload Bukti</span>
+                                <span class="text-muted">
+                                    {{ $item->difasilitasi_agen ? 'Difasilitasi agen (tanpa bukti bayar)' : 'Belum Upload Bukti' }}
+                                </span>
                             @endif
                         </td>
                     </tr>
@@ -170,13 +185,14 @@
                     ordering: true,
                     info: true,
                     columnDefs: [{
-                            orderable: false,
-                            targets: 7
-                        } // kolom Aksi tidak bisa sort
-                    ]
+                        orderable: false,
+                        targets: 7
+                    }]
                 });
 
-                // Auto numbering kolom pertama
+                // ============================
+                // AUTO NUMBERING
+                // ============================
                 table.on('order.dt search.dt draw.dt', function() {
                     table.column(0, {
                             search: 'applied',
@@ -186,6 +202,8 @@
                         .each(function(cell, i) {
                             cell.innerHTML = i + 1;
                         });
+
+                    updateScorecard();
                 }).draw();
 
                 // ============================
@@ -200,6 +218,7 @@
 
                     // tanggal format dd-mm-yyyy
                     var parts = data[1].split('-');
+
                     if (parts.length === 3) {
                         years.add(parts[2]);
                         months.add(parts[1]);
@@ -221,7 +240,7 @@
                 );
 
                 // ============================
-                // CUSTOM FILTER (SEMUA DIGABUNG)
+                // CUSTOM FILTER
                 // ============================
                 $.fn.dataTable.ext.search.push(function(settings, data) {
 
@@ -234,7 +253,7 @@
                     var tanggal = data[1] || '';
                     var perusahaanRow = data[3] || '';
                     var dokumenRow = data[5] || '';
-                    var statusRow = data[8] || ''; // ✅ kolom Aksi
+                    var statusRow = data[8] || '';
 
                     var parts = tanggal.split('-');
                     var rowTahun = parts[2];
@@ -245,7 +264,7 @@
                     if (perusahaan && perusahaanRow !== perusahaan) return false;
                     if (dokumen && dokumenRow !== dokumen) return false;
 
-                    // Filter status (karena di kolom aksi ada tombol juga)
+                    // FILTER STATUS
                     if (status && !statusRow.includes(status)) return false;
 
                     return true;
@@ -263,13 +282,68 @@
                 // RESET FILTER
                 // ============================
                 $('#resetFilter').on('click', function() {
+
                     $('#filterTahun').val('');
                     $('#filterBulan').val('');
                     $('#filterPerusahaan').val('');
                     $('#filterJenisDokumen').val('');
                     $('#filterStatus').val('');
+
                     table.search('').draw();
                 });
+
+                // ============================
+                // UPDATE SCORECARD
+                // ============================
+                function updateScorecard() {
+
+                    let total = 0;
+                    let belumTagihan = 0;
+                    let belumBayar = 0;
+                    let menunggu = 0;
+                    let ditolak = 0;
+                    let lunas = 0;
+                    let difasilitasi = 0;
+
+                    table.rows({
+                        search: 'applied'
+                    }).every(function() {
+
+                        const rowNode = this.node();
+                        const statusCell = rowNode.children[8];
+
+                        if (!statusCell) return;
+
+                        total++;
+
+                        const text = statusCell.innerText;
+
+                        if (text.includes('Belum Ada Tagihan')) {
+                            belumTagihan++;
+                        } else if (text.includes('Belum Bayar')) {
+                            belumBayar++;
+                        } else if (text.includes('Menunggu Verifikasi')) {
+                            menunggu++;
+                        } else if (text.includes('Ditolak')) {
+                            ditolak++;
+                        } else if (text.includes('Difasilitasi Agen')) {
+                            difasilitasi++;
+                        } else if (text.includes('Lunas')) {
+                            lunas++;
+                        }
+
+                    });
+
+                    $('#totalPengajuan').text(total);
+                    $('#totalBelumTagihan').text(belumTagihan);
+                    $('#totalBelumBayar').text(belumBayar);
+                    $('#totalMenunggu').text(menunggu);
+                    $('#totalLunas').text(lunas);
+                    $('#totalDifasilitasi').text(difasilitasi);
+                }
+
+                // FIRST LOAD
+                updateScorecard();
 
             });
         </script>
@@ -300,6 +374,8 @@
                         ditolak++;
                     } else if (text.includes('Lunas')) {
                         lunas++;
+                    } else if (text.includes('Difasilitasi Agen')) {
+                        lunas++; // dianggap lunas
                     }
 
                 });

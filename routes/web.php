@@ -1,5 +1,6 @@
 <?php
 
+use App\Exports\VerifikasiPembayaranAgen;
 use App\Exports\VerifikasiPembayaranExport;
 use App\Exports\VerifikasiPembayaranLunasExport;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -152,6 +153,7 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         '/petugas/penagihan/{pengajuan}',
         [PenugasanController::class, 'store']
     )->name('petugas.penagihan.store');
+    Route::post('/petugas/penagihan/agen/{id}', [PenugasanController::class, 'storeAgen']);
     Route::get('/admin/export-verifikasi', function (Request $request) {
 
         $mulai = $request->mulai;
@@ -180,6 +182,32 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker'])->group(funct
         );
 
     })->name('export.verifikasi-lunas');
+
+    Route::get('/admin/export-verifikasi-lunas-agen', function (Request $request) {
+
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $perusahaan = $request->perusahaan;
+        $jenis = $request->jenis;
+
+        $namaFile = 'difasilitasi_agen_'.now()->format('d-m-Y').'.xlsx';
+
+        return Excel::download(
+            new VerifikasiPembayaranAgen(
+                $mulai,
+                $selesai,
+                $tahun,
+                $bulan,
+                $perusahaan,
+                $jenis
+            ),
+            $namaFile
+        );
+
+    })->name('export.verifikasi-agen');
 });
 
 Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilker'])->group(function () {
@@ -191,8 +219,6 @@ Route::middleware(['auth', 'checkroles:kawilker|bendahara_wilker|arsiparis_wilke
 
     Route::get('/bendahara/petugas', [DashboardPetugasController::class, 'indexPengajuanBendahara'])
         ->name('bendahara.petugas');
-
-
 
 });
 
@@ -253,11 +279,11 @@ Route::middleware(['auth', 'keuangan'])->group(function () {
 
     Route::get('/dashboard/keuangan/lunas', [DashboardPetugasController::class, 'indexPembayaranLunas'])
         ->name('keuangan.pembayaran.lunas');
+    Route::get('/dashboard/keuangan/difasilitasi-agen', [DashboardPetugasController::class, 'indexPembayaranDifasilitasiAgen'])
+        ->name('keuangan.pembayaran.difasilitasi-agen');
 
     Route::get('/keuangan/petugas', [DashboardPetugasController::class, 'indexKeuangan'])
         ->name('petugas.keuangan');
-
-
 
 });
 

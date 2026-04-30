@@ -21,6 +21,7 @@ class Penagihan extends Model
         'total_tarif',
         'waktu_mulai',
         'waktu_selesai',
+        'at_cost',
     ];
 
     /**

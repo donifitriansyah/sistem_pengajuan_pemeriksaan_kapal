@@ -24,6 +24,7 @@ class PengajuanPemeriksaanKapal extends Model
         'surat_permohonan_dan_dokumen',
         'status',
         'keterangan',
+        'difasilitasi_agen',
         'kode_bayar',
         'penagihan_id',
         'agenda_surat_pengajuan_id',
@@ -51,6 +52,11 @@ class PengajuanPemeriksaanKapal extends Model
     {
         return $this->belongsTo(Penagihan::class);
     }
+
+    public function isAgen()
+{
+    return $this->difasilitasi_agen === true;
+}
 
     // In PengajuanPemeriksaanKapal model
 public function penagihanId()

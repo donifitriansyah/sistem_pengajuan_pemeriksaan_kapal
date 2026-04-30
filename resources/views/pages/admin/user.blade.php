@@ -137,8 +137,8 @@
                                                         </option>
                                                         <option value="user"
                                                             {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
-                                                        <option value="petugas"
-                                                            {{ $user->role == 'petugas' ? 'selected' : '' }}>Petugas
+                                                        <option value="kawilker"
+                                                            {{ $user->role == 'kawilker' ? 'selected' : '' }}>Kawilker
                                                         </option>
                                                         <option value="petugas-kapal"
                                                             {{ $user->role == 'petugas-kapal' ? 'selected' : '' }}>Petugas

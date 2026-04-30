@@ -337,209 +337,167 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($pengajuan as $item)
-                    <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
-                        <td>{{ $item->nama_kapal }}</td>
-                        <td>{{ $item->wilayah_kerja }}</td>
-                        <td>{{ $item->lokasi_kapal }}</td>
-                        <td>{{ $item->jenis_dokumen }}</td>
-                        <td><span class="badge bg-secondary">{{ $item->kode_bayar }}</span></td>
-                        <td>{{ $item->status }}</td>
-                        <td>
-                            {{-- Jika belum diagendakan --}}
-                            @if (is_null($item->agenda_surat_pengajuan_id))
-                                <span class="badge bg-danger">Menunggu Verifikasi</span>
+              @foreach ($pengajuan as $item)
+    <tr data-status="{{ $item->penagihan ? $item->penagihan->status_bayar : 'belum_ada_tagihan' }}">
+        <td>{{ $loop->iteration }}</td>
+        <td>{{ \Carbon\Carbon::parse($item->tgl_estimasi_pemeriksaan)->format('d-m-Y') }}</td>
+        <td>{{ $item->nama_kapal }}</td>
+        <td>{{ $item->wilayah_kerja }}</td>
+        <td>{{ $item->lokasi_kapal }}</td>
+        <td>{{ $item->jenis_dokumen }}</td>
 
-                                <form action="{{ route('user.destroy', $item->id) }}" method="POST" class="mt-1"
-                                    onsubmit="return confirm('Yakin ingin menghapus pengajuan ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        Hapus Pengajuan
-                                    </button>
-                                </form>
+        <td>
+            <span class="badge bg-secondary">
+                {{ $item->kode_bayar }}
+            </span>
+        </td>
 
-                                {{-- Jika sudah diagendakan, lanjut cek penagihan --}}
-                            @else
-                                {{-- Jika belum ada tagihan --}}
-                                @if (!$item->penagihan)
-                                    <span class="badge bg-secondary">Belum Ada Tagihan</span>
-                                @elseif($item->penagihan->status_bayar === 'belum_bayar')
-                                    <span class="badge bg-warning text-dark mb-2">Belum Bayar</span>
-                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">
-                                        Lihat Invoice
-                                    </a>
+        <td>{{ $item->status }}</td>
 
-                                    <div class="mt-1">
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#modalBayar{{ $item->id }}">
-                                            Bayar Tagihan
-                                        </button>
-                                    </div>
-                                @elseif($item->penagihan->status_bayar === 'menunggu')
-                                    <span class="badge bg-info">Menunggu Verifikasi</span>
-                                    <a href="{{ route('kwitansi.show', $item->penagihan->id) }}" target="_blank"
-                                        class="btn btn-sm btn-success">
-                                        Lihat Invoice
-                                    </a>
-                                @elseif($item->penagihan->status_bayar === 'ditolak')
-                                    <span class="badge bg-danger">Pembayaran Ditolak</span>
-                                    <div class="mt-1">
-                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                                            data-bs-target="#modalBayar{{ $item->id }}">
-                                            Upload Ulang Bukti
-                                        </button>
-                                    </div>
-                                @elseif($item->penagihan->status_bayar === 'diterima')
-                                    <span class="badge bg-success">Lunas</span>
-                                    <div class="mt-1">
-                                        <a href="{{ route('invoice.show', $item->penagihan->id) }}" target="_blank"
-                                            class="btn btn-sm btn-success mb-2">
-                                            Lihat Kwitansi
-                                        </a>
-                                    </div>
-                                @endif
-                            @endif
+        <td>
 
-                            {{-- Jika status pengajuan ditolak --}}
-                            @if ($item->status === 'Ditolak')
-                                <div class="mt-1">
-                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#editPengajuanModal{{ $item->id }}">
-                                        Edit Pengajuan
-                                    </button>
-                                </div>
-                            @endif
-                        </td>
-                    </tr>
-                    <div class="modal fade" id="editPengajuanModal{{ $item->id }}" tabindex="-1"
-                        aria-labelledby="editPengajuanModalLabel{{ $item->id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
+            {{-- BELUM DIAGENDAKAN --}}
+            @if (is_null($item->agenda_surat_pengajuan_id))
 
-                                <form action="{{ route('user.pengajuan.update', $item->id) }}" method="POST"
-                                    enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
+                <span class="badge bg-danger">
+                    Menunggu Verifikasi
+                </span>
 
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="editPengajuanModalLabel{{ $item->id }}">Edit
-                                            Pengajuan</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
+                <form action="{{ route('user.destroy', $item->id) }}"
+                    method="POST"
+                    class="mt-1"
+                    onsubmit="return confirm('Yakin ingin menghapus pengajuan ini?')">
 
-                                    <div class="modal-body">
-                                        <!-- Nama Kapal -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Nama Kapal</label>
-                                            <input type="text" name="nama_kapal" class="form-control"
-                                                value="{{ $item->nama_kapal }}" required>
-                                        </div>
+                    @csrf
+                    @method('DELETE')
 
-                                        <!-- Tanggal Estimasi Pemeriksaan -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Tanggal Estimasi Pemeriksaan</label>
-                                            <input type="date" name="tgl_estimasi_pemeriksaan" class="form-control"
-                                                value="{{ old('tgl_estimasi_pemeriksaan', $item->tgl_estimasi_pemeriksaan) }}"
-                                                required>
-                                        </div>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Hapus Pengajuan
+                    </button>
+                </form>
 
-                                        <!-- Wilayah Kerja -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Wilayah Kerja</label>
-                                            <select name="wilayah_kerja" class="form-select" required>
-                                                <option value="">-- Pilih Wilayah --</option>
-                                                <option value="Dwikora"
-                                                    {{ $item->wilayah_kerja === 'Dwikora' ? 'selected' : '' }}>Dwikora
-                                                </option>
-                                                <option value="Kijing"
-                                                    {{ $item->wilayah_kerja === 'Kijing' ? 'selected' : '' }}>Kijing
-                                                </option>
-                                                <option value="Padang Tikar"
-                                                    {{ $item->wilayah_kerja === 'Padang Tikar' ? 'selected' : '' }}>
-                                                    Padang
-                                                    Tikar</option>
-                                                <option value="Ketapang"
-                                                    {{ $item->wilayah_kerja === 'Ketapang' ? 'selected' : '' }}>
-                                                    Ketapang
-                                                </option>
-                                                <option value="Kendawangan"
-                                                    {{ $item->wilayah_kerja === 'Kendawangan' ? 'selected' : '' }}>
-                                                    Kendawangan</option>
-                                            </select>
-                                        </div>
+            @else
 
-                                        <!-- Lokasi Kapal -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Lokasi Kapal</label>
-                                            <input type="text" name="lokasi_kapal" class="form-control"
-                                                value="{{ $item->lokasi_kapal }}" required>
-                                        </div>
+                {{-- BELUM ADA TAGIHAN --}}
+                @if (!$item->penagihan)
 
-                                        <!-- Jenis Dokumen -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Jenis Dokumen</label>
-                                            <select name="jenis_dokumen" class="form-select" required>
-                                                <option value="PHQC"
-                                                    {{ $item->jenis_dokumen === 'PHQC' ? 'selected' : '' }}>PHQC
-                                                </option>
-                                                <option value="SSCEC"
-                                                    {{ $item->jenis_dokumen === 'SSCEC' ? 'selected' : '' }}>SSCEC
-                                                </option>
-                                                <option value="COP"
-                                                    {{ $item->jenis_dokumen === 'COP' ? 'selected' : '' }}>COP</option>
-                                                <option value="P3K"
-                                                    {{ $item->jenis_dokumen === 'P3K' ? 'selected' : '' }}>P3K</option>
-                                            </select>
-                                        </div>
+                    <span class="badge bg-secondary">
+                        Belum Ada Tagihan
+                    </span>
 
-                                        <!-- Waktu Kedatangan Kapal -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Tanggal Kedatangan Kapal</label>
-                                            <input type="datetime-local" name="waktu_kedatangan_kapal"
-                                                class="form-control"
-                                                value="{{ \Carbon\Carbon::parse($item->waktu_kedatangan_kapal)->format('Y-m-d\TH:i') }}"
-                                                required>
-                                        </div>
+                @else
 
-                                        <!-- Surat Permohonan (Upload) -->
-                                        <div class="mb-3">
-                                            <label class="form-label">Upload Surat Permohonan</label>
-                                            <input type="file" name="surat_permohonan" class="form-control">
+                    {{-- =========================
+                        DIFASILITASI AGEN
+                    ========================== --}}
+                    @if ($item->difasilitasi_agen)
 
-                                            <small class="text-danger">* File format pdf dengan maksimal 2mb</small>
+                        <span class="badge bg-info text-dark">
+                            Difasilitasi Agen
+                        </span>
 
-                                            @if ($item->surat_permohonan_dan_dokumen)
-                                                <p class="mt-1">
-                                                    Current File:
-                                                    <a href="{{ asset('storage/' . $item->surat_permohonan_dan_dokumen) }}"
-                                                        target="_blank">
-                                                        View Current File
-                                                    </a>
-                                                </p>
-                                            @endif
-                                        </div>
+                    @else
 
-                                        <!-- Alasan Penolakan (Keterangan) -->
-                                        <div class="mb-3">
-                                            <label for="keterangan" class="form-label">Alasan Penolakan</label>
-                                            <textarea name="keterangan" class="form-control" rows="4" readonly>{{ $item->keterangan }}</textarea>
-                                        </div>
-                                    </div>
+                        {{-- =========================
+                            BELUM BAYAR
+                        ========================== --}}
+                        @if ($item->penagihan->status_bayar === 'belum_bayar')
 
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                                    </div>
-                                </form>
+                            <span class="badge bg-warning text-dark mb-2">
+                                Belum Bayar
+                            </span>
+
+                            <div class="mt-1">
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-success">
+                                    Lihat Invoice
+                                </a>
                             </div>
-                        </div>
-                    </div>
-                @endforeach
+
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalBayar{{ $item->id }}">
+                                    Bayar Tagihan
+                                </button>
+                            </div>
+
+                        {{-- =========================
+                            MENUNGGU VERIFIKASI
+                        ========================== --}}
+                        @elseif($item->penagihan->status_bayar === 'menunggu')
+
+                            <span class="badge bg-info">
+                                Menunggu Verifikasi
+                            </span>
+
+                            <div class="mt-1">
+                                <a href="{{ route('kwitansi.show', $item->penagihan->id) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-success">
+                                    Lihat Invoice
+                                </a>
+                            </div>
+
+                        {{-- =========================
+                            DITOLAK
+                        ========================== --}}
+                        @elseif($item->penagihan->status_bayar === 'ditolak')
+
+                            <span class="badge bg-danger">
+                                Pembayaran Ditolak
+                            </span>
+
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalBayar{{ $item->id }}">
+                                    Upload Ulang Bukti
+                                </button>
+                            </div>
+
+                        {{-- =========================
+                            LUNAS
+                        ========================== --}}
+                        @elseif($item->penagihan->status_bayar === 'diterima')
+
+                            <span class="badge bg-success">
+                                Lunas
+                            </span>
+
+                            <div class="mt-1">
+                                <a href="{{ route('invoice.show', $item->penagihan->id) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-success mb-2">
+                                    Lihat Kwitansi
+                                </a>
+                            </div>
+
+                        @endif
+
+                    @endif
+
+                @endif
+
+            @endif
+
+            {{-- STATUS PENGAJUAN DITOLAK --}}
+            @if ($item->status === 'Ditolak')
+
+                <div class="mt-1">
+                    <button class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editPengajuanModal{{ $item->id }}">
+                        Edit Pengajuan
+                    </button>
+                </div>
+
+            @endif
+
+        </td>
+    </tr>
+@endforeach
             </tbody>
 
         </table>

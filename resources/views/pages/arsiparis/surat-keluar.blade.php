@@ -116,7 +116,6 @@
                         </td>
 
                     </tr>
-
                 @endforeach
             </tbody>
         </table>
@@ -126,99 +125,164 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
-        // Function to filter the table based on date range
-        // Function to filter the table based on date range
-        function filterTable() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const rows = document.querySelectorAll("#tablePengajuan tbody tr");
+    $(document).ready(function() {
 
-            rows.forEach(row => {
-                const dateCell = row.cells[1].innerText.trim(); // Get the 'Tanggal Surat' cell content
-                const rowDate = new Date(dateCell.split('-').reverse().join(
-                    '-')); // Convert to Date object (dd-mm-yyyy to yyyy-mm-dd)
+        // =========================
+        // DATATABLE
+        // =========================
+        const table = $('#tablePengajuan').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+            pageLength: 10,
 
-                const filterStartDate = startDate ? new Date(startDate) : null;
-                const filterEndDate = endDate ? new Date(endDate) : null;
+            columnDefs: [{
+                targets: 0,
+                orderable: false
+            }],
 
-                let showRow = true;
-
-                // Show or hide the row based on date range
-                if (filterStartDate && rowDate < filterStartDate) {
-                    showRow = false;
-                }
-
-                if (filterEndDate && rowDate > filterEndDate) {
-                    showRow = false;
-                }
-
-                row.style.display = showRow ? '' : 'none';
-            });
-
-            // Manually reset row numbers after the filter is applied
-            resetRowNumbers();
-        }
-
-        // Function to manually reset row numbers
-        function resetRowNumbers() {
-            const rows = document.querySelectorAll("#tablePengajuan tbody tr");
-            let rowNumber = 1;
-
-            rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    row.cells[0].innerText = rowNumber; // Update the row number in the first column
-                    rowNumber++;
-                }
-            });
-        }
-
-        // Function to download the table as an Excel file using SheetJS
-        function downloadTableAsExcel() {
-            const wb = XLSX.utils.table_to_book(document.getElementById('tablePengajuan'), {
-                sheet: "Sheet1"
-            });
-            XLSX.writeFile(wb, "surat_keluar.xlsx");
-        }
-
-        $(document).ready(function() {
-            const table = $('#tablePengajuan').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                lengthChange: true,
-                pageLength: 10,
-                columnDefs: [{
-                    targets: 0,
-                    orderable: false
-                }],
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    },
-                    emptyTable: "Tidak ada data surat keluar"
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                paginate: {
+                    first: "Awal",
+                    last: "Akhir",
+                    next: "›",
+                    previous: "‹"
                 },
-                drawCallback: function(settings) {
-                    var api = this.api();
-                    api.column(0, {
-                        page: 'current'
-                    }).nodes().each(function(cell, i) {
-                        cell.innerHTML = i + 1;
-                    });
-                }
-            });
+                emptyTable: "Tidak ada data surat keluar"
+            },
 
-            // Redraw table and reset row numbers when applying filters
-            $('#startDate, #endDate').on('change', function() {
-                filterTable();
-                table.draw(); // Trigger the row number recalculation after filtering
-            });
+            // Auto numbering
+            drawCallback: function(settings) {
+
+                let api = this.api();
+
+                api.column(0, {
+                    page: 'current'
+                }).nodes().each(function(cell, i) {
+
+                    cell.innerHTML = i + 1 + settings._iDisplayStart;
+
+                });
+            }
         });
-    </script>
+
+        // =========================
+        // FILTER RANGE TANGGAL
+        // =========================
+        $.fn.dataTable.ext.search.push(function(settings, data) {
+
+            // Pastikan hanya untuk tabel ini
+            if (settings.nTable.id !== 'tablePengajuan') {
+                return true;
+            }
+
+            let startDate = $('#startDate').val();
+            let endDate = $('#endDate').val();
+
+            // Kolom tanggal
+            let tanggal = data[1] || '';
+
+            if (!tanggal) {
+                return true;
+            }
+
+            // Format dd-mm-yyyy
+            let parts = tanggal.split('-');
+
+            if (parts.length !== 3) {
+                return true;
+            }
+
+            let day = parts[0];
+            let month = parts[1];
+            let year = parts[2];
+
+            // Ubah jadi YYYYMMDD
+            let rowDate = parseInt(year + month + day);
+
+            // FILTER START DATE
+            if (startDate) {
+
+                let s = startDate.split('-');
+
+                let start = parseInt(s[0] + s[1] + s[2]);
+
+                if (rowDate < start) {
+                    return false;
+                }
+            }
+
+            // FILTER END DATE
+            if (endDate) {
+
+                let e = endDate.split('-');
+
+                let end = parseInt(e[0] + e[1] + e[2]);
+
+                if (rowDate > end) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        // =========================
+        // TRIGGER FILTER
+        // =========================
+        $('#startDate, #endDate').on('change', function() {
+            table.draw();
+        });
+
+    });
+
+    // =========================
+    // RESET FILTER
+    // =========================
+    function resetFilter() {
+
+        $('#startDate').val('');
+        $('#endDate').val('');
+
+        let table = $('#tablePengajuan').DataTable();
+
+        table.search('');
+        table.draw();
+    }
+
+    // =========================
+    // EXPORT EXCEL
+    // =========================
+    function downloadTableAsExcel() {
+
+        let table = $('#tablePengajuan').DataTable();
+
+        // Simpan jumlah row awal
+        let oldLength = table.page.len();
+
+        // Tampilkan semua row hasil filter
+        table.page.len(-1).draw();
+
+        setTimeout(() => {
+
+            // Export hasil filter
+            const wb = XLSX.utils.table_to_book(
+                document.getElementById('tablePengajuan'), {
+                    sheet: "Surat Keluar"
+                }
+            );
+
+            XLSX.writeFile(wb, "surat_keluar.xlsx");
+
+            // Kembalikan pagination awal
+            table.page.len(oldLength).draw();
+
+        }, 300);
+    }
+</script>
 @endsection

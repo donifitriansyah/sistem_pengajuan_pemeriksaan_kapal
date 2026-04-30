@@ -149,6 +149,33 @@ class DashboardPetugasController extends Controller
         ]);
     }
 
+    public function indexPembayaranDifasilitasiAgen()
+    {
+        $user = auth()->user();
+
+        $pengajuan = PengajuanPemeriksaanKapal::with([
+            'user',
+            'penagihan.pembayaran',
+            'agendaSuratPengajuan',
+        ])
+            ->where('wilayah_kerja', $user->wilayah_kerja)
+
+            // ✅ hanya yang difasilitasi agen
+            ->where('difasilitasi_agen', 1)
+
+            // ✅ wajib punya pembayaran diterima
+            ->whereHas('penagihan.pembayaran', function ($query) {
+                $query->where('status', 'diterima');
+            })
+
+            ->latest()
+            ->get();
+
+        return view('pages.keuangan.pembayaran-agen', [
+            'pengajuan' => $pengajuan,
+        ]);
+    }
+
     public function indexPembayaranLunas()
     {
         $user = auth()->user();
@@ -160,7 +187,13 @@ class DashboardPetugasController extends Controller
         ])
             ->where('wilayah_kerja', $user->wilayah_kerja)
 
-            // wajib punya pembayaran
+            // ⛔ jangan tampilkan difasilitasi agen
+            ->where(function ($query) {
+                $query->whereNull('difasilitasi_agen')
+                    ->orWhere('difasilitasi_agen', 0);
+            })
+
+            // wajib punya pembayaran diterima
             ->whereHas('penagihan.pembayaran', function ($query) {
                 $query->where('status', 'diterima');
             })

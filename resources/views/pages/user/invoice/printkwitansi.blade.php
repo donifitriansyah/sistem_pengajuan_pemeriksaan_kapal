@@ -155,7 +155,7 @@
                 <td>:</td>
                 <td>{{ $jenis_tarif_name }}</td>
             </tr>
-             <tr>
+            <tr>
                 <td>Uang Sejumlah</td>
                 <td>:</td>
                 <td><strong>Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}</strong></td>
@@ -175,6 +175,7 @@
                     {{ $penagihan->pengajuan->kode_bayar }}
                 </td>
             </tr>
+
         </table>
         <p>
         <p>
@@ -187,45 +188,83 @@
             6. Keputusan Menteri Kesehatan RI Nomor HK.01.07/MENKES/898/2025 <br>
             7. Peraturan Direktur Jenderal Perbendaharaan Nomor PER-22/PB/2013 <br>
             Dengan rincian sebagai berikut : <br>
+            @if ($penagihan->at_cost)
+                <p><em>*Perhitungan menggunakan skema At Cost </em></p>
+            @endif
         </p>
         </p>
 
         <!-- RINCIAN -->
         <table class="rincian">
-            <tr>
-                <th width="10%">Uraian</th>
-                <th width="30%">Jumlah per Petugas</th>
-                <th width="30%">Jumlah Total</th>
-            </tr>
-            <tr>
-                <td>Transportasi</td>
-                <td>Rp {{ number_format($total_transportasi_per_petugas, 0, ',', '.') }} x {{ $jumlah_petugas }}
-                    Petugas x {{ $days_difference }} Hari</td>
-                <td>Rp
-                    {{ number_format($total_transportasi_per_petugas * $jumlah_petugas * $days_difference, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr>
-                <td>Uang Harian</td>
-                <td>Rp {{ number_format($total_uang_harian_per_petugas, 0, ',', '.') }} x {{ $jumlah_petugas }}
-                    Petugas x {{ $days_difference }} Hari</td>
-                <td>Rp
-                    {{ number_format($total_uang_harian_per_petugas * $jumlah_petugas * $days_difference, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr>
-                <td>Penginapan</td>
-                <td>Rp {{ number_format($total_penginapan_per_petugas, 0, ',', '.') }} x {{ $jumlah_petugas }} Petugas
-                    x {{ $days_difference }} Hari</td>
-                <td>Rp
-                    {{ number_format($total_penginapan_per_petugas * $jumlah_petugas * $days_difference, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr>
-                <th>Total</th>
-                <th></th>
-                <th>Rp {{ number_format($total, 0, ',', '.') }}</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th width="10%">Uraian</th>
+
+                    @if (!$penagihan->at_cost)
+                        <th width="30%">Jumlah per Petugas</th>
+                    @endif
+
+                    <th width="30%">Jumlah Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if ($penagihan->at_cost)
+                    {{-- MODE AT COST --}}
+                    <tr>
+                        <td>Transportasi</td>
+                        <td>
+                            Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Total</th>
+                        <th>
+                            Rp {{ number_format($penagihan->total_tarif, 0, ',', '.') }}
+                        </th>
+                    </tr>
+                @else
+                    {{-- MODE NORMAL --}}
+                    <tr>
+                        <td>Transportasi</td>
+                        <td>
+                            Rp {{ number_format($total_transportasi_per_petugas, 0, ',', '.') }}
+                            x {{ $jumlah_petugas }} Petugas x {{ $days_difference }} Hari
+                        </td>
+                        <td>
+                            Rp {{ number_format($total_transportasi, 0, ',', '.') }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Uang Harian</td>
+                        <td>
+                            Rp {{ number_format($total_uang_harian_per_petugas, 0, ',', '.') }}
+                            x {{ $jumlah_petugas }} Petugas x {{ $days_difference }} Hari
+                        </td>
+                        <td>
+                            Rp {{ number_format($total_uang_harian, 0, ',', '.') }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Penginapan</td>
+                        <td>
+                            Rp {{ number_format($total_penginapan_per_petugas, 0, ',', '.') }}
+                            x {{ $jumlah_petugas }} Petugas x {{ $days_difference }} Hari
+                        </td>
+                        <td>
+                            Rp {{ number_format($total_penginapan, 0, ',', '.') }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Total</th>
+                        <th></th>
+                        <th>Rp {{ number_format($total, 0, ',', '.') }}</th>
+                    </tr>
+                @endif
+            </tbody>
         </table>
 
         <table>
